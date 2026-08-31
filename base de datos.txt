@@ -1,0 +1,309 @@
+-- ============================================================
+-- BASE DE DATOS: PharmaCore (Colombia)
+-- Compatibilidad: MySQL 8.0+ / MariaDB / HeidiSQL
+-- ============================================================
+
+CREATE DATABASE IF NOT EXISTS pharmacore_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE pharmacore_db;
+
+SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS domicilios;
+DROP TABLE IF EXISTS devoluciones;
+DROP TABLE IF EXISTS detalles_formulas;
+DROP TABLE IF EXISTS formulas_medicas;
+DROP TABLE IF EXISTS detalles_ventas;
+DROP TABLE IF EXISTS ventas;
+DROP TABLE IF EXISTS detalles_compras;
+DROP TABLE IF EXISTS compras;
+DROP TABLE IF EXISTS movimientos_inventario;
+DROP TABLE IF EXISTS lotes;
+DROP TABLE IF EXISTS productos;
+DROP TABLE IF EXISTS categorias;
+DROP TABLE IF EXISTS proveedores;
+DROP TABLE IF EXISTS usuarios;
+DROP TABLE IF EXISTS empleados;
+DROP TABLE IF EXISTS roles;
+DROP TABLE IF EXISTS clientes;
+SET FOREIGN_KEY_CHECKS = 1;
+
+-- ------------------------------------------------------------
+-- 1. TABLA ROLES
+-- ------------------------------------------------------------
+CREATE TABLE roles (
+    id_rol INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(50) NOT NULL UNIQUE
+) ENGINE=InnoDB;
+
+-- ------------------------------------------------------------
+-- 2. TABLA CLIENTES
+-- ------------------------------------------------------------
+CREATE TABLE clientes (
+    id_cliente INT AUTO_INCREMENT PRIMARY KEY,
+    nombre_completo VARCHAR(150) NOT NULL,
+    tipo_documento ENUM('CC', 'CE', 'PASAPORTE', 'TI', 'NIT') DEFAULT 'CC',
+    numero_documento VARCHAR(20) NOT NULL UNIQUE,
+    telefono VARCHAR(15),
+    direccion VARCHAR(200),
+    correo VARCHAR(100),
+    fecha_nacimiento DATE,
+    eps VARCHAR(100),
+    alergias TEXT,
+    fecha_registro DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+
+-- ------------------------------------------------------------
+-- 3. TABLA EMPLEADOS Y USUARIOS
+-- ------------------------------------------------------------
+CREATE TABLE empleados (
+    id_empleado INT AUTO_INCREMENT PRIMARY KEY,
+    nombre_completo VARCHAR(150) NOT NULL,
+    tipo_documento ENUM('CC', 'CE', 'PASAPORTE') DEFAULT 'CC',
+    numero_documento VARCHAR(20) NOT NULL UNIQUE,
+    telefono VARCHAR(15),
+    direccion VARCHAR(200),
+    correo VARCHAR(100),
+    cargo VARCHAR(50) NOT NULL,
+    salario DECIMAL(12,2) NOT NULL,
+    estado ENUM('ACTIVO', 'INACTIVO') DEFAULT 'ACTIVO'
+) ENGINE=InnoDB;
+
+
+
+CREATE TABLE usuarios (
+    id_usuario INT AUTO_INCREMENT PRIMARY KEY,
+    id_empleado INT UNIQUE NOT NULL,
+    id_rol INT NOT NULL,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    estado ENUM('ACTIVO', 'BLOQUEADO', 'INACTIVO') DEFAULT 'ACTIVO',
+    FOREIGN KEY (id_empleado) REFERENCES empleados(id_empleado) ON DELETE CASCADE,
+    FOREIGN KEY (id_rol) REFERENCES roles(id_rol)
+) ENGINE=InnoDB;
+
+
+
+-- ------------------------------------------------------------
+-- 4. TABLA PROVEEDORES
+-- ------------------------------------------------------------
+CREATE TABLE proveedores (
+    id_proveedor INT AUTO_INCREMENT PRIMARY KEY,
+    razon_social VARCHAR(150) NOT NULL,
+    nit VARCHAR(20) NOT NULL UNIQUE,
+    direccion VARCHAR(200),
+    telefono VARCHAR(15),
+    correo VARCHAR(100),
+    nombre_contacto VARCHAR(100),
+    tipo_productos VARCHAR(150),
+    estado ENUM('ACTIVO', 'INACTIVO') DEFAULT 'ACTIVO'
+) ENGINE=InnoDB;
+
+
+
+-- ------------------------------------------------------------
+-- 5. TABLA CATEGORIAS
+-- ------------------------------------------------------------
+CREATE TABLE categorias (
+    id_categoria INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL UNIQUE,
+    descripcion TEXT
+) ENGINE=InnoDB;
+
+
+
+-- ------------------------------------------------------------
+-- 6. TABLA PRODUCTOS
+-- ------------------------------------------------------------
+CREATE TABLE productos (
+    id_producto INT AUTO_INCREMENT PRIMARY KEY,
+    codigo_interno VARCHAR(30) UNIQUE NOT NULL,
+    codigo_barras VARCHAR(50) UNIQUE NOT NULL,
+    nombre_comercial VARCHAR(150) NOT NULL,
+    nombre_generico VARCHAR(150),
+    descripcion TEXT,
+    presentacion VARCHAR(100),
+    concentracion VARCHAR(50),
+    laboratorio VARCHAR(100),
+    registro_invima VARCHAR(50) NOT NULL,
+    id_categoria INT NOT NULL,
+    id_proveedor INT NOT NULL,
+    precio_compra DECIMAL(12,2) NOT NULL,
+    precio_venta DECIMAL(12,2) NOT NULL,
+    stock_total INT DEFAULT 0,
+    stock_minimo INT DEFAULT 10,
+    ubicacion_estante VARCHAR(50),
+    requiere_formula BOOLEAN DEFAULT FALSE,
+    es_venta_libre BOOLEAN DEFAULT TRUE,
+    es_controlado BOOLEAN DEFAULT FALSE,
+    requiere_refrigeracion BOOLEAN DEFAULT FALSE,
+    restricciones_venta VARCHAR(200),
+    estado ENUM('ACTIVO', 'INACTIVO', 'DESCONTINUADO') DEFAULT 'ACTIVO',
+    FOREIGN KEY (id_categoria) REFERENCES categorias(id_categoria),
+    FOREIGN KEY (id_proveedor) REFERENCES proveedores(id_proveedor)
+) ENGINE=InnoDB;
+
+-- ------------------------------------------------------------
+-- 7. TABLA LOTES Y CONTROL DE VENCIMIENTOS
+-- ------------------------------------------------------------
+CREATE TABLE lotes (
+    id_lote INT AUTO_INCREMENT PRIMARY KEY,
+    id_producto INT NOT NULL,
+    numero_lote VARCHAR(50) NOT NULL,
+    fecha_fabricacion DATE,
+    fecha_vencimiento DATE NOT NULL,
+    cantidad_inicial INT NOT NULL,
+    cantidad_actual INT NOT NULL,
+    estado ENUM('DISPONIBLE', 'PROXIMO_A_VENCER', 'VENCIDO', 'RETIRADO', 'DEVUELTO') DEFAULT 'DISPONIBLE',
+    FOREIGN KEY (id_producto) REFERENCES productos(id_producto)
+) ENGINE=InnoDB;
+
+-- ------------------------------------------------------------
+-- 8. TABLA COMPRAS (A PROVEEDORES)
+-- ------------------------------------------------------------
+CREATE TABLE compras (
+    id_compra INT AUTO_INCREMENT PRIMARY KEY,
+    numero_factura_proveedor VARCHAR(50) NOT NULL,
+    id_proveedor INT NOT NULL,
+    id_empleado INT NOT NULL,
+    fecha_compra DATETIME DEFAULT CURRENT_TIMESTAMP,
+    subtotal DECIMAL(12,2) NOT NULL,
+    impuestos DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+    total DECIMAL(12,2) NOT NULL,
+    forma_pago ENUM('EFECTIVO', 'TRANSFERENCIA', 'CREDITO_PROVEEDOR') DEFAULT 'CREDITO_PROVEEDOR',
+    estado ENUM('PENDIENTE', 'RECIBIDA', 'PARCIALMENTE_RECIBIDA', 'CANCELADA', 'DEVUELTA') DEFAULT 'RECIBIDA',
+    FOREIGN KEY (id_proveedor) REFERENCES proveedores(id_proveedor),
+    FOREIGN KEY (id_empleado) REFERENCES empleados(id_empleado)
+) ENGINE=InnoDB;
+
+
+CREATE TABLE detalles_compras (
+    id_detalle_compra INT AUTO_INCREMENT PRIMARY KEY,
+    id_compra INT NOT NULL,
+    id_producto INT NOT NULL,
+    cantidad INT NOT NULL,
+    precio_unitario DECIMAL(12,2) NOT NULL,
+    subtotal DECIMAL(12,2) NOT NULL,
+    FOREIGN KEY (id_compra) REFERENCES compras(id_compra) ON DELETE CASCADE,
+    FOREIGN KEY (id_producto) REFERENCES productos(id_producto)
+) ENGINE=InnoDB;
+
+-- ------------------------------------------------------------
+-- 9. TABLA VENTAS
+-- ------------------------------------------------------------
+CREATE TABLE ventas (
+    id_venta INT AUTO_INCREMENT PRIMARY KEY,
+    numero_factura VARCHAR(50) UNIQUE NOT NULL,
+    id_cliente INT,
+    id_empleado INT NOT NULL,
+    fecha_venta DATETIME DEFAULT CURRENT_TIMESTAMP,
+    subtotal DECIMAL(12,2) NOT NULL,
+    descuento DECIMAL(12,2) DEFAULT 0.00,
+    impuesto_iva DECIMAL(12,2) DEFAULT 0.00,
+    total DECIMAL(12,2) NOT NULL,
+    metodo_pago ENUM('EFECTIVO', 'TARJETA_DEBITO', 'TARJETA_CREDITO', 'TRANSFERENCIA', 'NEQUI_DAVIPLATA', 'PAGO_MIXTO') DEFAULT 'EFECTIVO',
+    estado ENUM('PENDIENTE', 'PAGADA', 'ANULADA', 'DEVUELTA') DEFAULT 'PAGADA',
+    FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente),
+    FOREIGN KEY (id_empleado) REFERENCES empleados(id_empleado)
+) ENGINE=InnoDB;
+
+
+CREATE TABLE detalles_ventas (
+    id_detalle_venta INT AUTO_INCREMENT PRIMARY KEY,
+    id_venta INT NOT NULL,
+    id_producto INT NOT NULL,
+    id_lote INT NOT NULL,
+    cantidad INT NOT NULL,
+    precio_unitario DECIMAL(12,2) NOT NULL,
+    subtotal DECIMAL(12,2) NOT NULL,
+    FOREIGN KEY (id_venta) REFERENCES ventas(id_venta) ON DELETE CASCADE,
+    FOREIGN KEY (id_producto) REFERENCES productos(id_producto),
+    FOREIGN KEY (id_lote) REFERENCES lotes(id_lote)
+) ENGINE=InnoDB;
+
+
+-- ------------------------------------------------------------
+-- 10. TABLA FORMULAS MEDICAS
+-- ------------------------------------------------------------
+CREATE TABLE formulas_medicas (
+    id_formula INT AUTO_INCREMENT PRIMARY KEY,
+    id_cliente INT NOT NULL,
+    nombre_medico VARCHAR(150) NOT NULL,
+    tarjeta_profesional VARCHAR(50) NOT NULL,
+    entidad_salud VARCHAR(100),
+    fecha_expedicion DATE NOT NULL,
+    vigencia_dias INT DEFAULT 30,
+    archivo_adjunto_url VARCHAR(255),
+    observaciones TEXT,
+    FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente)
+) ENGINE=InnoDB;
+
+
+CREATE TABLE detalles_formulas (
+    id_detalle_formula INT AUTO_INCREMENT PRIMARY KEY,
+    id_formula INT NOT NULL,
+    id_producto INT NOT NULL,
+    dosis VARCHAR(100) NOT NULL,
+    frecuencia VARCHAR(100) NOT NULL,
+    duracion_tratamiento VARCHAR(100) NOT NULL,
+    FOREIGN KEY (id_formula) REFERENCES formulas_medicas(id_formula) ON DELETE CASCADE,
+    FOREIGN KEY (id_producto) REFERENCES productos(id_producto)
+) ENGINE=InnoDB;
+
+
+-- ------------------------------------------------------------
+-- 11. MOVIMIENTOS DE INVENTARIO
+-- ------------------------------------------------------------
+CREATE TABLE movimientos_inventario (
+    id_movimiento INT AUTO_INCREMENT PRIMARY KEY,
+    tipo_movimiento ENUM('ENTRADA_COMPRA', 'SALIDA_VENTA', 'AJUSTE_PERDIDA', 'AJUSTE_DANIO', 'DEVOLUCION_CLIENTE', 'DEVOLUCION_PROVEEDOR') NOT NULL,
+    id_producto INT NOT NULL,
+    id_lote INT,
+    cantidad INT NOT NULL,
+    existencia_anterior INT NOT NULL,
+    nueva_existencia INT NOT NULL,
+    fecha_movimiento DATETIME DEFAULT CURRENT_TIMESTAMP,
+    id_usuario INT NOT NULL,
+    motivo VARCHAR(255),
+    FOREIGN KEY (id_producto) REFERENCES productos(id_producto),
+    FOREIGN KEY (id_lote) REFERENCES lotes(id_lote),
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario)
+) ENGINE=InnoDB;
+
+-- ------------------------------------------------------------
+-- 12. TABLA DOMICILIOS
+-- ------------------------------------------------------------
+CREATE TABLE domicilios (
+    id_domicilio INT AUTO_INCREMENT PRIMARY KEY,
+    id_venta INT NOT NULL UNIQUE,
+    id_cliente INT NOT NULL,
+    direccion_entrega VARCHAR(200) NOT NULL,
+    telefono_contacto VARCHAR(15) NOT NULL,
+    nombre_domiciliario VARCHAR(100),
+    costo_domicilio DECIMAL(10,2) DEFAULT 0.00,
+    estado ENUM('PENDIENTE', 'EN_PREPARACION', 'EN_CAMINO', 'ENTREGADO', 'CANCELADO') DEFAULT 'PENDIENTE',
+    fecha_hora_salida DATETIME NULL,
+    fecha_hora_entrega DATETIME NULL,
+    FOREIGN KEY (id_venta) REFERENCES ventas(id_venta),
+    FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente)
+) ENGINE=INNODB;
+
+-- ------------------------------------------------------------
+-- 13. TABLA DEVOLUCIONES
+-- ------------------------------------------------------------
+CREATE TABLE devoluciones (
+    id_devolucion INT AUTO_INCREMENT PRIMARY KEY,
+    tipo_devolucion ENUM('CLIENTE', 'PROVEEDOR') NOT NULL,
+    id_venta INT NULL,
+    id_compra INT NULL,
+    id_producto INT NOT NULL,
+    cantidad INT NOT NULL,
+    motivo ENUM('PRODUCTO_DEFECTUOSO', 'ERROR_ENTREGA', 'PROXIMO_A_VENCER', 'VENCIDO', 'RETIRO_MERCADO', 'EMPAQUE_DANADO') NOT NULL,
+    estado_producto ENUM('APTO_PARA_REINGRESO', 'DESECHADO', 'DEVUELTO_A_FABRICA') NOT NULL,
+    fecha_devolucion DATETIME DEFAULT CURRENT_TIMESTAMP,
+    id_usuario_regente INT NOT NULL,
+    observaciones TEXT,
+    FOREIGN KEY (id_venta) REFERENCES ventas(id_venta),
+    FOREIGN KEY (id_compra) REFERENCES compras(id_compra),
+    FOREIGN KEY (id_producto) REFERENCES productos(id_producto),
+    FOREIGN KEY (id_usuario_regente) REFERENCES usuarios(id_usuario)
+) ENGINE=innoDB;

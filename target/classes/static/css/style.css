@@ -1,0 +1,259 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --pharmacore-bg: #f7faf9;
+  --pharmacore-surface: #ffffff;
+  --pharmacore-primary: #004b4b;
+  --pharmacore-primary-dark: #003f3f;
+  --pharmacore-accent: #006565;
+  --pharmacore-text: #1e1e1e;
+  --pharmacore-muted: #657070;
+  --pharmacore-border: #d3dcda;
+  --pharmacore-danger: #d00000;
+  --pharmacore-shell: #202020;
+  --font-family-base: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+* { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+html, body { margin: 0; min-height: 100%; }
+body {
+  font-family: var(--font-family-base) !important;
+  color: var(--pharmacore-text) !important;
+  background: var(--pharmacore-shell) !important;
+  font-size: 13px;
+}
+
+a { text-decoration: none; color: inherit; }
+button, input, select, textarea { font-family: inherit; }
+
+/* App shell: matches the framed Figma presentation */
+body > header,
+body > div.flex.flex-1.relative,
+body > div.flex.flex-1.relative.min-h-screen,
+body > div.flex.flex-1.relative.min-h-\[calc\(100vh-4rem\)\] {
+  width: calc(100% - 40px);
+  margin-left: 20px;
+  margin-right: 20px;
+}
+body > header { margin-top: 28px; }
+body > div.flex.flex-1.relative,
+body > div.flex.flex-1.relative.min-h-screen,
+body > div.flex.flex-1.relative.min-h-\[calc\(100vh-4rem\)\] {
+  min-height: calc(100vh - 123px) !important;
+  background: var(--pharmacore-bg) !important;
+}
+
+/* Top bar */
+.app-topbar {
+  height: 49px;
+  min-height: 49px;
+  background: var(--pharmacore-primary) !important;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+.app-brand-row { display: flex; align-items: center; min-width: 0; gap: 16px; }
+.app-brand {
+  color: #fff;
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: 1.2px;
+  line-height: 1;
+  white-space: nowrap;
+}
+.app-brand-divider { width: 1px; height: 18px; background: rgba(255,255,255,.22); }
+.app-tagline { color: rgba(255,255,255,.78); font-size: 11px; letter-spacing: .2px; white-space: nowrap; }
+.app-topbar-actions { display: flex; align-items: center; gap: 10px; }
+.notification-button {
+  position: relative; width: 28px; height: 28px; display: grid; place-items: center;
+  color: #d8e5e4; background: transparent; border: 0; cursor: pointer; padding: 0;
+}
+.notification-button svg { width: 17px; height: 17px; }
+.notification-button:hover { color: #fff; }
+.notification-dot { position: absolute; top: 3px; right: 4px; width: 5px; height: 5px; border-radius: 50%; background: #8bd4cf; }
+.mobile-menu-button { display:none; }
+
+/* Sidebar */
+.app-sidebar {
+  width: 196px !important;
+  min-width: 196px !important;
+  background: var(--pharmacore-primary) !important;
+  color: #fff;
+  height: calc(100vh - 123px) !important;
+  top: 0 !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+.sidebar-section-title {
+  height: 39px;
+  display: flex;
+  align-items: center;
+  padding: 0 13px;
+  color: rgba(255,255,255,.52);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.sidebar-nav { padding: 9px 10px !important; }
+.sidebar-nav > a,
+.sidebar-nav > div > button {
+  min-height: 34px;
+  padding: 0 9px !important;
+  border-radius: 4px !important;
+  color: rgba(255,255,255,.82) !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  letter-spacing: .05px;
+}
+.sidebar-nav > a:hover,
+.sidebar-nav > div > button:hover { background: rgba(255,255,255,.07) !important; color: #fff !important; }
+.sidebar-nav > a .w-6,
+.sidebar-nav > div > button .w-6 { width: 22px !important; height: 22px !important; border-radius: 3px !important; background: transparent !important; }
+.sidebar-nav > a svg,
+.sidebar-nav > div > button svg { color: currentColor; }
+.sidebar-nav > a.is-active,
+.sidebar-nav > a[aria-current="page"] {
+  background: var(--pharmacore-accent) !important;
+  color: #fff !important;
+}
+.sidebar-nav .submenu-container { margin-left: 14px !important; padding-left: 8px !important; border-left-color: rgba(255,255,255,.14) !important; }
+.sidebar-nav .submenu-container a { border-radius: 3px !important; font-size: 10.5px !important; padding: 5px 8px !important; }
+.sidebar-nav .submenu-container a:hover,
+.sidebar-nav .submenu-container a.text-white { background: rgba(255,255,255,.08) !important; color: #fff !important; }
+
+/* Main content */
+body > div.flex.flex-1.relative > div.flex-1,
+body > div.flex.flex-1.relative.min-h-screen > div.flex-1,
+body > div.flex.flex-1.relative.min-h-\[calc\(100vh-4rem\)\] > div.flex-1 {
+  background: var(--pharmacore-bg) !important;
+}
+main { color: var(--pharmacore-text); }
+main h1 {
+  color: var(--pharmacore-text) !important;
+  font-size: 24px !important;
+  line-height: 1.2 !important;
+  letter-spacing: -.3px !important;
+  font-weight: 700 !important;
+}
+main h2 { color: var(--pharmacore-primary) !important; }
+main p.text-slate-500 { color: #657070 !important; }
+
+/* Figma spacing */
+main.p-4, main.sm\:p-6, main.lg\:p-8,
+main[class*="p-4"] { padding: 28px 24px !important; }
+main[class*="max-w-7xl"] { max-width: none !important; }
+main[class*="max-w-7xl"] > * { max-width: 100%; }
+
+/* Buttons */
+a.bg-pharmacore-accent,
+button.bg-pharmacore-accent,
+.bg-pharmacore-accent {
+  background: var(--pharmacore-accent) !important;
+  border-radius: 4px !important;
+  box-shadow: none !important;
+}
+a.bg-pharmacore-accent:hover,
+button.bg-pharmacore-accent:hover { background: #005959 !important; }
+
+/* Cards / table containers */
+main section.rounded-xl,
+main section.rounded-lg,
+main form.rounded-xl,
+main form.rounded-lg {
+  border-radius: 6px !important;
+  border-color: var(--pharmacore-border) !important;
+  box-shadow: none !important;
+}
+main section.bg-white,
+main form.bg-white { background: #fff !important; }
+
+/* Search bars */
+main input,
+main select,
+main textarea {
+  border-color: var(--pharmacore-border) !important;
+  background: #fff !important;
+  color: var(--pharmacore-text) !important;
+  border-radius: 4px !important;
+  box-shadow: none !important;
+}
+main input:focus,
+main select:focus,
+main textarea:focus {
+  border-color: var(--pharmacore-accent) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(0,101,101,.10) !important;
+}
+
+/* Tables */
+main table { width: 100%; border-collapse: collapse; }
+main table thead tr { background: var(--pharmacore-primary) !important; }
+main table thead th {
+  color: #fff !important;
+  font-size: 9px !important;
+  font-weight: 700 !important;
+  letter-spacing: .55px !important;
+  padding: 11px 18px !important;
+}
+main table tbody tr { border-bottom: 1px solid var(--pharmacore-border) !important; }
+main table tbody tr:last-child { border-bottom: 0 !important; }
+main table tbody tr:hover { background: #f2f7f6 !important; }
+main table tbody td {
+  color: #374040 !important;
+  font-size: 10.5px !important;
+  padding: 13px 18px !important;
+  vertical-align: middle;
+}
+main table tbody td .text-pharmacore-accent,
+main table tbody td .text-pharmacore-accent { color: var(--pharmacore-accent) !important; }
+
+/* Identifier chips */
+main table tbody td span[class*="bg-pharmacore-accent"],
+main table tbody td span[class*="bg-pharmacore-accent"] {
+  background: #edf4f3 !important;
+  border-color: #dce9e7 !important;
+  color: var(--pharmacore-primary) !important;
+  border-radius: 2px !important;
+}
+
+/* Danger / allergy text */
+.text-rose-600, .text-red-600, .text-red-500 { color: var(--pharmacore-danger) !important; }
+
+/* Alerts */
+main .bg-emerald-50 { background: #edf7f3 !important; }
+main .border-emerald-200 { border-color: #cce5da !important; }
+main .bg-rose-50 { background: #fff1f1 !important; }
+main .border-rose-200 { border-color: #f0cccc !important; }
+
+/* Footer is intentionally minimal in the Figma composition */
+.app-footer { display: none !important; }
+
+/* Remove the old visual language */
+.shadow-sm, .shadow-md, .shadow-lg, .shadow-xl, .shadow-2xl { box-shadow: none !important; }
+.rounded-xl { border-radius: 6px !important; }
+.rounded-lg { border-radius: 4px !important; }
+
+@media (max-width: 767px) {
+  body { padding-bottom: 0; }
+  body > header,
+  body > div.flex.flex-1.relative,
+  body > div.flex.flex-1.relative.min-h-screen,
+  body > div.flex.flex-1.relative.min-h-\[calc\(100vh-4rem\)\] {
+    width: 100%; margin-left: 0; margin-right: 0;
+  }
+  body > header { margin-top: 0; }
+  .app-topbar { padding: 0 12px; }
+  .mobile-menu-button { display: grid; place-items:center; width:28px; height:28px; border:0; background:transparent; color:#fff; }
+  .mobile-menu-button svg { width:18px; height:18px; }
+  .app-brand-divider, .app-tagline { display:none; }
+  .app-sidebar { width: 220px !important; min-width: 220px !important; height: 100vh !important; position: fixed !important; top: 0 !important; }
+  main[class*="p-4"] { padding: 18px 14px !important; }
+}

@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PharmaCore - Pharma System</title>
+
+    <th:block th:fragment="styles">
+        <!-- Tailwind CSS CDN -->
+        <script src="https://cdn.tailwindcss.com"></script>
+
+        <!-- Google Fonts: Poppins -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" th:href="@{/img/img.png}">
+        <link rel="stylesheet" th:href="@{/css/style.css}">
+
+        <!-- Configuración personalizada de Tailwind con la paleta de colores oficial -->
+        <script>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        colors: {
+                            pharmacore: {
+                                bg: '#F7FAF9',        /* Fondo Principal: Ghost White */
+                                dark: '#004B4B',      /* Header / Sidebar: Deep Twilight */
+                                darker: '#003939',    /* Tonalidad más profunda para degradados */
+                                accent: '#006565',    /* Acento / Acciones / Bordes: Bondi Blue */
+                                text: '#1E1E1E'       /* Texto Principal: Carbon Black */
+                            }
+                        },
+                        fontFamily: {
+                            sans: ['Poppins', 'sans-serif'],
+                        }
+                    }
+                }
+            }
+        </script>
+
+        <!-- Estilos de transición suave para los submenús -->
+        <style>
+            .submenu-container {
+                max-height: 0px;
+                overflow: hidden;
+                transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease-in-out;
+                opacity: 0;
+            }
+        </style>
+    </th:block>
+</head>
+<body class="bg-pharmacore-bg font-sans text-pharmacore-text antialiased min-h-screen flex flex-col selection:bg-pharmacore-accent selection:text-white">
+
+<!-- ===================== HEADER / TOPBAR ===================== -->
+<header th:fragment="topbar(title)" class="app-topbar">
+    <div class="app-brand-row">
+        <button type="button" onclick="toggleSidebar()" class="mobile-menu-button" aria-label="Abrir menú">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <a th:href="@{/view/home}" class="app-brand" title="Ir al inicio">PHARMACORE</a>
+        <span class="app-brand-divider"></span>
+        <span class="app-tagline">Administración de farmacias ágil, normativa y libre de errores.</span>
+    </div>
+
+    <div class="app-topbar-actions">
+        <button type="button" class="notification-button" title="Notificaciones" aria-label="Notificaciones">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+            </svg>
+            <span class="notification-dot"></span>
+        </button>
+    </div>
+</header>
+
+<!-- ===================== CONTENEDOR CENTRAL ===================== -->
+<div class="flex flex-1 relative min-h-[calc(100vh-4rem)]">
+
+    <div id="overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/60 z-10 hidden md:hidden transition-all duration-300"></div>
+
+    <!-- ===================== SIDEBAR ===================== -->
+    <aside th:fragment="sidebar(activeMenu)" id="pharmacore-sidebar"
+           class="app-sidebar flex flex-col fixed md:sticky top-0 z-40 transition-transform duration-300 ease-out -translate-x-full md:translate-x-0 flex-shrink-0">
+
+        <div class="sidebar-section-title">NAVEGACIÓN</div>
+
+        <!-- LISTA DE MÓDULOS -->
+        <nav class="sidebar-nav flex-1 overflow-y-auto">
+
+            <!-- Inicio -->
+            <a th:href="@{/view/home}"
+               th:classappend="${activeMenu == 'home'} ? 'is-active' : ''"
+               class="text-slate-300 hover:bg-white/10 hover:text-white flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-colors duration-200 group cursor-pointer">
+                <div class="w-6 h-6 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors duration-200">
+                    <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                    </svg>
+                </div>
+                <span>Inicio</span>
+            </a>
+
+            <!-- Catálogo y Stock (Desplegable) -->
+            <div class="space-y-1">
+                <button type="button" onclick="toggleSubmenu('submenu-inventario')"
+                        class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-colors duration-200 group focus:outline-none cursor-pointer">
+                    <div class="flex items-center gap-3">
+                        <div class="w-6 h-6 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors duration-200">
+                            <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                            </svg>
+                        </div>
+                        <span>Catálogo y Stock</span>
+                    </div>
+                    <svg id="arrow-inventario" class="w-3 h-3 transition-transform duration-300 text-slate-400 group-hover:text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+
+                <div id="submenu-inventario" class="submenu-container pl-4 space-y-1 pt-1 border-l border-white/10 ml-5 my-1" style="max-height:0px;overflow:hidden;opacity:0;">
+                    <a th:href="@{/view/medicamentos}"
+                       class="block px-3 py-1.5 rounded-lg text-[11px] text-slate-400 hover:text-white hover:bg-white/10 transition-colors duration-200 cursor-pointer">
+                        Medicamentos
+                    </a>
+                    <a th:href="@{/view/lotes}"
+                       class="block px-3 py-1.5 rounded-lg text-[11px] text-slate-400 hover:text-white hover:bg-white/10 transition-colors duration-200 cursor-pointer">
+                        Control de Lotes e Inventario
+                    </a>
+                    <a th:href="@{/view/vencimientos}"
+                       class="block px-3 py-1.5 rounded-lg text-[11px] text-slate-400 hover:text-white hover:bg-white/10 transition-colors duration-200 cursor-pointer">
+                        Alertas de Vencimiento
+                    </a>
+                </div>
+            </div>
+
+            <!-- Dispensación / POS (Desplegable) -->
+            <div class="space-y-1">
+                <button type="button" onclick="toggleSubmenu('submenu-dispensacion')"
+                        class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-colors duration-200 group focus:outline-none cursor-pointer">
+                    <div class="flex items-center gap-3">
+                        <div class="w-6 h-6 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors duration-200">
+                            <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/>
+                            </svg>
+                        </div>
+                        <span>Dispensación / POS</span>
+                    </div>
+                    <svg id="arrow-dispensacion" class="w-3 h-3 transition-transform duration-300 text-slate-400 group-hover:text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+
+                <div id="submenu-dispensacion" class="submenu-container pl-4 space-y-1 pt-1 border-l border-white/10 ml-5 my-1" style="max-height:0px;overflow:hidden;opacity:0;">
+                    <a th:href="@{/view/ventas/nueva}"
+                       class="block px-3 py-1.5 rounded-lg text-[11px] text-slate-400 hover:text-white hover:bg-white/10 transition-colors duration-200 cursor-pointer">
+                        Nueva Venta / Facturación
+                    </a>
+                    <a th:href="@{/view/dispensacion/historial}"
+                       class="block px-3 py-1.5 rounded-lg text-[11px] text-slate-400 hover:text-white hover:bg-white/10 transition-colors duration-200 cursor-pointer">
+                        Historial de Dispensación
+                    </a>
+                </div>
+            </div>
+
+            <!-- Proveedores (Desplegable) -->
+            <div class="space-y-1">
+                <button type="button" onclick="toggleSubmenu('submenu-proveedores')"
+                        class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-colors duration-200 group focus:outline-none cursor-pointer">
+                    <div class="flex items-center gap-3">
+                        <div class="w-6 h-6 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors duration-200">
+                            <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0V11m0 0h4m-4 0H9m4 0V7m0 0h4m-4 0H9"/>
+                            </svg>
+                        </div>
+                        <span>Proveedores</span>
+                    </div>
+                    <svg id="arrow-proveedores" class="w-3 h-3 transition-transform duration-300 text-slate-400 group-hover:text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+
+                <div id="submenu-proveedores" class="submenu-container pl-4 space-y-1 pt-1 border-l border-white/10 ml-5 my-1" style="max-height:0px;overflow:hidden;opacity:0;">
+                    <a th:href="@{/view/proveedores}"
+                       class="block px-3 py-1.5 rounded-lg text-[11px] text-slate-400 hover:text-white hover:bg-white/10 transition-colors duration-200 cursor-pointer">
+                        Directorio de Proveedores
+                    </a>
+                    <a th:href="@{/view/ordenes-compra}"
+                       class="block px-3 py-1.5 rounded-lg text-[11px] text-slate-400 hover:text-white hover:bg-white/10 transition-colors duration-200 cursor-pointer">
+                        Órdenes de Compra
+                    </a>
+                </div>
+            </div>
+
+            <!-- Pacientes -->
+            <a th:href="@{/view/clientes}"
+               th:classappend="${activeMenu == 'clientes'} ? 'is-active' : ''"
+               class="text-slate-300 hover:bg-white/10 hover:text-white flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-colors duration-200 group cursor-pointer">
+                <div class="w-6 h-6 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors duration-200">
+                    <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                    </svg>
+                </div>
+                <span>Pacientes</span>
+            </a>
+
+            <!-- Usuarios y Personal (Desplegable actualizado con Empleados, Usuarios y Roles) -->
+            <div class="space-y-1">
+                <button type="button" onclick="toggleSubmenu('submenu-empleados')"
+                        class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-colors duration-200 group focus:outline-none cursor-pointer">
+                    <div class="flex items-center gap-3">
+                        <div class="w-6 h-6 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors duration-200">
+                            <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                            </svg>
+                        </div>
+                        <span>Usuarios y Personal</span>
+                    </div>
+                    <svg id="arrow-empleados" class="w-3 h-3 transition-transform duration-300 text-slate-400 group-hover:text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+
+                <div id="submenu-empleados" class="submenu-container pl-4 space-y-1 pt-1 border-l border-white/10 ml-5 my-1" style="max-height:0px;overflow:hidden;opacity:0;">
+                    <a th:href="@{/view/empleados}"
+                       class="block px-3 py-1.5 rounded-lg text-[11px] text-slate-400 hover:text-white hover:bg-white/10 transition-colors duration-200 cursor-pointer">
+                        Empleados
+                    </a>
+                    <a th:href="@{/view/usuarios}"
+                       class="block px-3 py-1.5 rounded-lg text-[11px] text-slate-400 hover:text-white hover:bg-white/10 transition-colors duration-200 cursor-pointer">
+                        Usuarios
+                    </a>
+                    <a th:href="@{/view/roles}"
+                       class="block px-3 py-1.5 rounded-lg text-[11px] text-slate-400 hover:text-white hover:bg-white/10 transition-colors duration-200 cursor-pointer">
+                        Roles
+                    </a>
+                </div>
+            </div>
+
+            <!-- Reportes -->
+            <a th:href="@{/view/reportes}"
+               th:classappend="${activeMenu == 'reportes'} ? 'is-active' : ''"
+               class="text-slate-300 hover:bg-white/10 hover:text-white flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-colors duration-200 group cursor-pointer">
+                <div class="w-6 h-6 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors duration-200">
+                    <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                    </svg>
+                </div>
+                <span>Reportes</span>
+            </a>
+
+            <!-- Configuración (Desplegable) -->
+            <div class="space-y-1">
+                <button type="button" onclick="toggleSubmenu('submenu-config')"
+                        class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-colors duration-200 group focus:outline-none cursor-pointer">
+                    <div class="flex items-center gap-3">
+                        <div class="w-6 h-6 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors duration-200">
+                            <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                        </div>
+                        <span>Configuración</span>
+                    </div>
+                    <svg id="arrow-config" class="w-3 h-3 transition-transform duration-300 text-slate-400 group-hover:text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+
+                <div id="submenu-config" class="submenu-container pl-4 space-y-1 pt-1 border-l border-white/10 ml-5 my-1" style="max-height:0px;overflow:hidden;opacity:0;">
+<a th:href="@{/view/configuracion}"
+                       class="block px-3 py-1.5 rounded-lg text-[11px] text-slate-400 hover:text-white hover:bg-white/10 transition-colors duration-200 cursor-pointer">
+                        Impuestos / Métodos de Pago
+                    </a>
+                </div>
+            </div>
+
+        </nav>
+
+    </aside>
+
+    <!-- AREA PRINCIPAL -->
+    <div class="flex-1 flex flex-col min-w-0 bg-pharmacore-bg">
+
+        <main class="flex-1 p-4 sm:p-6 lg:p-8">
+            <!-- Contenido Dinámico -->
+        </main>
+
+        <!-- ===================== FOOTER ===================== -->
+        <footer th:fragment="footer"
+                class="app-footer">
+            <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+
+                <div class="flex items-center gap-2">
+                    <a th:href="@{/view/home}" class="font-semibold text-pharmacore-primary hover:text-pharmacore-accent transition-colors duration-200 cursor-pointer">PharmaCore</a>
+                    <span>&copy; <span th:text="${#dates.format(#dates.createNow(), 'yyyy')}">2026</span>. Todos los derechos reservados.</span>
+                </div>
+
+                <div class="flex items-center gap-4 text-slate-400">
+                    <span class="hover:text-pharmacore-primary transition-colors duration-200 cursor-pointer">Soporte Técnico</span>
+                    <span>&bull;</span>
+                    <span class="hover:text-pharmacore-primary transition-colors duration-200 cursor-pointer">Normativa Sanitaria</span>
+                    <span>&bull;</span>
+                    <span class="text-slate-400 font-mono text-[11px]">v1.0.4-RELEASE</span>
+                </div>
+
+            </div>
+        </footer>
+
+    </div>
+
+</div>
+
+<!-- ===================== SCRIPTS DE CONTROL GLOBAL ===================== -->
+<th:block th:fragment="scripts">
+    <script>
+        window.toggleSidebar = function() {
+            const sidebar = document.getElementById('pharmacore-sidebar');
+            const overlay = document.getElementById('overlay');
+            if (!sidebar) return;
+
+            const isOpen = sidebar.dataset.open === 'true';
+
+            if (isOpen) {
+                sidebar.classList.add('-translate-x-full');
+                sidebar.dataset.open = 'false';
+                if (overlay) overlay.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            } else {
+                sidebar.classList.remove('-translate-x-full');
+                sidebar.dataset.open = 'true';
+                if (overlay) overlay.classList.remove('hidden');
+                document.body.classList.add('overflow-hidden');
+            }
+        };
+
+        window.toggleSubmenu = function(id) {
+            const submenu = document.getElementById(id);
+            if (!submenu) return;
+
+            const arrowId = 'arrow-' + id.split('-')[1];
+            const arrow = document.getElementById(arrowId);
+            const isOpen = submenu.style.maxHeight && submenu.style.maxHeight !== '0px';
+
+            document.querySelectorAll('.submenu-container').forEach(function(otro) {
+                if (otro !== submenu) {
+                    otro.style.maxHeight = '0px';
+                    otro.style.opacity = '0';
+                    const otroArrowId = 'arrow-' + otro.id.split('-')[1];
+                    const otroArrow = document.getElementById(otroArrowId);
+                    if (otroArrow) otroArrow.classList.remove('rotate-180');
+                }
+            });
+
+            if (isOpen) {
+                submenu.style.maxHeight = '0px';
+                submenu.style.opacity = '0';
+                if (arrow) arrow.classList.remove('rotate-180');
+            } else {
+                submenu.style.maxHeight = submenu.scrollHeight + 'px';
+                submenu.style.opacity = '1';
+                if (arrow) arrow.classList.add('rotate-180');
+            }
+        };
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const sidebar = document.getElementById('pharmacore-sidebar');
+            if (sidebar) {
+                sidebar.querySelectorAll('a[href]').forEach(function(link) {
+                    link.addEventListener('click', function() {
+                        if (window.innerWidth < 768 && sidebar.dataset.open === 'true') {
+                            window.toggleSidebar();
+                        }
+                    });
+                });
+            }
+        });
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const currentPath = window.location.pathname;
+            const submenuContainers = document.querySelectorAll('.submenu-container');
+
+            submenuContainers.forEach(submenu => {
+                const links = submenu.querySelectorAll('a');
+                let hasActiveLink = false;
+
+                links.forEach(link => {
+                    const href = link.getAttribute('href');
+                    if (href && href !== '#' && currentPath.includes(href)) {
+                        hasActiveLink = true;
+                        link.classList.add('text-white', 'bg-white/10');
+                    }
+                });
+
+                if (hasActiveLink) {
+                    const id = submenu.id;
+                    const arrowId = 'arrow-' + id.split('-')[1];
+                    const arrow = document.getElementById(arrowId);
+
+                    submenu.style.maxHeight = submenu.scrollHeight + 'px';
+                    submenu.style.opacity = '1';
+                    if (arrow) arrow.classList.add('rotate-180');
+                }
+            });
+        });
+    </script>
+</th:block>
+
+</body>
+</html>

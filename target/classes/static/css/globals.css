@@ -1,0 +1,13 @@
+:root {
+  --pharmacore-bg: #f7faf9;
+  --pharmacore-dark: #004b4b;
+  --pharmacore-accent: #006565;
+  --pharmacore-text: #1e1e1e;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 2px solid #006565 !important; outline-offset: 2px;
+}
+a { text-decoration: none; color: inherit; }

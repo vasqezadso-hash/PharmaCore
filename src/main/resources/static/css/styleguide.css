@@ -1,0 +1,166 @@
+/* ==========================================================================
+   STYLEGUIDE.CSS - SISTEMA DE DISEÑO / VARIABLES (POPPINS FONT)
+   ========================================================================== */
+
+:root {
+  /* --- PALETA DE COLORES OFICIAL --- */
+  --pharmacore-bg: rgba(247, 250, 249, 1);
+  --pharmacore-dark: rgba(0, 75, 75, 1);
+  --pharmacore-accent: rgba(0, 101, 101, 1);
+  --pharmacore-text: rgba(30, 30, 30, 1);
+
+  /* Aliases y tonos neutros complementarios adaptados */
+  --blanco-neutro: rgba(255, 255, 255, 1);
+  --gris-claro-neutro: rgba(240, 240, 245, 1);
+  --gris-oscuro-neutro: rgba(70, 70, 80, 1);
+  --acento-claro: rgba(32, 138, 174, 0.15);
+  --rojo-claro: rgba(255, 182, 193, 1);
+  --emphasis-gray: rgba(220, 220, 230, 1);
+
+  /* --- TIPOGRAFÍA BASE --- */
+  --font-family-poppins: "Poppins", system-ui, -apple-system, sans-serif;
+
+  /* --- HEADINGS / TÍTULOS --- */
+  --h1-TITLE-font-family: var(--font-family-poppins);
+  --h1-TITLE-font-weight: 700;
+  --h1-TITLE-font-size: 28px;
+  --h1-TITLE-letter-spacing: -0.5px;
+  --h1-TITLE-line-height: 1.2;
+  --h1-TITLE-font-style: normal;
+
+  --h2-TITLE-font-family: var(--font-family-poppins);
+  --h2-TITLE-font-weight: 600;
+  --h2-TITLE-font-size: 20px;
+  --h2-TITLE-letter-spacing: -0.2px;
+  --h2-TITLE-line-height: 1.3;
+  --h2-TITLE-font-style: normal;
+
+  --h3-subtitle-font-family: var(--font-family-poppins);
+  --h3-subtitle-font-weight: 600;
+  --h3-subtitle-font-size: 18px;
+  --h3-subtitle-letter-spacing: 0px;
+  --h3-subtitle-line-height: 1.4;
+  --h3-subtitle-font-style: normal;
+
+  /* --- LABELS & PARAGRAPHS --- */
+  --label-font-family: var(--font-family-poppins);
+  --label-font-weight: 500;
+  --label-font-size: 12px;
+  --label-letter-spacing: 0px;
+  --label-line-height: 1.4;
+  --label-font-style: normal;
+
+  --paragraph-font-family: var(--font-family-poppins);
+  --paragraph-font-weight: 400;
+  --paragraph-font-size: 15px;
+  --paragraph-letter-spacing: 0px;
+  --paragraph-line-height: 1.5;
+  --paragraph-font-style: normal;
+
+  --notes-font-family: var(--font-family-poppins);
+  --notes-font-weight: 300;
+  --notes-font-size: 12px;
+  --notes-letter-spacing: 0px;
+  --notes-line-height: 1.4;
+  --notes-font-style: italic;
+
+  /* --- VARIANTES DE TEXTO --- */
+  --inter-regular-font-family: var(--font-family-poppins);
+  --inter-regular-font-weight: 400;
+  --inter-regular-font-size: 15px;
+  --inter-regular-letter-spacing: 0px;
+  --inter-regular-line-height: 24px;
+  --inter-regular-font-style: normal;
+
+  --inter-regular-upper-font-family: var(--font-family-poppins);
+  --inter-regular-upper-font-weight: 400;
+  --inter-regular-upper-font-size: 12px;
+  --inter-regular-upper-letter-spacing: 0.6px;
+  --inter-regular-upper-line-height: 16px;
+  --inter-regular-upper-font-style: normal;
+
+  --inter-semi-bold-font-family: var(--font-family-poppins);
+  --inter-semi-bold-font-weight: 600;
+  --inter-semi-bold-font-size: 12px;
+  --inter-semi-bold-letter-spacing: 0px;
+  --inter-semi-bold-line-height: 16px;
+  --inter-semi-bold-font-style: normal;
+
+  --inter-semi-bold-upper-font-family: var(--font-family-poppins);
+  --inter-semi-bold-upper-font-weight: 600;
+  --inter-semi-bold-upper-font-size: 10px;
+  --inter-semi-bold-upper-letter-spacing: 0.5px;
+  --inter-semi-bold-upper-line-height: 15px;
+  --inter-semi-bold-upper-font-style: normal;
+
+  --inter-medium-font-family: var(--font-family-poppins);
+  --inter-medium-font-weight: 500;
+  --inter-medium-font-size: 14px;
+  --inter-medium-letter-spacing: 0px;
+  --inter-medium-line-height: 20px;
+  --inter-medium-font-style: normal;
+
+  --inter-italic-font-family: var(--font-family-poppins);
+  --inter-italic-font-weight: 400;
+  --inter-italic-font-size: 14px;
+  --inter-italic-letter-spacing: 0px;
+  --inter-italic-line-height: 22px;
+  --inter-italic-font-style: italic;
+
+  --inter-bold-upper-font-family: var(--font-family-poppins);
+  --inter-bold-upper-font-weight: 700;
+  --inter-bold-upper-font-size: 10px;
+  --inter-bold-upper-letter-spacing: 1px;
+  --inter-bold-upper-line-height: 15px;
+  --inter-bold-upper-font-style: normal;
+
+  --inter-bold-font-family: var(--font-family-poppins);
+  --inter-bold-font-weight: 700;
+  --inter-bold-font-size: 15px;
+  --inter-bold-letter-spacing: 0px;
+  --inter-bold-line-height: 24px;
+  --inter-bold-font-style: normal;
+
+  /* --- TOKENS SEMÁNTICOS --- */
+  --semantic-button-font-family: var(--font-family-poppins);
+  --semantic-button-font-weight: 600;
+  --semantic-button-font-size: 15px;
+  --semantic-button-letter-spacing: 0px;
+  --semantic-button-line-height: 22.5px;
+  --semantic-button-font-style: normal;
+
+  --semantic-heading-1-font-family: var(--font-family-poppins);
+  --semantic-heading-1-font-weight: 700;
+  --semantic-heading-1-font-size: 30px;
+  --semantic-heading-1-letter-spacing: -0.5px;
+  --semantic-heading-1-line-height: 36px;
+  --semantic-heading-1-font-style: normal;
+
+  --semantic-heading-2-font-family: var(--font-family-poppins);
+  --semantic-heading-2-font-weight: 600;
+  --semantic-heading-2-font-size: 20px;
+  --semantic-heading-2-letter-spacing: 0px;
+  --semantic-heading-2-line-height: 28px;
+  --semantic-heading-2-font-style: normal;
+
+  --semantic-heading-3-font-family: var(--font-family-poppins);
+  --semantic-heading-3-font-weight: 500;
+  --semantic-heading-3-font-size: 18px;
+  --semantic-heading-3-letter-spacing: 0px;
+  --semantic-heading-3-line-height: 28px;
+  --semantic-heading-3-font-style: normal;
+
+  --semantic-heading-4-font-family: var(--font-family-poppins);
+  --semantic-heading-4-font-weight: 600;
+  --semantic-heading-4-font-size: 14px;
+  --semantic-heading-4-letter-spacing: 0px;
+  --semantic-heading-4-line-height: 20px;
+  --semantic-heading-4-font-style: normal;
+
+  --semantic-label-upper-font-family: var(--font-family-poppins);
+  --semantic-label-upper-font-weight: 600;
+  --semantic-label-upper-font-size: 12px;
+  --semantic-label-upper-letter-spacing: 0.6px;
+  --semantic-label-upper-line-height: 16px;
+  --semantic-label-upper-font-style: normal;
+}

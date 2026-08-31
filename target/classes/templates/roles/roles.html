@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PharmaCore - Gestión de Roles</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/png" th:href="@{/img/img.png}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <th:block th:replace="fragments/layout :: styles"></th:block>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        pharmacore: {
+                            bg: '#F7FAF9',
+                            dark: '#004B4B',
+                            darker: '#003939',
+                            accent: '#006565',
+                            text: '#1E1E1E'
+                        }
+                    },
+                    fontFamily: { sans: ['Poppins', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-pharmacore-bg font-sans text-pharmacore-text antialiased min-h-screen flex flex-col text-xs">
+
+<!-- TOPBAR GLOBAL -->
+<header th:replace="fragments/layout :: topbar('Gestión de Roles')"></header>
+
+<!-- CONTENEDOR CENTRAL -->
+<div class="flex flex-1 relative">
+
+    <div id="overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/60 z-10 hidden md:hidden"></div>
+
+    <!-- SIDEBAR GLOBAL -->
+    <aside th:replace="fragments/layout :: sidebar('roles')"></aside>
+
+    <!-- AREA PRINCIPAL -->
+    <div class="flex-1 flex flex-col min-w-0">
+        <main class="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
+
+            <!-- ENCABEZADO -->
+            <section class="mb-5">
+                <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                    <div>
+                        <h1 class="text-xl md:text-2xl font-extrabold text-pharmacore-dark uppercase tracking-tight">
+                            Módulo de Roles
+                        </h1>
+                        <p class="text-xs text-slate-500 mt-1">
+                            Administre los perfiles de autorización y permisos disponibles en el sistema PharmaCore.
+                        </p>
+                    </div>
+                    <div>
+                        <a th:href="@{/view/roles/form}"
+                           class="inline-flex items-center justify-center gap-2 rounded-lg bg-pharmacore-accent px-4 py-2.5 text-xs font-bold text-white shadow-sm hover:opacity-90 transition cursor-pointer">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
+                            Nuevo Rol
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- MENSAJE FLASH (ÉXITO) -->
+            <div th:if="${mensaje}" class="mb-4 rounded-lg bg-emerald-50 border border-emerald-200 p-3 text-emerald-800 text-xs font-medium shadow-sm flex items-center gap-2">
+                <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                <span th:text="${mensaje}">Mensaje de éxito</span>
+            </div>
+
+            <!-- MENSAJE FLASH (ERROR) -->
+            <div th:if="${error}" class="mb-4 rounded-lg bg-rose-50 border border-rose-200 p-3 text-rose-800 text-xs font-medium shadow-sm flex items-center gap-2">
+                <svg class="w-4 h-4 text-rose-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+                <span th:text="${error}">Mensaje de error</span>
+            </div>
+
+            <!-- CONTENEDOR DE TABLA -->
+            <section class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden flex flex-col">
+
+                <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-white">
+                    <div class="text-xs text-slate-500 font-medium">
+                        Total de roles registrados: <span class="font-bold text-pharmacore-dark" th:text="${roles.size()}">0</span>
+                    </div>
+                </div>
+
+                <!-- TABLA RESPONSIVA -->
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-xs text-left">
+                        <thead>
+                        <tr class="bg-pharmacore-dark text-white border-b border-slate-100 text-[10px] uppercase tracking-wider">
+                            <th class="px-6 py-3.5 font-bold w-24">ID</th>
+                            <th class="px-6 py-3.5 font-bold">Nombre del Rol</th>
+                            <th class="px-6 py-3.5 text-center font-bold w-32">Acciones</th>
+                        </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+
+                        <tr th:each="rol : ${roles}" class="hover:bg-pharmacore-bg/40 transition">
+                            <td class="px-6 py-3.5 font-bold text-pharmacore-accent" th:text="${rol.idRol}"></td>
+                            <td class="px-6 py-3.5 font-semibold text-slate-700" th:text="${rol.nombre}"></td>
+                            <td class="px-6 py-3.5 text-center">
+                                <div class="flex items-center justify-center gap-1.5">
+                                    <!-- Botón Editar -->
+                                    <a th:href="@{/view/roles/edit/{id}(id=${rol.idRol})}"
+                                       class="p-1.5 rounded-lg text-slate-500 hover:text-white hover:bg-pharmacore-accent transition shadow-xs" title="Editar rol">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                    </a>
+                                    <!-- Botón Eliminar -->
+                                    <form th:action="@{'/view/roles/delete/' + ${rol.idRol}}" method="post" onsubmit="return confirm('¿Estás seguro de eliminar este rol?');" class="inline-flex">
+                                        <button type="submit" class="p-1.5 rounded-lg text-slate-500 hover:text-white hover:bg-rose-600 transition shadow-xs bg-transparent border-0 cursor-pointer" title="Eliminar rol">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr th:if="${roles.empty}">
+                            <td colspan="3" class="px-6 py-12 text-center text-slate-400">
+                                No se encontraron roles registrados en el sistema.
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </section>
+        </main>
+
+        <footer th:replace="fragments/layout :: footer"></footer>
+    </div>
+</div>
+
+<div th:replace="fragments/layout :: scripts"></div>
+<script th:src="@{/js/script.js}" defer></script>
+</body>
+</html>

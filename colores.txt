@@ -1,0 +1,9 @@
+Fondo Principal: #F7FAF9 (Blanco verdoso muy claro)
+
+Header / Sidebar: #004B4B (Verde petróleo profundo)
+
+Acento / Acciones / Elementos Activos: #006565 (Verde teal)
+
+Texto Principal: #1E1E1E (Negro carbón)
+
+Utilizaremos la tipografía Poppins

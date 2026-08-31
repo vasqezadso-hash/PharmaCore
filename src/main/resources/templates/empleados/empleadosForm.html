@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario Empleado - PharmaCore</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/png" th:href="@{/img/img.png}">
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <!-- Estilos del sidebar -->
+    <th:block th:replace="fragments/layout :: styles"></th:block>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        pharmacore: {
+                            bg: '#F7FAF9',
+                            dark: '#004B4B',
+                            darker: '#003939',
+                            accent: '#006565',
+                            text: '#1E1E1E'
+                        }
+                    },
+                    fontFamily: { sans: ['Poppins', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-pharmacore-bg text-pharmacore-text antialiased min-h-screen flex flex-col text-xs font-sans">
+
+<!-- TOPBAR GLOBAL -->
+<header th:replace="fragments/layout :: topbar('Gestión de Empleados')"></header>
+
+<!-- CONTENEDOR CENTRAL -->
+<div class="flex flex-1 min-h-screen relative bg-pharmacore-bg">
+
+    <!-- OVERLAY MÓVIL -->
+    <div id="overlay" class="fixed inset-0 bg-slate-900/60 z-20 hidden" onclick="toggleSidebar()"></div>
+
+    <!-- SIDEBAR GLOBAL -->
+    <aside th:replace="fragments/layout :: sidebar('empleados')"></aside>
+
+    <!-- AREA PRINCIPAL CON SCROLL FLUIDO -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-y-auto">
+        <main class="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full pb-16">
+
+            <!-- ENCABEZADO -->
+            <section class="mb-5">
+                <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                    <div>
+                        <h1 class="text-xl md:text-2xl font-extrabold text-pharmacore-dark uppercase tracking-tight">
+                            Módulo de Empleados
+                        </h1>
+                        <p class="text-xs text-slate-500 mt-1">
+                            Gestión de datos, información laboral y accesos del personal en el sistema PharmaCore.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <form th:action="@{/view/empleados/save}"
+                  th:object="${empleado}"
+                  method="post"
+                  novalidate>
+
+                <input type="hidden" th:field="*{id_empleado}" />
+
+                <!-- CONTENEDOR PRINCIPAL EN GRID DE 2 COLUMNAS -->
+                <div class="grid grid-cols-1 xl:grid-cols-2 gap-5">
+
+                    <!-- SECCIÓN 1: INFORMACIÓN DEL EMPLEADO -->
+                    <section class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden flex flex-col">
+                        <div class="px-5 py-3.5 border-b border-slate-100 bg-slate-50/50 flex items-center gap-2">
+                            <svg class="w-4 h-4 text-pharmacore-accent shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                            <h2 class="text-xs font-extrabold text-pharmacore-dark uppercase tracking-wider">
+                                Información Personal
+                            </h2>
+                        </div>
+
+                        <div class="p-5 grid grid-cols-1 md:grid-cols-2 gap-4 flex-1">
+                            <div class="md:col-span-2">
+                                <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">
+                                    Nombre completo
+                                </label>
+                                <input type="text" th:field="*{nombre_completo}" required
+                                       placeholder="Nombres y Apellidos"
+                                       class="w-full rounded-lg border border-slate-200 bg-slate-50/50 px-3.5 py-2 text-xs outline-none focus:border-pharmacore-accent focus:bg-white focus:ring-2 focus:ring-pharmacore-accent/20 transition">
+                            </div>
+
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">
+                                    Tipo de documento
+                                </label>
+                                <select th:field="*{tipo_documento}" required
+                                        class="w-full rounded-lg border border-slate-200 bg-slate-50/50 px-3.5 py-2 text-xs outline-none focus:border-pharmacore-accent focus:bg-white focus:ring-2 focus:ring-pharmacore-accent/20 transition">
+                                    <option value="CC">CC</option>
+                                    <option value="CE">CE</option>
+                                    <option value="PASAPORTE">PASAPORTE</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">
+                                    Número de documento
+                                </label>
+                                <input type="text" th:field="*{numero_documento}" required
+                                       placeholder="Número de documento"
+                                       class="w-full rounded-lg border border-slate-200 bg-slate-50/50 px-3.5 py-2 text-xs outline-none focus:border-pharmacore-accent focus:bg-white focus:ring-2 focus:ring-pharmacore-accent/20 transition">
+                            </div>
+
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">
+                                    Teléfono
+                                </label>
+                                <input type="text" th:field="*{telefono}"
+                                       placeholder="Teléfono móvil"
+                                       class="w-full rounded-lg border border-slate-200 bg-slate-50/50 px-3.5 py-2 text-xs outline-none focus:border-pharmacore-accent focus:bg-white focus:ring-2 focus:ring-pharmacore-accent/20 transition">
+                            </div>
+
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">
+                                    Dirección
+                                </label>
+                                <input type="text" th:field="*{direccion}"
+                                       placeholder="Dirección de residencia"
+                                       class="w-full rounded-lg border border-slate-200 bg-slate-50/50 px-3.5 py-2 text-xs outline-none focus:border-pharmacore-accent focus:bg-white focus:ring-2 focus:ring-pharmacore-accent/20 transition">
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- SECCIÓN 2: INFORMACIÓN LABORAL Y CONTACTO -->
+                    <section class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden flex flex-col">
+                        <div class="px-5 py-3.5 border-b border-slate-100 bg-slate-50/50 flex items-center gap-2">
+                            <svg class="w-4 h-4 text-pharmacore-accent shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                            </svg>
+                            <h2 class="text-xs font-extrabold text-pharmacore-dark uppercase tracking-wider">
+                                Información Laboral y Contacto
+                            </h2>
+                        </div>
+
+                        <div class="p-5 grid grid-cols-1 md:grid-cols-2 gap-4 flex-1">
+                            <div class="md:col-span-2">
+                                <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">
+                                    Correo electrónico
+                                </label>
+                                <input type="email" th:field="*{correo}"
+                                       placeholder="correo@ejemplo.com"
+                                       class="w-full rounded-lg border border-slate-200 bg-slate-50/50 px-3.5 py-2 text-xs outline-none focus:border-pharmacore-accent focus:bg-white focus:ring-2 focus:ring-pharmacore-accent/20 transition">
+                            </div>
+
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">
+                                    Cargo
+                                </label>
+                                <input type="text" th:field="*{cargo}" required
+                                       placeholder="Ej: Farmacéutico, Regente..."
+                                       class="w-full rounded-lg border border-slate-200 bg-slate-50/50 px-3.5 py-2 text-xs outline-none focus:border-pharmacore-accent focus:bg-white focus:ring-2 focus:ring-pharmacore-accent/20 transition">
+                            </div>
+
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">
+                                    Salario
+                                </label>
+                                <input type="number" step="0.01" th:field="*{salario}" required
+                                       placeholder="Monto de salario"
+                                       class="w-full rounded-lg border border-slate-200 bg-slate-50/50 px-3.5 py-2 text-xs outline-none focus:border-pharmacore-accent focus:bg-white focus:ring-2 focus:ring-pharmacore-accent/20 transition">
+                            </div>
+
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">
+                                    Estado
+                                </label>
+                                <select th:field="*{estado}" required
+                                        class="w-full rounded-lg border border-slate-200 bg-slate-50/50 px-3.5 py-2 text-xs outline-none focus:border-pharmacore-accent focus:bg-white focus:ring-2 focus:ring-pharmacore-accent/20 transition">
+                                    <option value="ACTIVO">ACTIVO</option>
+                                    <option value="INACTIVO">INACTIVO</option>
+                                </select>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- SECCIÓN 3: CREDENCIALES DE ACCESO (USUARIO) -->
+                    <section class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden flex flex-col xl:col-span-2">
+                        <div class="px-5 py-3.5 border-b border-slate-100 bg-slate-50/50 flex items-center gap-2">
+                            <svg class="w-4 h-4 text-pharmacore-accent shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
+                            </svg>
+                            <h2 class="text-xs font-extrabold text-pharmacore-dark uppercase tracking-wider">
+                                Credenciales de Acceso al Sistema (Usuario)
+                            </h2>
+                        </div>
+
+                        <div class="p-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <!-- Username -->
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">
+                                    Nombre de Usuario (Username) <span class="text-rose-500">*</span>
+                                </label>
+                                <input type="text" th:field="*{usuario.username}" required
+                                       placeholder="Ej: jperez"
+                                       class="w-full rounded-lg border border-slate-200 bg-slate-50/50 px-3.5 py-2 text-xs outline-none focus:border-pharmacore-accent focus:bg-white focus:ring-2 focus:ring-pharmacore-accent/20 transition">
+                            </div>
+
+                            <!-- Contraseña -->
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">
+                                    Contraseña <span class="text-rose-500">*</span>
+                                </label>
+                                <input type="password" name="password_hash"
+                                       placeholder="••••••••"
+                                       class="w-full rounded-lg border border-slate-200 bg-slate-50/50 px-3.5 py-2 text-xs outline-none focus:border-pharmacore-accent focus:bg-white focus:ring-2 focus:ring-pharmacore-accent/20 transition">
+                            </div>
+
+                            <!-- Rol del Sistema -->
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">
+                                    Rol del Sistema <span class="text-rose-500">*</span>
+                                </label>
+                                <select th:field="*{usuario.rol.idRol}" required
+                                        class="w-full rounded-lg border border-slate-200 bg-slate-50/50 px-3.5 py-2 text-xs outline-none focus:border-pharmacore-accent focus:bg-white focus:ring-2 focus:ring-pharmacore-accent/20 transition">
+                                    <option value="">Seleccione un rol...</option>
+                                    <option th:each="r : ${roles}"
+                                            th:value="${r.idRol}"
+                                            th:text="${r.nombre}">
+                                    </option>
+                                </select>
+                            </div>
+
+                            <!-- Estado del Usuario (Activo / Inactivo) -->
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">
+                                    Estado de Usuario <span class="text-rose-500">*</span>
+                                </label>
+                                <select th:field="*{usuario.estado}" required
+                                        class="w-full rounded-lg border border-slate-200 bg-slate-50/50 px-3.5 py-2 text-xs outline-none focus:border-pharmacore-accent focus:bg-white focus:ring-2 focus:ring-pharmacore-accent/20 transition">
+                                    <option th:each="e : ${T(com.pharmacore.pharmacore.model.Usuarios.EstadoUsuario).values()}"
+                                            th:value="${e}" th:text="${e}">ACTIVO</option>
+                                </select>
+                            </div>
+                        </div>
+                    </section>
+
+                </div>
+
+                <!-- BOTONERA DE ACCIÓN -->
+                <div class="flex items-center justify-end gap-3 mt-5">
+                    <a th:href="@{/view/empleados}"
+                       class="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-5 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-pharmacore-accent transition shadow-xs cursor-pointer">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                        Cancelar / Volver
+                    </a>
+
+                    <button type="submit"
+                            class="inline-flex items-center gap-2 rounded-lg bg-pharmacore-accent px-6 py-2 text-xs font-bold text-white shadow-sm hover:opacity-90 transition cursor-pointer">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                        Guardar Empleado
+                    </button>
+                </div>
+
+            </form>
+
+        </main>
+
+        <!-- FOOTER GLOBAL -->
+        <footer th:replace="fragments/layout :: footer"></footer>
+    </div>
+</div>
+
+<!-- Scripts del sidebar -->
+<div th:replace="fragments/layout :: scripts"></div>
+<script th:src="@{/js/script.js}" defer></script>
+<script th:if="${error}">alert('⚠️ ' + '[[${error}]]');</script>
+<script th:if="${mensaje}">alert('✅ ' + '[[${mensaje}]]');</script>
+
+</body>
+</html>

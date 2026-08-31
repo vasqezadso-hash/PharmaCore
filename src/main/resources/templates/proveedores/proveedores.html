@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PharmaCore - Directorio de Proveedores</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts: Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" th:href="@{/img/img.png}">
+
+    <!-- Configuración personalizada de Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        pharmacore: {
+                            bg: '#F7FAF9',
+                            dark: '#004B4B',
+                            darker: '#003939',
+                            accent: '#006565',
+                            text: '#1E1E1E'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-pharmacore-bg font-sans text-pharmacore-text antialiased min-h-screen flex flex-col selection:bg-pharmacore-accent selection:text-white">
+
+<!-- HEADER / TOPBAR -->
+<header th:replace="~{fragments/layout :: topbar('Proveedores')}"></header>
+<!-- CONTENEDOR CENTRAL -->
+<div class="flex flex-1 relative min-h-[calc(100vh-4rem)]">
+
+    <div id="overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/60 z-10 hidden md:hidden transition-all duration-300"></div>
+
+    <!-- SIDEBAR -->
+    <aside th:replace="~{fragments/layout :: sidebar('proveedores')}"></aside>
+    <!-- AREA PRINCIPAL -->
+    <div class="flex-1 flex flex-col min-w-0 bg-pharmacore-bg">
+        <main class="flex-1 p-4 sm:p-6 lg:p-8">
+
+            <!-- Cabecera de la sección estilo Pacientes/Clientes -->
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-bold text-pharmacore-dark uppercase tracking-wide">DIRECTORIO DE PROVEEDORES</h1>
+                    <p class="text-xs sm:text-sm text-slate-500">Administre la información de los proveedores y tipos de productos centralizados.</p>
+                </div>
+                <div>
+                    <!-- CORREGIDO: Se agregó el prefijo th: para que Thymeleaf interprete la ruta -->
+                    <a th:href="@{/view/proveedores/form}" class="bg-pharmacore-accent text-white px-4 py-2 rounded-xl text-xs font-semibold hover:opacity-90 transition-opacity">
+                        + Nuevo Proveedor
+                    </a>
+                </div>
+            </div>
+
+            <!-- Contenedor Principal Estilo Tarjeta -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+
+                <!-- Barra de Búsqueda y Conteo de Registros -->
+                <div class="p-4 sm:p-6 border-b border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div class="relative w-full sm:w-96">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        </span>
+                        <input type="text" placeholder="Buscar proveedor por razón social, NIT..." class="w-full pl-9 pr-4 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all">
+                    </div>
+                    <div class="text-xs sm:text-sm font-medium text-slate-600">
+                        Total registros: <span class="font-bold text-pharmacore-dark">2</span>
+                    </div>
+                </div>
+
+                <!-- Tabla de Proveedores con datos quemados estáticos -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-pharmacore-dark text-white text-xs uppercase tracking-wider">
+                        <tr>
+                            <th class="p-4">NIT</th>
+                            <th class="p-4">Razón Social</th>
+                            <th class="p-4">Teléfono</th>
+                            <th class="p-4">Tipo Productos</th>
+                            <th class="p-4">Estado</th>
+                            <th class="p-4 text-center">Acciones</th>
+                        </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                        <!-- Fila quemada 1 -->
+                        <tr class="hover:bg-slate-50/80 transition-colors duration-150">
+                            <td class="p-4">
+                                <span class="inline-flex px-2.5 py-1 text-xs font-semibold bg-sky-50 text-sky-700 rounded-md border border-sky-100">900123456-1</span>
+                            </td>
+                            <td class="p-4 font-medium text-slate-900">Distribuidora Farmacéutica S.A.S.</td>
+                            <td class="p-4 text-slate-600">3112233445</td>
+                            <td class="p-4 text-slate-600">Medicamentos Genéricos</td>
+                            <td class="p-4">
+                                <span class="inline-flex px-2.5 py-1 text-[10px] font-semibold rounded-full bg-emerald-100 text-emerald-800">ACTIVO</span>
+                            </td>
+                            <td class="p-4 text-center">
+                                <div class="inline-flex items-center justify-center gap-2">
+                                    <a href="#" class="p-1.5 text-slate-500 hover:text-sky-600 hover:bg-sky-50 rounded-lg transition-colors duration-200" title="Editar">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                    </a>
+                                    <form action="#" method="post" onsubmit="return confirm('¿Estás seguro de eliminar este proveedor?');" class="inline">
+                                        <button type="submit" class="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors duration-200 cursor-pointer" title="Eliminar">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        <!-- Fila quemada 2 -->
+                        <tr class="hover:bg-slate-50/80 transition-colors duration-150">
+                            <td class="p-4">
+                                <span class="inline-flex px-2.5 py-1 text-xs font-semibold bg-sky-50 text-sky-700 rounded-md border border-sky-100">800987654-9</span>
+                            </td>
+                            <td class="p-4 font-medium text-slate-900">Insumos Médicos del Valle Ltda</td>
+                            <td class="p-4 text-slate-600">3209876543</td>
+                            <td class="p-4 text-slate-600">Material Quirúrgico</td>
+                            <td class="p-4">
+                                <span class="inline-flex px-2.5 py-1 text-[10px] font-semibold rounded-full bg-slate-100 text-slate-700">INACTIVO</span>
+                            </td>
+                            <td class="p-4 text-center">
+                                <div class="inline-flex items-center justify-center gap-2">
+                                    <a href="#" class="p-1.5 text-slate-500 hover:text-sky-600 hover:bg-sky-50 rounded-lg transition-colors duration-200" title="Editar">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                    </a>
+                                    <form action="#" method="post" onsubmit="return confirm('¿Estás seguro de eliminar este proveedor?');" class="inline">
+                                        <button type="submit" class="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors duration-200 cursor-pointer" title="Eliminar">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- FOOTER -->
+        <footer th:replace="~{fragments/layout :: footer}"></footer>
+    </div>
+</div>
+
+<!-- SCRIPTS GLOBALES -->
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

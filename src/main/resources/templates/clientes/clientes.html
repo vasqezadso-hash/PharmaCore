@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PharmaCore - Gestión de Clientes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/png" th:href="@{/img/img.png}">
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Estilos del sidebar (submenu-container: colapsado + transición) -->
+    <th:block th:replace="fragments/layout :: styles"></th:block>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        pharmacore: {
+                            bg: '#F7FAF9',
+                            dark: '#004B4B',
+                            darker: '#003939',
+                            accent: '#006565',
+                            text: '#1E1E1E'
+                        }
+                    },
+                    fontFamily: { sans: ['Poppins', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-pharmacore-bg font-sans text-pharmacore-text antialiased min-h-screen flex flex-col text-xs">
+
+<!-- TOPBAR -->
+<div th:replace="fragments/layout :: topbar('Clientes')"></div>
+
+<!-- CONTENEDOR PRINCIPAL -->
+<div class="flex flex-1 relative min-h-[calc(100vh-4rem)] bg-pharmacore-bg">
+
+    <!-- SIDEBAR -->
+    <div th:replace="fragments/layout :: sidebar('clientes')"></div>
+
+    <!-- AREA PRINCIPAL -->
+    <div class="flex-1 flex flex-col min-w-0 bg-pharmacore-bg">
+        <main class="flex-1 p-4 sm:p-6 lg:p-8">
+
+            <!-- MENSAJE FLASH -->
+            <div th:if="${mensaje}" class="mb-4 rounded-lg bg-emerald-50 border border-emerald-200 p-3 text-emerald-800 text-xs font-medium shadow-sm flex items-center gap-2">
+                <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                <span th:text="${mensaje}">Mensaje de éxito</span>
+            </div>
+
+            <!-- ENCABEZADO -->
+            <section class="mb-5">
+                <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                    <div>
+                        <h1 class="text-xl md:text-2xl font-extrabold text-pharmacore-dark leading-tight uppercase tracking-tight">
+                            DIRECTORIO DE CLIENTES
+                        </h1>
+                        <p class="text-xs text-slate-500 mt-1">
+                            Manejo integral de la información del cliente: EPS, datos de contacto y antecedentes de salud.
+                        </p>
+                    </div>
+                    <div>
+                        <a th:href="@{/view/clientes/form}"
+                           class="inline-flex items-center justify-center gap-2 rounded-lg bg-pharmacore-accent px-4 py-2.5 text-xs font-bold text-white shadow-sm hover:opacity-90 transition cursor-pointer">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
+                            Nuevo Cliente
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CONTENEDOR PROFESIONAL DE TABLA -->
+            <section class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden flex flex-col">
+
+                <!-- BARRA DE HERRAMIENTAS / BUSCADOR INTERNO -->
+                <div class="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white">
+                    <div class="relative w-full sm:w-72">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        </span>
+                        <input type="text" id="buscador-tabla" onkeyup="filtrarTabla()" placeholder="Buscar cliente por nombre, documento..."
+                               class="w-full pl-9 pr-3.5 py-2 text-xs rounded-lg border border-slate-200 outline-none focus:border-pharmacore-accent focus:ring-2 focus:ring-pharmacore-accent/20 text-pharmacore-text bg-slate-50/50 transition">
+                    </div>
+                    <div class="text-xs text-slate-500 font-medium">
+                        Total registros: <span id="contador-total" class="font-bold text-pharmacore-dark">0</span>
+                    </div>
+                </div>
+
+                <!-- TABLA RESPONSIVA -->
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-xs text-left">
+                        <thead>
+                        <tr class="bg-pharmacore-dark text-white border-b border-slate-100 text-[10px] uppercase tracking-wider">
+                            <th class="px-4 py-3.5 font-bold">Documento</th>
+                            <th class="px-4 py-3.5 font-bold">Nombre Completo</th>
+                            <th class="px-4 py-3.5 font-bold">Teléfono</th>
+                            <th class="px-4 py-3.5 font-bold">EPS</th>
+                            <th class="px-4 py-3.5 font-bold">Alergias</th>
+                            <th class="px-4 py-3.5 text-center font-bold w-24">Acciones</th>
+                        </tr>
+                        </thead>
+                        <tbody id="tabla-clientes" class="divide-y divide-slate-100">
+                        <tr th:each="cliente : ${clientes}" class="fila-cliente hover:bg-pharmacore-bg/40 transition">
+                            <td class="px-4 py-3.5">
+                                <span class="font-bold text-pharmacore-accent px-2 py-1 rounded bg-pharmacore-accent/5 border border-pharmacore-accent/10"
+                                      th:text="${cliente.tipoDocumento + ' - ' + cliente.numeroDocumento}">
+                                </span>
+                            </td>
+                            <td class="px-4 py-3.5 font-semibold text-slate-700" th:text="${cliente.nombreCompleto}"></td>
+                            <td class="px-4 py-3.5 text-slate-600" th:text="${cliente.telefono}"></td>
+                            <td class="px-4 py-3.5 text-slate-600" th:text="${cliente.eps}"></td>
+                            <td class="px-4 py-3.5 text-rose-600 font-medium" th:text="${cliente.alergias}"></td>
+                            <td class="px-4 py-3.5 text-center">
+                                <div class="flex items-center justify-center gap-1.5">
+                                    <!-- Botón Editar -->
+                                    <a th:href="@{/view/clientes/edit/{id}(id=${cliente.id_cliente})}"
+                                       class="p-1.5 rounded-lg text-slate-500 hover:text-white hover:bg-pharmacore-accent transition shadow-xs" title="Editar registro">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                    </a>
+                                    <!-- Botón Eliminar -->
+                                    <form th:action="@{'/view/clientes/delete/' + ${cliente.id_cliente}}" method="post" onsubmit="return confirm('¿Estás seguro de eliminar este cliente del sistema?');" class="inline-flex">
+                                        <button type="submit" class="p-1.5 rounded-lg text-slate-500 hover:text-white hover:bg-rose-600 transition shadow-xs bg-transparent border-0 cursor-pointer" title="Eliminar registro">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr id="sin-registros" class="hidden">
+                            <td colspan="6" class="px-6 py-12 text-center text-slate-400">
+                                <svg class="w-10 h-10 mx-auto text-slate-300 mb-2" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
+                                No se encontraron registros coincidentes en el sistema.
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- PAGINACIÓN PROFESIONAL -->
+                <div id="paginacion-container" class="flex flex-col sm:flex-row items-center justify-between px-4 py-3 bg-slate-50/80 border-t border-slate-200 gap-3">
+                    <span id="info-paginacion" class="text-slate-500 font-medium">Mostrando registros</span>
+                    <div class="flex items-center gap-1.5">
+                        <button id="btn-anterior" onclick="cambiarPagina(-1)" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition font-medium shadow-xs">Anterior</button>
+                        <span id="indicador-pagina" class="px-3 py-1 font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg shadow-xs">Página 1 de 1</span>
+                        <button id="btn-siguiente" onclick="cambiarPagina(1)" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition font-medium shadow-xs">Siguiente</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- FOOTER -->
+        <footer th:replace="fragments/layout :: footer"></footer>
+    </div>
+</div>
+
+<!-- SCRIPTS DEL LAYOUT (toggleSidebar / toggleSubmenu) -->
+<!-- Sin este include, el sidebar se renderiza pero sus funciones onclick no existen -->
+<div th:replace="fragments/layout :: scripts"></div>
+
+<!-- LÓGICA DE TABLA PROFESIONAL (Paginación + Buscador) -->
+<script>
+    const registrosPorPagina = 8;
+    let paginaActual = 1;
+    let filasOriginales = [];
+    let filasFiltradas = [];
+
+    document.addEventListener("DOMContentLoaded", function() {
+        filasOriginales = Array.from(document.querySelectorAll(".fila-cliente"));
+        filasFiltradas = [...filasOriginales];
+
+        document.getElementById("contador-total").innerText = filasOriginales.length;
+
+        if (filasOriginales.length === 0) {
+            document.getElementById("sin-registros").classList.remove("hidden");
+            document.getElementById("paginacion-container").style.display = "none";
+            return;
+        }
+
+        actualizarTabla();
+    });
+
+    function filtrarTabla() {
+        const textoBusqueda = document.getElementById("buscador-tabla").value.toLowerCase().trim();
+
+        if (textoBusqueda === "") {
+            filasFiltradas = [...filasOriginales];
+        } else {
+            filasFiltradas = filasOriginales.filter(fila => {
+                const contenidoFila = fila.innerText.toLowerCase();
+                return contenidoFila.includes(textoBusqueda);
+            });
+        }
+
+        paginaActual = 1;
+        actualizarTabla();
+    }
+
+    function actualizarTabla() {
+        const sinRegistros = document.getElementById("sin-registros");
+        const paginacionContainer = document.getElementById("paginacion-container");
+
+        // Ocultar todas las filas primero
+        filasOriginales.forEach(f => f.style.display = "none");
+
+        if (filasFiltradas.length === 0) {
+            sinRegistros.classList.remove("hidden");
+            paginacionContainer.style.display = "none";
+            return;
+        } else {
+            sinRegistros.classList.add("hidden");
+            paginacionContainer.style.display = "flex";
+        }
+
+        const totalPaginas = Math.ceil(filasFiltradas.length / registrosPorPagina) || 1;
+        if (paginaActual > totalPaginas) paginaActual = totalPaginas;
+
+        const inicio = (paginaActual - 1) * registrosPorPagina;
+        const fin = inicio + registrosPorPagina;
+
+        // Mostrar solo las filas de la página actual correspondientes al filtro
+        for (let i = inicio; i < fin && i < filasFiltradas.length; i++) {
+            filasFiltradas[i].style.display = "";
+        }
+
+        // Actualizar estados visuales de paginación
+        document.getElementById("indicador-pagina").innerText = `Página ${paginaActual} de ${totalPaginas}`;
+        document.getElementById("info-paginacion").innerText = `Mostrando ${Math.min(fin, filasFiltradas.length)} de ${filasFiltradas.length} clientes filtrados`;
+
+        document.getElementById("btn-anterior").disabled = paginaActual === 1;
+        document.getElementById("btn-siguiente").disabled = paginaActual >= totalPaginas;
+
+        if (totalPaginas <= 1) {
+            paginacionContainer.style.display = "none";
+        }
+    }
+
+    function cambiarPagina(direccion) {
+        const totalPaginas = Math.ceil(filasFiltradas.length / registrosPorPagina);
+        const nuevaPagina = paginaActual + direccion;
+        if (nuevaPagina >= 1 && nuevaPagina <= totalPaginas) {
+            paginaActual = nuevaPagina;
+            actualizarTabla();
+        }
+    }
+</script>
+
+</body>
+</html>
