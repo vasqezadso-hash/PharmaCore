@@ -1,0 +1,2 @@
+com\pharmacore\exception\RecursoNoEncontradoException.class
+com\pharmacore\exception\GlobalExceptionHandler.class
