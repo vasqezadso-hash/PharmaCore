@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${error} + ' | PharmaCore'">Error | PharmaCore</title>
+    <th:block th:replace="fragments/layout :: styles"></th:block>
+</head>
+<body class="bg-pharmacore-bg font-sans text-pharmacore-text antialiased min-h-screen flex flex-col">
+    <header th:replace="fragments/layout :: topbar('Error')"></header>
+    <div class="flex flex-1 relative min-h-[calc(100vh-4rem)]">
+        <div id="overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/60 z-10 hidden md:hidden"></div>
+        <aside th:replace="fragments/layout :: sidebar('')"></aside>
+        <div class="flex-1 flex flex-col min-w-0 bg-pharmacore-bg">
+            <main class="error-page">
+                <section class="error-panel">
+                    <div class="error-mark">!</div>
+                    <h1 class="error-code" th:text="${status} ?: 'Error'">Error</h1>
+                    <h2 class="error-title" th:text="${error} ?: 'Ocurrió un inconveniente'">Ocurrió un inconveniente</h2>
+                    <p class="error-message" th:text="${message} ?: 'No fue posible procesar la solicitud en este momento.'">No fue posible procesar la solicitud en este momento.</p>
+                    <a th:href="@{/view/home}" class="error-action">
+                        <span aria-hidden="true">&#8592;</span> Volver al inicio
+                    </a>
+                </section>
+            </main>
+            <footer th:replace="fragments/layout :: footer"></footer>
+        </div>
+    </div>
+    <div th:replace="fragments/layout :: scripts"></div>
+</body>
+</html>

@@ -39,7 +39,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         // Público: login y recursos estáticos
-                        .requestMatchers("/login", "/css/**", "/js/**", "/img/**", "/webjars/**").permitAll()
+                        .requestMatchers("/login", "/error/**", "/errores/**", "/css/**", "/js/**", "/img/**", "/webjars/**").permitAll()
                         // Solo Administrador: gestión de usuarios, empleados y roles del sistema
                         .requestMatchers("/view/usuarios/**", "/view/empleados/**", "/view/roles/**")
                             .hasRole("ADMINISTRADOR")
@@ -48,6 +48,9 @@ public class SecurityConfig {
                         // Todo lo demás requiere haber iniciado sesión
                         .anyRequest().authenticated()
                 )
+                    .exceptionHandling(exception -> exception
+                        .accessDeniedPage("/error/403")
+                    )
                 .formLogin((FormLoginConfigurer<HttpSecurity> form) -> form
                         .loginPage("/login")
                         .loginProcessingUrl("/login")
