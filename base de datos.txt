@@ -1,10 +1,6 @@
 -- ============================================================
 -- BASE DE DATOS: PharmaCore (Colombia)
 -- Compatibilidad: MySQL 8.0+ / MariaDB / HeidiSQL
---
--- NOTA: las secciones "Fórmulas Médicas" y "Ventas" se reordenaron
--- respecto al script original. detalles_ventas.id_detalle_formula
--- referencia a detalles_formulas
 -- ============================================================
 
 CREATE DATABASE IF NOT EXISTS pharmacore_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -13,10 +9,10 @@ USE pharmacore_db;
 SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS domicilios;
 DROP TABLE IF EXISTS devoluciones;
-DROP TABLE IF EXISTS detalles_ventas;
-DROP TABLE IF EXISTS ventas;
 DROP TABLE IF EXISTS detalles_formulas;
 DROP TABLE IF EXISTS formulas_medicas;
+DROP TABLE IF EXISTS detalles_ventas;
+DROP TABLE IF EXISTS ventas;
 DROP TABLE IF EXISTS detalles_compras;
 DROP TABLE IF EXISTS compras;
 DROP TABLE IF EXISTS movimientos_inventario;
@@ -192,8 +188,41 @@ CREATE TABLE detalles_compras (
 ) ENGINE=InnoDB;
 
 -- ------------------------------------------------------------
--- 9. TABLA FORMULAS MEDICAS
--- (se crea ANTES que Ventas porque detalles_ventas la referencia)
+-- 9. TABLA VENTAS
+-- ------------------------------------------------------------
+CREATE TABLE ventas (
+    id_venta INT AUTO_INCREMENT PRIMARY KEY,
+    numero_factura VARCHAR(50) UNIQUE NOT NULL,
+    id_cliente INT,
+    id_empleado INT NOT NULL,
+    fecha_venta DATETIME DEFAULT CURRENT_TIMESTAMP,
+    subtotal DECIMAL(12,2) NOT NULL,
+    descuento DECIMAL(12,2) DEFAULT 0.00,
+    impuesto_iva DECIMAL(12,2) DEFAULT 0.00,
+    total DECIMAL(12,2) NOT NULL,
+    metodo_pago ENUM('EFECTIVO', 'TARJETA_DEBITO', 'TARJETA_CREDITO', 'TRANSFERENCIA', 'NEQUI_DAVIPLATA', 'PAGO_MIXTO') DEFAULT 'EFECTIVO',
+    estado ENUM('PENDIENTE', 'PAGADA', 'ANULADA', 'DEVUELTA') DEFAULT 'PAGADA',
+    FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente),
+    FOREIGN KEY (id_empleado) REFERENCES empleados(id_empleado)
+) ENGINE=InnoDB;
+
+
+CREATE TABLE detalles_ventas (
+    id_detalle_venta INT AUTO_INCREMENT PRIMARY KEY,
+    id_venta INT NOT NULL,
+    id_producto INT NOT NULL,
+    id_lote INT NOT NULL,
+    cantidad INT NOT NULL,
+    precio_unitario DECIMAL(12,2) NOT NULL,
+    subtotal DECIMAL(12,2) NOT NULL,
+    FOREIGN KEY (id_venta) REFERENCES ventas(id_venta) ON DELETE CASCADE,
+    FOREIGN KEY (id_producto) REFERENCES productos(id_producto),
+    FOREIGN KEY (id_lote) REFERENCES lotes(id_lote)
+) ENGINE=InnoDB;
+
+
+-- ------------------------------------------------------------
+-- 10. TABLA FORMULAS MEDICAS
 -- ------------------------------------------------------------
 CREATE TABLE formulas_medicas (
     id_formula INT AUTO_INCREMENT PRIMARY KEY,
@@ -218,44 +247,6 @@ CREATE TABLE detalles_formulas (
     duracion_tratamiento VARCHAR(100) NOT NULL,
     FOREIGN KEY (id_formula) REFERENCES formulas_medicas(id_formula) ON DELETE CASCADE,
     FOREIGN KEY (id_producto) REFERENCES productos(id_producto)
-) ENGINE=InnoDB;
-
--- ------------------------------------------------------------
--- 10. TABLA VENTAS
--- ------------------------------------------------------------
-CREATE TABLE ventas (
-    id_venta INT AUTO_INCREMENT PRIMARY KEY,
-    numero_factura VARCHAR(50) UNIQUE NOT NULL,
-    id_cliente INT,
-    id_empleado INT NOT NULL,
-    fecha_venta DATETIME DEFAULT CURRENT_TIMESTAMP,
-    subtotal DECIMAL(12,2) NOT NULL,
-    descuento DECIMAL(12,2) DEFAULT 0.00,
-    impuesto_iva DECIMAL(12,2) DEFAULT 0.00,
-    total DECIMAL(12,2) NOT NULL,
-    metodo_pago ENUM('EFECTIVO', 'TARJETA_DEBITO', 'TARJETA_CREDITO', 'TRANSFERENCIA', 'NEQUI_DAVIPLATA', 'PAGO_MIXTO') DEFAULT 'EFECTIVO',
-    estado ENUM('PENDIENTE', 'PAGADA', 'ANULADA', 'DEVUELTA') DEFAULT 'PAGADA',
-    FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente),
-    FOREIGN KEY (id_empleado) REFERENCES empleados(id_empleado)
-) ENGINE=InnoDB;
-
-
-CREATE TABLE detalles_ventas (
-    id_detalle_venta INT AUTO_INCREMENT PRIMARY KEY,
-    id_venta INT NOT NULL,
-    id_producto INT NOT NULL,
-    id_lote INT NOT NULL,
-    -- Conecta la venta con la línea de fórmula médica que la respalda, cuando el
-    -- producto requiere fórmula (requiere_formula = TRUE en productos). Queda NULL
-    -- para productos de venta libre.
-    id_detalle_formula INT NULL,
-    cantidad INT NOT NULL,
-    precio_unitario DECIMAL(12,2) NOT NULL,
-    subtotal DECIMAL(12,2) NOT NULL,
-    FOREIGN KEY (id_venta) REFERENCES ventas(id_venta) ON DELETE CASCADE,
-    FOREIGN KEY (id_producto) REFERENCES productos(id_producto),
-    FOREIGN KEY (id_lote) REFERENCES lotes(id_lote),
-    FOREIGN KEY (id_detalle_formula) REFERENCES detalles_formulas(id_detalle_formula)
 ) ENGINE=InnoDB;
 
 
@@ -294,8 +285,7 @@ CREATE TABLE domicilios (
     fecha_hora_entrega DATETIME NULL,
     FOREIGN KEY (id_venta) REFERENCES ventas(id_venta),
     FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente)
-) ENGINE=InnoDB;
-
+) ENGINE=INNODB;
 
 -- ------------------------------------------------------------
 -- 13. TABLA DEVOLUCIONES
@@ -316,4 +306,4 @@ CREATE TABLE devoluciones (
     FOREIGN KEY (id_compra) REFERENCES compras(id_compra),
     FOREIGN KEY (id_producto) REFERENCES productos(id_producto),
     FOREIGN KEY (id_usuario_regente) REFERENCES usuarios(id_usuario)
-) ENGINE=InnoDB;
+) ENGINE=innoDB;

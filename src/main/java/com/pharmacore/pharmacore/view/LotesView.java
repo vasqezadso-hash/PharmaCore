@@ -24,7 +24,6 @@ public class LotesView {
     @Autowired
     private ProductosRepository productosRepository;
 
-    // LISTA (enlazado desde el sidebar: "Control de Lotes e Inventario")
     @GetMapping("/view/lotes")
     public String lista(Model model) {
         model.addAttribute("lotes", lotesRepository.findAll());
@@ -77,7 +76,6 @@ public class LotesView {
         return "redirect:/view/lotes";
     }
 
-    // ALERTAS DE VENCIMIENTO (enlazado desde el sidebar: "Alertas de Vencimiento")
     @GetMapping("/view/vencimientos")
     public String vencimientos(Model model) {
         LocalDate hoy = LocalDate.now();
@@ -99,7 +97,6 @@ public class LotesView {
         return "lotes/vencimientos";
     }
 
-    // Mapa "ID -> nombre" para no mostrar IDs crudos en las plantillas.
     private void cargarNombresProductos(Model model) {
         model.addAttribute("nombresProductos", productosRepository.findAll().stream()
                 .collect(Collectors.toMap(p -> p.getIdProducto(), p -> p.getNombreComercial())));

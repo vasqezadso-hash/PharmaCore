@@ -12,10 +12,7 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 
-/**
- * Medicamentos y Productos — módulo base del sistema.
- * Todo lo demás (Lotes, Inventario, Compras, Ventas, Fórmulas) depende de esta entidad.
- */
+
 @Entity
 @Table(name = "productos")
 @Getter
@@ -122,7 +119,7 @@ public class Productos {
         DESCONTINUADO
     }
 
-    // Útil para el dashboard/inventario más adelante: true si el stock ya tocó (o pasó) el mínimo.
+    /** Útil para el dashboard/inventario más adelante: true si el stock ya tocó (o pasó) el mínimo. */
     public boolean isStockBajo() {
         return stockTotal != null && stockMinimo != null && stockTotal <= stockMinimo;
     }

@@ -12,6 +12,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Set;
 
+// Esta clase es el corazón del manejo de inventario del proyecto.
+// La idea principal es que NINGÚN otro módulo (Ventas, Compras, Devoluciones)
+// le cambie el stock a un producto directamente. Todos tienen que pasar por
+// este servicio, para que siempre quede un registro de qué pasó y por qué
+// (eso es lo que en la sustentación llamo el "Kardex": el historial de
+// movimientos de inventario).
 @Service
 public class InventarioService {
 
@@ -30,6 +36,11 @@ public class InventarioService {
     // Tipos que RESTAN del stock (sale mercancía)
     private static final Set<String> TIPOS_SALIDA = Set.of("SALIDA_VENTA", "AJUSTE_PERDIDA", "AJUSTE_DANIO", "DEVOLUCION_PROVEEDOR");
 
+    // Este es el único método que puede mover inventario en todo el sistema.
+    // Compras lo llama cuando llega mercancía, Ventas cuando se factura,
+    // y Devoluciones cuando corresponde reponer o sacar stock.
+    // Hacerlo así evita que cada módulo calcule el stock a su manera y que
+    // se desincronice el número que se ve en pantalla con lo que pasó de verdad.
     public MovimientosInventario registrarMovimiento(String tipoMovimiento, Integer idProducto, Integer idLote,
                                                        Integer cantidad, Integer idUsuario, String motivo) {
 
@@ -47,6 +58,9 @@ public class InventarioService {
         boolean esEntrada = TIPOS_ENTRADA.contains(tipoMovimiento);
         int nuevaExistencia = esEntrada ? existenciaAnterior + cantidad : existenciaAnterior - cantidad;
 
+        // No dejo que el stock quede en negativo bajo ninguna circunstancia.
+        // Si alguien intenta vender más de lo que hay disponible, se corta acá
+        // con un mensaje claro, antes de guardar nada en la base de datos.
         if (nuevaExistencia < 0) {
             throw new IllegalStateException("La operación dejaría el stock de \"" + producto.getNombreComercial()
                     + "\" en negativo (disponible: " + existenciaAnterior + ", solicitado: " + cantidad + ").");
@@ -68,6 +82,9 @@ public class InventarioService {
         producto.setStockTotal(nuevaExistencia);
         productosRepository.save(producto);
 
+        // Acá queda el registro histórico del movimiento (el Kardex). Guardo
+        // la existencia ANTES y DESPUÉS del movimiento, no solo la cantidad,
+        // para que después se pueda auditar exactamente qué pasó en cada paso.
         MovimientosInventario movimiento = MovimientosInventario.builder()
                 .tipoMovimiento(tipoMovimiento)
                 .idProducto(idProducto)

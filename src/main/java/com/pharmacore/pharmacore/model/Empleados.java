@@ -47,6 +47,12 @@ public class Empleados {
 
     private String estado;
 
+    // Este campo es especial: en la tabla empleados NO existe ninguna columna
+    // para el usuario (la relación va al revés, en usuarios.id_empleado).
+    // Le puse @Transient para decirle a Hibernate "este campo no lo busques
+    // ni lo guardes en la base de datos, solo lo uso en memoria mientras
+    // armo el formulario". Lo lleno a mano en EmpleadosView cuando necesito
+    // mostrar o editar los datos del usuario junto con los del empleado.
     @Transient
     private Usuarios usuario;
 }

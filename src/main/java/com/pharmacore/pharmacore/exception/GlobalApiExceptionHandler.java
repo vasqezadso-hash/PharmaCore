@@ -10,6 +10,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
+
+
+ //Igual que GlobalWebExceptionHandler, pero para los @RestController del paquete
+ //"controller" (la API /api/**): en vez de redirigir a una página, devuelve JSON con
+ // un mensaje claro y el código HTTP correcto
+
 @RestControllerAdvice(basePackages = "com.pharmacore.pharmacore.controller")
 public class GlobalApiExceptionHandler {
 

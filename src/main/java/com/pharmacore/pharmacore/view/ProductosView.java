@@ -25,7 +25,6 @@ public class ProductosView {
     @Autowired
     private ProveedoresRepository proveedoresRepository;
 
-    // LISTA (con búsqueda opcional ?q=)
     @GetMapping("/view/medicamentos")
     public String lista(@RequestParam(value = "q", required = false) String q, Model model) {
         if (StringUtils.hasText(q)) {

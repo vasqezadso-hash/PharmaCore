@@ -9,11 +9,8 @@ import java.util.Optional;
 @Repository
 public interface UsuariosRepository extends JpaRepository<Usuarios, Long> {
 
-    // Cambiado de findByid_usuario a findByIdUsuario para que coincida con el atributo en camelCase
     Usuarios findByIdEmpleado(Long idEmpleado);
 
-    // Se usa para resolver el usuario logueado (Authentication.getName()) en Devoluciones,
-    // donde se necesita id_usuario_regente sin que el formulario tenga que volver a pedirlo.
     Usuarios findByUsernameIgnoreCase(String username);
 
 }

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <th:block th:replace="fragments/layout :: styles"></th:block>
     <meta charset="UTF-8">
@@ -52,7 +52,8 @@
                 </div>
             </div>
 
-            <div th:if="${lotesVencidos > 0 or lotesPorVencer > 0}" class="bg-amber-50 border border-amber-200 rounded-2xl p-6 mb-8 flex items-center justify-between">
+            <!-- El Vendedor no maneja lotes ni vencimientos, así que no le muestro esta alerta -->
+            <div th:if="${lotesVencidos > 0 or lotesPorVencer > 0}" sec:authorize="hasAnyRole('ADMINISTRADOR','FARMACEUTICO')" class="bg-amber-50 border border-amber-200 rounded-2xl p-6 mb-8 flex items-center justify-between">
                 <p class="text-sm text-amber-800">
                     <span class="font-semibold" th:text="${lotesVencidos}"></span> lote(s) vencido(s) y
                     <span class="font-semibold" th:text="${lotesPorVencer}"></span> por vencer en los próximos 30 días.
@@ -65,11 +66,12 @@
                     <p class="font-bold mb-1">Nueva Venta</p>
                     <p class="text-xs text-white/70">Registrar una venta en el punto de venta</p>
                 </a>
-                <a th:href="@{/view/ordenes-compra}" class="bg-white border border-slate-200 rounded-2xl p-6 hover:border-pharmacore-accent transition-colors">
+                <!-- Estos dos botones son de módulos que el Vendedor no tiene permitido abrir, se ocultan para ese rol -->
+                <a th:href="@{/view/ordenes-compra}" sec:authorize="hasAnyRole('ADMINISTRADOR','FARMACEUTICO')" class="bg-white border border-slate-200 rounded-2xl p-6 hover:border-pharmacore-accent transition-colors">
                     <p class="font-bold mb-1 text-pharmacore-dark">Órdenes de Compra</p>
                     <p class="text-xs text-slate-500">Ver y registrar compras a proveedores</p>
                 </a>
-                <a th:href="@{/view/lotes}" class="bg-white border border-slate-200 rounded-2xl p-6 hover:border-pharmacore-accent transition-colors">
+                <a th:href="@{/view/lotes}" sec:authorize="hasAnyRole('ADMINISTRADOR','FARMACEUTICO')" class="bg-white border border-slate-200 rounded-2xl p-6 hover:border-pharmacore-accent transition-colors">
                     <p class="font-bold mb-1 text-pharmacore-dark">Control de Lotes</p>
                     <p class="text-xs text-slate-500">Gestionar lotes y vencimientos</p>
                 </a>

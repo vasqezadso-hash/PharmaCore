@@ -9,6 +9,5 @@ import java.util.List;
 @Repository
 public interface LotesRepository extends JpaRepository<Lotes, Integer> {
 
-    // Útil para el POS: lotes disponibles de un producto (para aplicar regla FEFO)
     List<Lotes> findByIdProductoOrderByFechaVencimientoAsc(Integer idProducto);
 }

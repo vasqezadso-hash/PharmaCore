@@ -7,8 +7,17 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+// Esta clase es una "red de seguridad" para todos los controladores @Controller
+// (los que están en el paquete view). Antes de tenerla, si un módulo se le
+// olvidaba poner su propio try/catch (por ejemplo, al eliminar un empleado que
+// ya tenía ventas registradas), el error se iba directo a la pantalla en
+// blanco por defecto de Spring. Con @ControllerAdvice centralizo eso: cualquier
+// excepción que se le escape a un controlador cae acá y se convierte en un
+// mensaje claro para el usuario, en vez de un error técnico. con esto ne se remplaza el try/catch de cada controlador
 @ControllerAdvice(basePackages = "com.pharmacore.pharmacore.view")
 public class GlobalWebExceptionHandler {
+
+    // Salta cuando la base de datos rechaza la operación por una restricción
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public String manejarIntegridadDatos(DataIntegrityViolationException ex, HttpServletRequest request, RedirectAttributes ra) {

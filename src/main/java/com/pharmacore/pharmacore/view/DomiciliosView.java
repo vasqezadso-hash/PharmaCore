@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+
 @Controller
 public class DomiciliosView {
 
@@ -78,8 +79,11 @@ public class DomiciliosView {
         }
     }
 
-    // Botones de la lista: avanzar el estado del pedido (PENDIENTE -> EN_PREPARACION -> EN_CAMINO -> ENTREGADO),
-    // o cancelarlo. No hay "editar" ni "eliminar": solo se avanza el estado, igual que en Ventas/Kardex.
+    // Este método reemplaza lo que sería "editar" y "eliminar" un domicilio.
+    // Un pedido va avanzando: PENDIENTE -> EN_PREPARACION -> EN_CAMINO -> ENTREGADO,
+    // o en cualquier punto se puede CANCELAR. Una vez llega a ENTREGADO o
+    // CANCELADO, lo bloqueo (ver el if de abajo) para que no se pueda seguir
+    // moviendo, porque ya se considera un pedido cerrado.
     @PostMapping("/view/domicilios/estado/{id}")
     public String cambiarEstado(@PathVariable Integer id,
                                  @RequestParam String nuevoEstado,

@@ -16,10 +16,8 @@ public interface ProductosRepository extends JpaRepository<Productos, Integer> {
 
     List<Productos> findByEstado(Productos.EstadoProducto estado);
 
-    // Búsqueda para la barra de búsqueda de la vista (por nombre comercial, genérico o código)
     List<Productos> findByNombreComercialContainingIgnoreCaseOrNombreGenericoContainingIgnoreCaseOrCodigoInternoContainingIgnoreCase(
             String nombreComercial, String nombreGenerico, String codigoInterno);
 
-    // Para la futura alerta de "stock bajo" del módulo de Inventario / Dashboard
     List<Productos> findByStockTotalLessThanEqual(Integer stockMinimoComparado);
 }

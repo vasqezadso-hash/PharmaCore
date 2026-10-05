@@ -19,6 +19,12 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+// Un domicilio siempre nace de una venta ya facturada, por eso id_venta es
+// único: una venta no puede tener dos domicilios. Este módulo no tiene forma
+// de "eliminar" un domicilio, solo de cambiarle el estado (ver
+// DomiciliosView.cambiarEstado). Lo hice así a propósito: si se pudiera
+// borrar, se perdería el rastro de que esa venta tuvo un intento de entrega,
+// aunque se haya cancelado. Es la misma idea que ya usa Ventas con "anular".
 public class Domicilios {
 
     @Id
@@ -59,7 +65,6 @@ public class Domicilios {
     @Column(name = "fecha_hora_entrega")
     private LocalDateTime fechaHoraEntrega;
 
-    /** Valores válidos, tal como quedaron en el ENUM de la tabla en MySQL. */
     public static final String[] ESTADOS = {
             "PENDIENTE", "EN_PREPARACION", "EN_CAMINO", "ENTREGADO", "CANCELADO"
     };

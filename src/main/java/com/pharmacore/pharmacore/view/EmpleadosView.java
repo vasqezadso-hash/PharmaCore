@@ -29,6 +29,10 @@ public class EmpleadosView {
     @Autowired
     private UsuariosRepository usuariosRepository;
 
+    // Esto es lo que me permite cifrar la contraseña antes de guardarla (lo uso
+    // más abajo en save()). Al principio no lo tenía y guardaba la contraseña
+    // tal cual la escribía el admin, en texto plano, y por eso nadie podía
+    // iniciar sesión: BCrypt solo reconoce contraseñas que él mismo cifró.
     @Autowired
     private PasswordEncoder passwordEncoder;
 
@@ -37,7 +41,11 @@ public class EmpleadosView {
     public String lista(Model model) {
         List<Empleados> empleados = empleadosRepository.findAll();
 
-
+        // "usuario" es @Transient en Empleados: findAll() nunca lo trae poblado.
+        // Sin esto, la columna "Rol" de empleados.html siempre cae en 'Sin Rol'
+        // aunque el empleado sí tenga usuario y rol asignados en la BD.
+        // Se trae la lista completa de usuarios de una sola vez (no uno por
+        // empleado) y se indexa por idEmpleado para no hacer N+1 consultas.
         Map<Long, Usuarios> usuariosPorEmpleado = usuariosRepository.findAll().stream()
                 .filter(u -> u.getIdEmpleado() != null)
                 .collect(Collectors.toMap(Usuarios::getIdEmpleado, u -> u));
@@ -117,10 +125,16 @@ public class EmpleadosView {
             usuarioToSave.setUsername(usuarioForm.getUsername());
             usuarioToSave.setEstado(usuarioForm.getEstado());
 
+            // Acá cifro la contraseña antes de guardarla. Nunca guardo lo que el
+            // usuario escribió tal cual: paso passwordEncoder.encode(...) primero,
+            // para que en la base de datos quede el hash de BCrypt, no la
+            // contraseña real.
             if (passwordHash != null && !passwordHash.trim().isEmpty()) {
                 usuarioToSave.setPasswordHash(passwordEncoder.encode(passwordHash));
             } else if (usuarioToSave.getPasswordHash() == null || usuarioToSave.getPasswordHash().trim().isEmpty()) {
-
+                // Si es un usuario nuevo y no le pusieron contraseña, prefiero cortar
+                // acá con un mensaje claro en vez de guardarlo con algo inventado que
+                // después no le va a servir para entrar al sistema.
                 ra.addFlashAttribute("error", "Debe asignar una contraseña al usuario (" + usuarioForm.getUsername() + ").");
                 return "redirect:/view/empleados/form";
             }

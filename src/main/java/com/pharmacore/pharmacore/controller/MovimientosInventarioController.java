@@ -12,8 +12,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
-
-//si algo se registró mal, se corrige con un movimiento de ajuste nuevo, no editando o borrando el que ya existe.
 @RestController
 @RequestMapping("/api/movimientos-inventario")
 public class MovimientosInventarioController {

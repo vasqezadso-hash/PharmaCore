@@ -1,12 +1,14 @@
 package com.pharmacore.pharmacore.view;
 
 import com.pharmacore.pharmacore.model.DetallesVentas;
+import com.pharmacore.pharmacore.model.Empleados;
 import com.pharmacore.pharmacore.model.Productos;
 import com.pharmacore.pharmacore.model.Usuarios;
 import com.pharmacore.pharmacore.model.Ventas;
 import com.pharmacore.pharmacore.repository.*;
 import com.pharmacore.pharmacore.service.InventarioService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -26,7 +28,6 @@ import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-
 
 @Controller
 public class VentasView {
@@ -64,10 +65,25 @@ public class VentasView {
     @Autowired
     private FacturaPdfService facturaPdfService;
 
-
     @GetMapping("/view/ventas/nueva")
-    public String nuevaVenta(Model model) {
-        model.addAttribute("venta", new Ventas());
+    public String nuevaVenta(Model model, Authentication authentication) {
+        // El empleado que vende ya no se elige de una lista: se toma del usuario que
+        // inició sesión, para que una venta siempre quede registrada a nombre de quien
+        // la hizo de verdad (antes cualquiera podía facturar "como" otro empleado
+        // eligiéndolo del combo). Acá solo lo busco para mostrar su nombre en pantalla;
+        // el valor que realmente se guarda se vuelve a resolver en guardar(), por las
+        // dudas, en vez de confiar en lo que venga del formulario.
+        Usuarios usuarioActual = usuariosRepository.findByUsernameIgnoreCase(authentication.getName());
+        if (usuarioActual == null || usuarioActual.getIdEmpleado() == null) {
+            throw new IllegalStateException("Tu usuario no tiene un empleado asociado; no puedes registrar ventas.");
+        }
+        Empleados empleadoActual = empleadosRepository.findById(usuarioActual.getIdEmpleado())
+                .orElseThrow(() -> new IllegalStateException("No se encontró el empleado asociado a tu usuario."));
+
+        Ventas venta = new Ventas();
+        venta.setIdEmpleado(empleadoActual.getId_empleado());
+        model.addAttribute("venta", venta);
+        model.addAttribute("nombreEmpleadoActual", empleadoActual.getNombre_completo());
         cargarListasApoyo(model);
         return "ventas/pos";
     }
@@ -110,8 +126,19 @@ public class VentasView {
                            @RequestParam(required = false) List<Integer> cantidades,
                            @RequestParam(required = false) List<BigDecimal> preciosUnitarios,
                            @RequestParam(required = false) List<String> idDetallesFormula,
+                           Authentication authentication,
                            RedirectAttributes ra) {
         try {
+
+            // No confío en el idEmpleado que venga del formulario (ya ni se manda, pero
+            // aunque alguien lo agregara a mano con las herramientas del navegador, acá
+            // lo vuelvo a pisar con el empleado real de la sesión). Así, pase lo que pase
+            // en el HTML, la venta siempre queda a nombre de quien efectivamente la hizo.
+            Usuarios usuarioActual = usuariosRepository.findByUsernameIgnoreCase(authentication.getName());
+            if (usuarioActual == null || usuarioActual.getIdEmpleado() == null) {
+                throw new IllegalStateException("Tu usuario no tiene un empleado asociado; no puedes registrar ventas.");
+            }
+            venta.setIdEmpleado(usuarioActual.getIdEmpleado());
 
             List<Integer> productosValidos = new ArrayList<>();
             List<Integer> lotesValidos = new ArrayList<>();
@@ -143,7 +170,6 @@ public class VentasView {
                             throw new IllegalStateException("El lote " + lote.getNumeroLote() + " está vencido y no se puede vender.");
                         }
 
-
                         Productos producto = productosRepository.findById(idProducto).orElse(null);
                         if (producto == null) {
                             throw new IllegalStateException("El producto seleccionado ya no existe.");
@@ -168,7 +194,7 @@ public class VentasView {
                                         + vencimientoFormula + "). No se puede vender " + producto.getNombreComercial() + " sin una vigente.");
                             }
                         } else if (idDetalleFormula != null) {
-
+                            // El producto no la requiere: se ignora cualquier fórmula que hayan mandado por error.
                             idDetalleFormula = null;
                         }
 
@@ -186,8 +212,6 @@ public class VentasView {
                 return "redirect:/view/ventas/nueva";
             }
 
-            // El movimiento de inventario necesita un usuario del sistema, pero el POS solo
-            // pide el empleado que atiende. Se busca el usuario asociado a ese empleado.
             Usuarios usuario = usuariosRepository.findByIdEmpleado(venta.getIdEmpleado());
             if (usuario == null) {
                 throw new IllegalStateException("El empleado seleccionado no tiene un usuario del sistema asociado; no se puede descontar el inventario.");
@@ -219,7 +243,6 @@ public class VentasView {
                 detalle.setSubtotal(preciosValidos.get(i).multiply(BigDecimal.valueOf(cantidadesValidas.get(i))));
                 detalle.setIdDetalleFormula(detallesFormulaValidos.get(i));
                 detallesVentasRepository.save(detalle);
-
 
                 inventarioService.registrarMovimiento(
                         "SALIDA_VENTA",
@@ -292,8 +315,6 @@ public class VentasView {
 
             List<DetallesVentas> detalles = detallesVentasRepository.findByVenta_IdVenta(id);
             for (DetallesVentas d : detalles) {
-                // DEVOLUCION_CLIENTE es un tipo de ENTRADA en InventarioService: devuelve al stock
-                // lo que esa línea había descontado.
                 inventarioService.registrarMovimiento(
                         "DEVOLUCION_CLIENTE",
                         d.getIdProducto(),
@@ -318,7 +339,6 @@ public class VentasView {
         model.addAttribute("empleados", empleadosRepository.findAll());
         model.addAttribute("productos", productosRepository.findAll());
 
-
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         List<Map<String, Object>> lotesParaJs = lotesRepository.findAll().stream()
                 .filter(l -> !l.isVencido())
@@ -332,9 +352,6 @@ public class VentasView {
                 .collect(Collectors.toList());
         model.addAttribute("lotes", lotesParaJs);
 
-        // NUEVO (Día 5): fórmulas médicas vigentes, para que el POS sepa qué línea de fórmula
-        // ofrecer cuando el producto seleccionado requiera fórmula. Vigente = hoy no ha pasado
-        // fecha_expedicion + vigencia_dias.
         LocalDate hoy = LocalDate.now();
         List<Map<String, Object>> formulasVigentesParaJs = formulasMedicasRepository.findAll().stream()
                 .filter(f -> f.getFechaExpedicion() != null

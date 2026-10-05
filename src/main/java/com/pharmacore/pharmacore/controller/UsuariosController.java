@@ -39,14 +39,18 @@ public class UsuariosController {
 
     @PutMapping("/{id}")
     public Usuarios update(@PathVariable Long id, @RequestBody Usuarios usuario) {
+        // Usamos el setter en camelCase que definimos en la entidad
         usuario.setIdUsuario(id);
 
         if (usuario.getPasswordHash() == null || usuario.getPasswordHash().isEmpty()) {
+            // No se envió contraseña nueva: se conserva el hash que ya tenía (no se re-cifra
+            // un valor que ya es un hash BCrypt, o se perdería el acceso al usuario).
             Usuarios existente = usuariosRepository.findById(id).orElse(null);
             if (existente != null) {
                 usuario.setPasswordHash(existente.getPasswordHash());
             }
         } else {
+            // Sí se envió una contraseña nueva en texto plano: se cifra antes de guardar.
             usuario.setPasswordHash(passwordEncoder.encode(usuario.getPasswordHash()));
         }
 

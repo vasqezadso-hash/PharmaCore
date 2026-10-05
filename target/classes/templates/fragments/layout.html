@@ -6,19 +6,15 @@
     <title>PharmaCore - Pharma System</title>
 
     <th:block th:fragment="styles">
-        <!-- Tailwind CSS CDN -->
         <script src="https://cdn.tailwindcss.com"></script>
 
-        <!-- Google Fonts: Poppins -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Favicon -->
     <link rel="icon" type="image/png" th:href="@{/img/img.png}">
         <link rel="stylesheet" th:href="@{/css/style.css}">
 
-        <!-- Configuración personalizada de Tailwind con la paleta de colores oficial -->
         <script>
             tailwind.config = {
                 theme: {
@@ -40,7 +36,6 @@
             }
         </script>
 
-        <!-- Estilos de transición suave para los submenús -->
         <style>
             .submenu-container {
                 max-height: 0px;
@@ -53,7 +48,6 @@
 </head>
 <body class="bg-pharmacore-bg font-sans text-pharmacore-text antialiased min-h-screen flex flex-col selection:bg-pharmacore-accent selection:text-white">
 
-<!-- ===================== HEADER / TOPBAR ===================== -->
 <header th:fragment="topbar(title)" class="app-topbar">
     <div class="app-brand-row">
         <button type="button" onclick="toggleSidebar()" class="mobile-menu-button" aria-label="Abrir menú">
@@ -65,12 +59,6 @@
     </div>
 
     <div class="app-topbar-actions">
-        <button type="button" class="notification-button" title="Notificaciones" aria-label="Notificaciones">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
-            </svg>
-            <span class="notification-dot"></span>
-        </button>
         <div class="flex items-center gap-2 pl-2 ml-1 border-l border-white/10">
             <span class="text-[11px] text-white/70 hidden sm:inline" sec:authentication="name">usuario</span>
             <form th:action="@{/logout}" method="post" class="inline">
@@ -82,12 +70,10 @@
     </div>
 </header>
 
-<!-- ===================== CONTENEDOR CENTRAL ===================== -->
 <div class="flex flex-1 relative min-h-[calc(100vh-4rem)]">
 
     <div id="overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/60 z-10 hidden md:hidden transition-all duration-300"></div>
 
-    <!-- ===================== SIDEBAR ===================== -->
     <aside th:fragment="sidebar(activeMenu)" id="pharmacore-sidebar"
            class="app-sidebar flex flex-col fixed md:sticky top-0 z-40 transition-transform duration-300 ease-out -translate-x-full md:translate-x-0 flex-shrink-0">
 
@@ -109,7 +95,8 @@
             </a>
 
             <!-- Catálogo y Stock (Desplegable) -->
-            <div class="space-y-1">
+            <!-- El Vendedor no lo necesita para su trabajo en el mostrador, así que lo oculto para ese rol -->
+            <div class="space-y-1" sec:authorize="hasAnyRole('ADMINISTRADOR','FARMACEUTICO')">
                 <button type="button" onclick="toggleSubmenu('submenu-inventario')"
                         class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-colors duration-200 group focus:outline-none cursor-pointer">
                     <div class="flex items-center gap-3">
@@ -183,6 +170,7 @@
                        class="block px-3 py-1.5 rounded-lg text-[11px] text-slate-400 hover:text-white hover:bg-white/10 transition-colors duration-200 cursor-pointer">
                         Fórmulas Médicas
                     </a>
+                    <!-- Devoluciones y Domicilios: el Vendedor también los usa (ver nota en SecurityConfig) -->
                     <a th:href="@{/view/devoluciones}"
                        class="block px-3 py-1.5 rounded-lg text-[11px] text-slate-400 hover:text-white hover:bg-white/10 transition-colors duration-200 cursor-pointer">
                         Devoluciones
@@ -195,7 +183,7 @@
             </div>
 
             <!-- Proveedores (Desplegable) -->
-            <div class="space-y-1">
+            <div class="space-y-1" sec:authorize="hasAnyRole('ADMINISTRADOR','FARMACEUTICO')">
                 <button type="button" onclick="toggleSubmenu('submenu-proveedores')"
                         class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-colors duration-200 group focus:outline-none cursor-pointer">
                     <div class="flex items-center gap-3">
@@ -270,7 +258,7 @@
             </div>
 
             <!-- Reportes -->
-            <a th:href="@{/view/reportes}"
+            <a th:href="@{/view/reportes}" sec:authorize="hasAnyRole('ADMINISTRADOR','FARMACEUTICO')"
                th:classappend="${activeMenu == 'reportes'} ? 'is-active' : ''"
                class="text-slate-300 hover:bg-white/10 hover:text-white flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-colors duration-200 group cursor-pointer">
                 <div class="w-6 h-6 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors duration-200">

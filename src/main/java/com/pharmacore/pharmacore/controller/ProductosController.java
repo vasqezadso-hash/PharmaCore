@@ -77,7 +77,7 @@ public class ProductosController {
         return ResponseEntity.noContent().build();
     }
 
-    // Evita problemas de choques (que se peguen pues) con el UNIQUE de codigo_interno / codigo_barras antes de llegar a la bd
+    // Evita chocar con el UNIQUE de codigo_interno / codigo_barras antes de llegar a la base de datos
     private String validarDuplicados(Productos producto) {
         var porCodigoInterno = productosRepository.findByCodigoInterno(producto.getCodigoInterno());
         if (porCodigoInterno.isPresent() && !porCodigoInterno.get().getIdProducto().equals(producto.getIdProducto())) {

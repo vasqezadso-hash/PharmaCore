@@ -37,6 +37,8 @@ public class PharmaCoreUserDetailsService implements UserDetailsService {
                 .build();
     }
 
+    // Convierte el nombre del rol (ej: "Administrador") a la convención de Spring Security
+    // ("ROLE_ADMINISTRADOR"), quitando tildes por si alguien los agrega al nombre del rol.
     private String autoridadDeRol(Usuarios usuario) {
         String nombreRol = (usuario.getRol() != null && usuario.getRol().getNombre() != null)
                 ? usuario.getRol().getNombre() : "SIN_ROL";

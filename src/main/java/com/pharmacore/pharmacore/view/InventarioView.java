@@ -51,7 +51,6 @@ public class InventarioView {
         return "inventario/movimientos";
     }
 
-    // FORMULARIO: registrar un ajuste manual (pérdida, daño, devolución)
     @GetMapping("/view/inventario/movimientos/form")
     public String form(Model model) {
         cargarListasApoyo(model);

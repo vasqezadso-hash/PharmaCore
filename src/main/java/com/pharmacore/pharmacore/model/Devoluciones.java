@@ -57,7 +57,6 @@ public class Devoluciones {
     @Column(name = "fecha_devolucion")
     private LocalDateTime fechaDevolucion = LocalDateTime.now();
 
-    // Se completa en el controlador a partir del usuario logueado; no se pide en el formulario.
     @Column(name = "id_usuario_regente", nullable = false)
     private Long idUsuarioRegente;
 

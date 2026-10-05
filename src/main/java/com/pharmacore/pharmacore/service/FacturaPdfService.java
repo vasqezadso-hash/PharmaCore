@@ -16,6 +16,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Genera la factura de una venta en PDF (OpenPDF).
+ * arma el documento directamente en memoria y lo devuelve como bytes, para que
+ * entregue como descarga
+ */
 @Service
 public class FacturaPdfService {
 

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <th:block th:replace="fragments/layout :: styles"></th:block>
     <meta charset="UTF-8">
@@ -47,7 +47,9 @@
                             <select id="tipoDevolucion" th:field="*{tipoDevolucion}" onchange="alternarOrigen()"
                                     class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all" required>
                                 <option value="">Seleccione...</option>
-                                <option th:each="t : ${tipos}" th:value="${t}" th:text="${t == 'CLIENTE'} ? 'Devolución de cliente' : 'Devolución a proveedor'"></option>
+                                <option value="CLIENTE">Devolución de cliente</option>
+                                <!-- El Vendedor no gestiona devoluciones a proveedor, así que ni siquiera le muestro esta opción -->
+                                <option value="PROVEEDOR" sec:authorize="hasAnyRole('ADMINISTRADOR','FARMACEUTICO')">Devolución a proveedor</option>
                             </select>
                         </div>
 

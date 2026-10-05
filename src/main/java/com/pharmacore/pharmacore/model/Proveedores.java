@@ -8,7 +8,6 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
-//Primero traemos la tabla de Proveedores
 @Entity
 @Table(name = "proveedores")
 @Getter
@@ -17,7 +16,6 @@ public class Proveedores {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id_proveedor;
-
 
     @NotBlank(message = "la razon social es obligatoria")
     private String razon_social;

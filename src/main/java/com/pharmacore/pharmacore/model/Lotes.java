@@ -10,11 +10,6 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 
-/**
- * Lotes de producto (control de vencimientos).
- * Modelo mínimo: se agrega como soporte necesario para poder registrar Ventas
- * (detalles_ventas.id_lote es obligatorio en el esquema de PharmaCore).
- */
 @Entity
 @Table(name = "lotes")
 @Getter
