@@ -2,11 +2,14 @@ package com.pharmacore.pharmacore.view;
 
 import com.pharmacore.pharmacore.model.Compras;
 import com.pharmacore.pharmacore.model.DetallesCompras;
+import com.pharmacore.pharmacore.model.Empleados;
 import com.pharmacore.pharmacore.model.Lotes;
+import com.pharmacore.pharmacore.model.Usuarios;
 import com.pharmacore.pharmacore.repository.*;
 import com.pharmacore.pharmacore.service.InventarioService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -58,8 +61,13 @@ public class ComprasView {
 
     // FORMULARIO CREAR CABECERA
     @GetMapping("/view/ordenes-compra/form")
-    public String form(Model model) {
-        model.addAttribute("compra", new Compras());
+    public String form(Model model, Authentication authentication) {
+
+        Empleados empleadoActual = empleadoDeLaSesion(authentication);
+        Compras compra = new Compras();
+        compra.setIdEmpleado(empleadoActual.getId_empleado());
+        model.addAttribute("compra", compra);
+        model.addAttribute("nombreEmpleado", empleadoActual.getNombre_completo());
         cargarListasApoyo(model);
         return "compras/comprasForm";
     }
@@ -72,16 +80,27 @@ public class ComprasView {
             return "redirect:/view/ordenes-compra";
         }
         model.addAttribute("compra", compra);
+        // En edición se muestra el empleado que registró la compra originalmente (no se reasigna)
+        model.addAttribute("nombreEmpleado", empleadosRepository.findById(compra.getIdEmpleado())
+                .map(Empleados::getNombre_completo).orElse("Empleado #" + compra.getIdEmpleado()));
         cargarListasApoyo(model);
         return "compras/comprasForm";
     }
 
-    // GUARDAR CABECERA (crear o actualizar) -> siempre termina en la pantalla de líneas
     @PostMapping("/view/ordenes-compra/save")
     public String save(@Valid @ModelAttribute("compra") Compras compra, BindingResult result,
-                        Model model, RedirectAttributes ra) {
+                        Authentication authentication, Model model, RedirectAttributes ra) {
+
+        Empleados empleadoActual = empleadoDeLaSesion(authentication);
+        if (compra.getIdCompra() == null) {
+            compra.setIdEmpleado(empleadoActual.getId_empleado());
+        } else {
+            Compras original = comprasRepository.findById(compra.getIdCompra()).orElse(null);
+            if (original != null) compra.setIdEmpleado(original.getIdEmpleado());
+        }
         if (result.hasErrors()) {
             model.addAttribute("error", "Verifica los campos obligatorios.");
+            model.addAttribute("nombreEmpleado", empleadoActual.getNombre_completo());
             cargarListasApoyo(model);
             return "compras/comprasForm";
         }
@@ -294,6 +313,15 @@ public class ComprasView {
 
     private void cargarListasApoyo(Model model) {
         model.addAttribute("proveedores", proveedoresRepository.findAll());
-        model.addAttribute("empleados", empleadosRepository.findAll());
+    }
+
+    // Empleado asociado al usuario que tiene la sesión iniciada
+    private Empleados empleadoDeLaSesion(Authentication authentication) {
+        Usuarios usuario = usuariosRepository.findByUsernameIgnoreCase(authentication.getName());
+        if (usuario == null || usuario.getIdEmpleado() == null) {
+            throw new IllegalStateException("Tu usuario no tiene un empleado asociado; no puedes registrar compras.");
+        }
+        return empleadosRepository.findById(usuario.getIdEmpleado())
+                .orElseThrow(() -> new IllegalStateException("No se encontró el empleado asociado a tu usuario."));
     }
 }

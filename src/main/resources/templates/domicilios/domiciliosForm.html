@@ -38,7 +38,8 @@
             <div th:if="${error}" class="bg-red-50 text-red-700 border border-red-200 p-3 mb-4 rounded-xl text-sm" th:text="${error}"></div>
 
             <div th:if="${#lists.isEmpty(ventas)}" class="bg-amber-50 text-amber-800 border border-amber-200 p-4 rounded-xl text-sm mb-4">
-                No hay ventas PAGADAS disponibles para domicilio (o ya todas tienen uno registrado). Registre primero una venta.
+                No hay ventas disponibles para domicilio. Solo aparecen las ventas PAGADAS que tienen cliente registrado
+                y que todavía no tienen domicilio. Si la venta se hizo "sin cliente registrado", no se puede enviar a domicilio.
             </div>
 
             <form th:unless="${#lists.isEmpty(ventas)}" th:action="@{/view/domicilios/guardar}" th:object="${domicilio}" method="post" class="space-y-6">

@@ -52,11 +52,12 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Empleado</label>
-                            <select th:field="*{idEmpleado}" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all" required>
-                                <option value="">Seleccione un empleado</option>
-                                <option th:each="e : ${empleados}" th:value="${e.id_empleado}" th:text="${e.nombre_completo}"></option>
-                            </select>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Empleado que registra</label>
+                            <!-- Ya no se elige de una lista: se toma automático de la sesión iniciada
+                                 (ver ComprasView.form/save). Se muestra solo de referencia. -->
+                            <input type="text" th:value="${nombreEmpleado}" disabled
+                                   class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-100 border border-slate-200 rounded-xl text-slate-500 cursor-not-allowed">
+                            <input type="hidden" th:field="*{idEmpleado}">
                         </div>
                     </div>
 

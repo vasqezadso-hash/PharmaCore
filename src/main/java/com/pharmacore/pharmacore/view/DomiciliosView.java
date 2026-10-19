@@ -64,8 +64,6 @@ public class DomiciliosView {
         }
 
         try {
-            // La columna id_venta es UNIQUE: se revalida en servidor (no solo confiar en que
-            // el <select> del formulario ya excluyó las ventas con domicilio).
             if (domiciliosRepository.existsByIdVenta(domicilio.getIdVenta())) {
                 throw new IllegalStateException("Esa venta ya tiene un domicilio registrado.");
             }
@@ -79,11 +77,7 @@ public class DomiciliosView {
         }
     }
 
-    // Este método reemplaza lo que sería "editar" y "eliminar" un domicilio.
-    // Un pedido va avanzando: PENDIENTE -> EN_PREPARACION -> EN_CAMINO -> ENTREGADO,
-    // o en cualquier punto se puede CANCELAR. Una vez llega a ENTREGADO o
-    // CANCELADO, lo bloqueo (ver el if de abajo) para que no se pueda seguir
-    // moviendo, porque ya se considera un pedido cerrado.
+
     @PostMapping("/view/domicilios/estado/{id}")
     public String cambiarEstado(@PathVariable Integer id,
                                  @RequestParam String nuevoEstado,
@@ -116,6 +110,7 @@ public class DomiciliosView {
         // Solo se ofrecen ventas PAGADAS que todavía no tengan domicilio.
         List<Ventas> ventasDisponibles = ventasRepository.findAll().stream()
                 .filter(v -> "PAGADA".equals(v.getEstado()))
+                .filter(v -> v.getIdCliente() != null)
                 .filter(v -> !domiciliosRepository.existsByIdVenta(v.getIdVenta()))
                 .collect(Collectors.toList());
         model.addAttribute("ventas", ventasDisponibles);
