@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="fragments/layout :: styles"></th:block>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PharmaCore - Ingresos y Egresos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" th:href="@{/img/img.png}">
+    <script>
+        tailwind.config = {
+            theme: { extend: { colors: { pharmacore: { bg:'#F7FAF9', dark:'#004B4B', darker:'#003939', accent:'#006565', text:'#1E1E1E' } }, fontFamily: { sans: ['Poppins','sans-serif'] } } }
+        }
+    </script>
+</head>
+<body class="bg-pharmacore-bg font-sans text-pharmacore-text antialiased min-h-screen flex flex-col selection:bg-pharmacore-accent selection:text-white">
+
+<header th:replace="~{fragments/layout :: topbar('Ingresos y Egresos')}"></header>
+
+<div class="flex flex-1 relative min-h-[calc(100vh-4rem)]">
+    <div id="overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/60 z-10 hidden md:hidden transition-all duration-300"></div>
+    <aside th:replace="~{fragments/layout :: sidebar('finanzas')}"></aside>
+
+    <div class="flex-1 flex flex-col min-w-0 bg-pharmacore-bg">
+        <main class="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
+
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-bold text-pharmacore-dark uppercase tracking-wide">GESTIÓN DE INGRESOS Y EGRESOS</h1>
+                    <p class="text-xs sm:text-sm text-slate-500">Control de tesorería, flujo de caja y trazabilidad financiera vinculada al inventario.</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="abrirModalAjuste()"
+                            class="bg-pharmacore-accent text-white px-4 py-2 rounded-xl text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer">
+                        + Registrar Ajuste de Caja
+                    </button>
+                </div>
+            </div>
+
+            <div th:if="${mensaje}" class="bg-emerald-50 text-emerald-700 border border-emerald-200 p-3 mb-4 rounded-xl text-sm" th:text="${mensaje}"></div>
+            <div th:if="${error}" class="bg-red-50 text-red-700 border border-red-200 p-3 mb-4 rounded-xl text-sm" th:text="${error}"></div>
+
+            <!-- Tarjetas de Resumen Financiero -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <!-- Total Ingresos -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Ingresos</span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                    </div>
+                    <div class="text-xl sm:text-2xl font-bold text-emerald-600"
+                         th:text="${'$' + #numbers.formatDecimal(totalIngresos, 0, 'COMMA', 0, 'POINT')}">$0</div>
+                    <p class="text-[11px] text-slate-400 mt-1">Entradas por ventas y ajustes</p>
+                </div>
+
+                <!-- Total Egresos -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Egresos</span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span>
+                    </div>
+                    <div class="text-xl sm:text-2xl font-bold text-red-600"
+                         th:text="${'$' + #numbers.formatDecimal(totalEgresos, 0, 'COMMA', 0, 'POINT')}">$0</div>
+                    <p class="text-[11px] text-slate-400 mt-1">Compras y reembolsos por devolución</p>
+                </div>
+
+                <!-- Balance Neto -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Balance en Caja</span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-pharmacore-accent"></span>
+                    </div>
+                    <div class="text-xl sm:text-2xl font-bold"
+                         th:classappend="${balanceNeto >= 0} ? 'text-pharmacore-dark' : 'text-red-600'"
+                         th:text="${'$' + #numbers.formatDecimal(balanceNeto, 0, 'COMMA', 0, 'POINT')}">$0</div>
+                    <p class="text-[11px] text-slate-400 mt-1">Flujo neto acumulado (Ingresos - Egresos)</p>
+                </div>
+
+                <!-- Total Transacciones -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Transacciones</span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
+                    </div>
+                    <div class="text-xl sm:text-2xl font-bold text-slate-700" th:text="${totalTransacciones}">0</div>
+                    <p class="text-[11px] text-slate-400 mt-1">Movimientos auditados en sistema</p>
+                </div>
+            </div>
+
+            <!-- Filtros de Búsqueda -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 mb-6">
+                <form th:action="@{/view/finanzas}" method="get" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Tipo de Flujo</label>
+                        <select name="tipo" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent">
+                            <option value="">Todos los flujos</option>
+                            <option value="INGRESO" th:selected="${tipoFiltro == 'INGRESO'}">Solo Ingresos (+)</option>
+                            <option value="EGRESO" th:selected="${tipoFiltro == 'EGRESO'}">Solo Egresos (-)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Concepto</label>
+                        <select name="concepto" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent">
+                            <option value="">Todos los conceptos</option>
+                            <option value="VENTA" th:selected="${conceptoFiltro == 'VENTA'}">Ventas</option>
+                            <option value="COMPRA_PROVEEDOR" th:selected="${conceptoFiltro == 'COMPRA_PROVEEDOR'}">Compras a Proveedores</option>
+                            <option value="DEVOLUCION_VENTA" th:selected="${conceptoFiltro == 'DEVOLUCION_VENTA'}">Reembolsos de Devolución</option>
+                            <option value="ANULACION_VENTA" th:selected="${conceptoFiltro == 'ANULACION_VENTA'}">Anulaciones de Venta</option>
+                            <option value="AJUSTE_INGRESO" th:selected="${conceptoFiltro == 'AJUSTE_INGRESO'}">Ajustes Ingreso Manual</option>
+                            <option value="AJUSTE_EGRESO" th:selected="${conceptoFiltro == 'AJUSTE_EGRESO'}">Ajustes Egreso Manual</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Desde</label>
+                        <input type="date" name="fechaInicio" th:value="${fechaInicioFiltro}"
+                               class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Hasta</label>
+                        <input type="date" name="fechaFin" th:value="${fechaFinFiltro}"
+                               class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent">
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <button type="submit"
+                                class="flex-1 bg-pharmacore-accent text-white px-4 py-2 rounded-xl text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer">
+                            Filtrar
+                        </button>
+                        <a th:href="@{/view/finanzas}"
+                           class="px-3 py-2 bg-slate-100 text-slate-600 rounded-xl text-xs font-semibold hover:bg-slate-200 transition-colors">
+                            Limpiar
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Tabla de Transacciones Financieras -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="p-4 sm:p-6 border-b border-slate-100 flex items-center justify-between">
+                    <div>
+                        <h2 class="text-xs font-bold text-pharmacore-accent uppercase tracking-wider">Historial de Transacciones Financieras</h2>
+                        <p class="text-xs text-slate-500 mt-0.5">Auditoría completa de entradas y salidas ligadas a ventas, compras, devoluciones y caja.</p>
+                    </div>
+                    <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600"
+                          th:text="${#lists.size(transacciones)} + ' movimiento(s)'"></span>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-pharmacore-dark text-white text-xs uppercase tracking-wider">
+                        <tr>
+                            <th class="p-4">Fecha y Hora</th>
+                            <th class="p-4 text-center">Tipo</th>
+                            <th class="p-4">Concepto</th>
+                            <th class="p-4">Referencia / Documento</th>
+                            <th class="p-4">Movimiento Inventario (Kardex)</th>
+                            <th class="p-4">Método de Pago</th>
+                            <th class="p-4">Responsable</th>
+                            <th class="p-4 text-right">Monto</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:if="${#lists.isEmpty(transacciones)}">
+                            <td colspan="8" class="p-6 text-center text-slate-400 text-xs">No se encontraron movimientos financieros con los filtros aplicados.</td>
+                        </tr>
+                        <tr th:each="t : ${transacciones}" class="border-b border-slate-100 hover:bg-slate-50 transition-colors text-xs">
+                            <td class="p-4 text-slate-600 font-mono" th:text="${#temporals.format(t.fechaTransaccion, 'dd/MM/yyyy HH:mm')}"></td>
+
+                            <td class="p-4 text-center">
+                                <span th:if="${t.tipoTransaccion == 'INGRESO'}"
+                                      class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">
+                                    + INGRESO
+                                </span>
+                                <span th:if="${t.tipoTransaccion == 'EGRESO'}"
+                                      class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-700">
+                                    - EGRESO
+                                </span>
+                            </td>
+
+                            <td class="p-4 font-semibold text-slate-800">
+                                <span th:text="${#strings.replace(t.concepto, '_', ' ')}"></span>
+                                <div class="text-[11px] text-slate-400 font-normal mt-0.5" th:text="${t.descripcion}"></div>
+                            </td>
+
+                            <td class="p-4">
+                                <a th:if="${t.idVenta != null}" th:href="@{/view/ventas/detalle/{id}(id=${t.idVenta})}"
+                                   class="font-mono text-pharmacore-accent font-semibold hover:underline"
+                                   th:text="${t.referencia != null ? t.referencia : ('Venta #' + t.idVenta)}"></a>
+                                <a th:if="${t.idCompra != null}" th:href="@{/view/ordenes-compra/detalle/{id}(id=${t.idCompra})}"
+                                   class="font-mono text-pharmacore-accent font-semibold hover:underline"
+                                   th:text="${t.referencia != null ? t.referencia : ('Compra #' + t.idCompra)}"></a>
+                                <span th:if="${t.idVenta == null and t.idCompra == null}"
+                                      class="font-mono text-slate-600"
+                                      th:text="${t.referencia != null ? t.referencia : '—'}"></span>
+                            </td>
+
+                            <td class="p-4">
+                                <a th:if="${t.idMovimientoInventario != null}"
+                                   th:href="@{/view/inventario/movimientos}"
+                                   class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors text-[11px] font-medium"
+                                   title="Ver en Kardex de inventario">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-pharmacore-accent"></span>
+                                    <span th:text="${resumenMovimientos.get(t.idMovimientoInventario) ?: ('Kardex #' + t.idMovimientoInventario)}"></span>
+                                </a>
+                                <span th:if="${t.idMovimientoInventario == null}" class="text-slate-400 italic text-[11px]">Sin movimiento de stock</span>
+                            </td>
+
+                            <td class="p-4 text-slate-600">
+                                <span th:text="${t.metodoPago != null ? #strings.replace(t.metodoPago, '_', ' ') : 'EFECTIVO'}"></span>
+                            </td>
+
+                            <td class="p-4 text-slate-600" th:text="${nombresUsuarios.get(t.idUsuario) ?: ('Usuario #' + t.idUsuario)}"></td>
+
+                            <td class="p-4 text-right font-bold text-xs"
+                                th:classappend="${t.tipoTransaccion == 'INGRESO'} ? 'text-emerald-700' : 'text-red-700'"
+                                th:text="${(t.tipoTransaccion == 'INGRESO' ? '+ $' : '- $') + #numbers.formatDecimal(t.monto, 0, 'COMMA', 0, 'POINT')}">
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </main>
+        <footer th:replace="~{fragments/layout :: footer}"></footer>
+    </div>
+</div>
+
+<!-- Modal para Registro de Ajuste Manual de Caja -->
+<div id="modalAjuste" class="fixed inset-0 z-50 bg-slate-900/60 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 sm:p-8 relative">
+        <div class="mb-4">
+            <h3 class="text-base font-bold text-pharmacore-dark uppercase tracking-wide">Registrar Ajuste de Caja</h3>
+            <p class="text-xs text-slate-500 mt-1">Registre un ingreso o egreso manual directo en caja.</p>
+        </div>
+
+        <form th:action="@{/view/finanzas/ajuste/guardar}" method="post" class="space-y-4">
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Tipo de Flujo *</label>
+                <select id="modalTipo" name="tipoTransaccion" required onchange="actualizarConceptoAjuste()"
+                        class="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent">
+                    <option value="INGRESO">Ingreso (+ Entrada de dinero)</option>
+                    <option value="EGRESO">Egreso (- Salida de dinero / Gasto)</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Concepto *</label>
+                <select id="modalConcepto" name="concepto" required
+                        class="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent">
+                    <option value="AJUSTE_INGRESO">Ajuste de Ingreso / Base Inicial</option>
+                    <option value="AJUSTE_EGRESO">Ajuste de Egreso / Gasto Menor</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Monto en Pesos (COP) *</label>
+                <input type="number" step="100" min="100" name="monto" required placeholder="Ej: 50000"
+                       class="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent">
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Método de Pago</label>
+                <select name="metodoPago"
+                        class="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent">
+                    <option value="EFECTIVO">Efectivo</option>
+                    <option value="TRANSFERENCIA">Transferencia</option>
+                    <option value="NEQUI_DAVIPLATA">Nequi / Daviplata</option>
+                    <option value="TARJETA_DEBITO">Tarjeta Débito</option>
+                    <option value="TARJETA_CREDITO">Tarjeta Crédito</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Descripción / Justificación *</label>
+                <textarea name="descripcion" rows="2" required placeholder="Ej: Apertura de caja turno mañana, o compra de papelería"
+                          class="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent"></textarea>
+            </div>
+
+            <div class="flex items-center justify-end gap-2 pt-2">
+                <button type="button" onclick="cerrarModalAjuste()"
+                        class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer">
+                    Cancelar
+                </button>
+                <button type="submit"
+                        class="px-4 py-2 rounded-xl text-xs font-semibold text-white bg-pharmacore-accent hover:opacity-90 transition-opacity cursor-pointer">
+                    Guardar Ajuste
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+
+<script>
+    function abrirModalAjuste() {
+        const modal = document.getElementById('modalAjuste');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+
+    function cerrarModalAjuste() {
+        const modal = document.getElementById('modalAjuste');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+
+    function actualizarConceptoAjuste() {
+        const tipo = document.getElementById('modalTipo').value;
+        const concepto = document.getElementById('modalConcepto');
+        if (tipo === 'INGRESO') {
+            concepto.innerHTML = `
+                <option value="AJUSTE_INGRESO">Ajuste de Ingreso / Base Inicial</option>
+                <option value="VENTA">Ingreso Extraordinario</option>
+            `;
+        } else {
+            concepto.innerHTML = `
+                <option value="AJUSTE_EGRESO">Ajuste de Egreso / Gasto Menor</option>
+                <option value="COMPRA_PROVEEDOR">Gasto Operativo / Proveedor</option>
+            `;
+        }
+    }
+</script>
+</body>
+</html>

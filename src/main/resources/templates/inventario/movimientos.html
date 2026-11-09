@@ -50,17 +50,18 @@
                         <tr>
                             <th class="p-4">Fecha</th>
                             <th class="p-4">Tipo</th>
-                            <th class="p-4">Producto ID</th>
-                            <th class="p-4">Lote ID</th>
+                            <th class="p-4">Producto</th>
+                            <th class="p-4">Lote</th>
                             <th class="p-4">Cantidad</th>
                             <th class="p-4">Antes → Después</th>
-                            <th class="p-4">Usuario ID</th>
+                            <th class="p-4">Impacto Financiero</th>
+                            <th class="p-4">Usuario</th>
                             <th class="p-4">Motivo</th>
                         </tr>
                         </thead>
                         <tbody>
                         <tr th:if="${#lists.isEmpty(movimientos)}">
-                            <td colspan="8" class="p-6 text-center text-slate-400 text-xs">No hay movimientos registrados todavía.</td>
+                            <td colspan="9" class="p-6 text-center text-slate-400 text-xs">No hay movimientos registrados todavía.</td>
                         </tr>
                         <tr th:each="m : ${movimientos}" class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
                             <td class="p-4 text-xs text-slate-600" th:text="${#temporals.format(m.fechaMovimiento, 'dd/MM/yyyy HH:mm')}"></td>
@@ -73,6 +74,22 @@
                             <td class="p-4 text-xs" th:text="${m.idLote != null ? (nombresLotes.get(m.idLote) ?: ('Lote #' + m.idLote)) : '—'}"></td>
                             <td class="p-4 text-xs font-semibold" th:text="${m.cantidad}"></td>
                             <td class="p-4 text-xs text-slate-600" th:text="${m.existenciaAnterior + ' → ' + m.nuevaExistencia}"></td>
+                            <td class="p-4 text-xs">
+                                <span th:if="${m.idTransaccion != null and transaccionesMap.containsKey(m.idTransaccion)}"
+                                      th:with="tf=${transaccionesMap.get(m.idTransaccion)}">
+                                    <a th:href="@{/view/finanzas}"
+                                       class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold transition-opacity hover:opacity-80"
+                                       th:classappend="${tf.tipoTransaccion == 'INGRESO'} ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'"
+                                       th:title="${tf.descripcion}">
+                                        <span class="w-1.5 h-1.5 rounded-full" th:classappend="${tf.tipoTransaccion == 'INGRESO'} ? 'bg-emerald-500' : 'bg-red-500'"></span>
+                                        <span th:text="${(tf.tipoTransaccion == 'INGRESO' ? '+ $' : '- $') + #numbers.formatDecimal(tf.monto, 0, 'COMMA', 0, 'POINT') + ' (' + #strings.replace(tf.concepto, '_', ' ') + ')'}"></span>
+                                    </a>
+                                </span>
+                                <span th:if="${m.idTransaccion == null or !transaccionesMap.containsKey(m.idTransaccion)}"
+                                      class="text-slate-400 text-[11px] italic">
+                                    Sin impacto en caja
+                                </span>
+                            </td>
                             <td class="p-4 text-xs text-slate-600" th:text="${nombresUsuarios.get(m.idUsuario) ?: ('Usuario #' + m.idUsuario)}"></td>
                             <td class="p-4 text-xs text-slate-500" th:text="${m.motivo}"></td>
                         </tr>

@@ -4,7 +4,7 @@
     <th:block th:replace="fragments/layout :: styles"></th:block>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PharmaCore - Registrar Ajuste de Inventario</title>
+    <title>PharmaCore - Ajuste de Inventario</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,7 +12,22 @@
     <link rel="icon" type="image/png" th:href="@{/img/img.png}">
     <script>
         tailwind.config = {
-            theme: { extend: { colors: { pharmacore: { bg:'#F7FAF9', dark:'#004B4B', darker:'#003939', accent:'#006565', text:'#1E1E1E' } }, fontFamily: { sans: ['Poppins','sans-serif'] } } }
+            theme: {
+                extend: {
+                    colors: {
+                        pharmacore: {
+                            bg: '#F7FAF9',
+                            dark: '#004B4B',
+                            darker: '#003939',
+                            accent: '#006565',
+                            text: '#1E1E1E'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif']
+                    }
+                }
+            }
         }
     </script>
 </head>
@@ -27,61 +42,73 @@
     <div class="flex-1 flex flex-col min-w-0 bg-pharmacore-bg">
         <main class="flex-1 p-4 sm:p-6 lg:p-8 max-w-2xl mx-auto w-full">
 
-            <div class="mb-6 flex items-center justify-between">
+            <div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h1 class="text-xl sm:text-2xl font-bold text-pharmacore-dark uppercase tracking-wide">REGISTRAR AJUSTE DE INVENTARIO</h1>
-                    <p class="text-xs sm:text-sm text-slate-500">Para pérdidas, daños o devoluciones. El stock del producto se actualiza automáticamente.</p>
+                    <p class="text-xs sm:text-sm text-slate-500">Registre ajustes de stock por avería, merma o corrección de conteo físico.</p>
                 </div>
-                <a th:href="@{/view/inventario/movimientos}" class="bg-slate-200 text-slate-700 px-4 py-2 rounded-xl text-xs font-semibold hover:bg-slate-300 transition-colors">← Volver</a>
+                <a th:href="@{/view/inventario/movimientos}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 transition-colors shadow-xs self-start sm:self-auto">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Volver a movimientos
+                </a>
             </div>
 
-            <div th:if="${error}" class="bg-red-50 text-red-700 border border-red-200 p-3 mb-4 rounded-xl text-sm" th:text="${error}"></div>
+            <div th:if="${error}" class="bg-red-50 text-red-700 border border-red-200 p-4 mb-6 rounded-2xl text-xs sm:text-sm flex items-center gap-3">
+                <svg class="w-5 h-5 text-red-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+                <span th:text="${error}"></span>
+            </div>
 
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden p-6 sm:p-8">
                 <form th:action="@{/view/inventario/movimientos/guardar}" method="post" class="space-y-6">
 
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Tipo de Movimiento</label>
-                        <select name="tipoMovimiento" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all" required>
-                            <option value="">Seleccione un tipo</option>
-                            <option th:each="t : ${tiposMovimiento}" th:value="${t}" th:text="${t}"></option>
-                        </select>
-                        <p class="text-[10px] text-slate-400 mt-1">Entradas por compra y salidas por venta se registran solas desde esos módulos.</p>
-                    </div>
-
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Producto</label>
-                            <select name="idProducto" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all" required>
-                                <option value="">Seleccione un producto</option>
-                                <option th:each="p : ${productos}" th:value="${p.idProducto}" th:text="${p.nombreComercial + ' (stock: ' + p.stockTotal + ')'}"></option>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Tipo de Movimiento *</label>
+                            <select name="tipoMovimiento" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all font-medium text-slate-800" required>
+                                <option value="">Seleccione un tipo...</option>
+                                <option th:each="t : ${tiposMovimiento}" th:value="${t}" th:text="${t}"></option>
                             </select>
                         </div>
+
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">ID de Lote (opcional)</label>
-                            <input type="number" name="idLote" placeholder="Déjelo vacío si no aplica" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all">
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Producto *</label>
+                            <select name="idProducto" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all font-medium text-slate-800" required>
+                                <option value="">Seleccione un producto...</option>
+                                <option th:each="p : ${productos}" th:value="${p.idProducto}" th:text="${p.nombreComercial + ' (Stock: ' + p.stockTotal + ')'}"></option>
+                            </select>
                         </div>
+
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Cantidad</label>
-                            <input type="number" name="cantidad" min="1" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all" required>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">ID de Lote (Opcional)</label>
+                            <input type="number" name="idLote" placeholder="Opcional" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all">
                         </div>
+
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Usuario Responsable</label>
-                            <select name="idUsuario" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all" required>
-                                <option value="">Seleccione un usuario</option>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Cantidad *</label>
+                            <input type="number" name="cantidad" min="1" placeholder="Ej: 5" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all font-bold text-slate-800" required>
+                        </div>
+
+                        <div class="sm:col-span-2">
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Usuario Responsable *</label>
+                            <select name="idUsuario" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all font-medium text-slate-800" required>
+                                <option value="">Seleccione un usuario...</option>
                                 <option th:each="u : ${usuarios}" th:value="${u.idUsuario}" th:text="${u.username}"></option>
                             </select>
                         </div>
-                    </div>
 
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Motivo</label>
-                        <textarea name="motivo" rows="3" placeholder="Ej: Caja dañada en bodega, 3 unidades no aptas para la venta" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all"></textarea>
+                        <div class="sm:col-span-2">
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Motivo o Justificación</label>
+                            <textarea name="motivo" rows="3" placeholder="Detalle el motivo del ajuste de inventario..." class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all"></textarea>
+                        </div>
                     </div>
 
                     <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
                         <a th:href="@{/view/inventario/movimientos}" class="px-5 py-2.5 rounded-xl text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors">Cancelar</a>
-                        <button type="submit" class="px-5 py-2.5 rounded-xl text-xs font-semibold text-white bg-pharmacore-accent hover:opacity-90 transition-opacity cursor-pointer">Registrar Movimiento</button>
+                        <button type="submit" class="px-6 py-2.5 rounded-xl text-xs font-semibold text-white bg-pharmacore-accent hover:opacity-90 transition-opacity cursor-pointer shadow-sm">Registrar Movimiento</button>
                     </div>
                 </form>
             </div>

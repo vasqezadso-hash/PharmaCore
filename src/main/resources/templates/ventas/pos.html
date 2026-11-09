@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <th:block th:replace="fragments/layout :: styles"></th:block>
     <meta charset="UTF-8">
@@ -8,273 +9,891 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
     <link rel="icon" type="image/png" th:href="@{/img/img.png}">
     <script>
         tailwind.config = {
-            theme: { extend: { colors: { pharmacore: { bg:'#F7FAF9', dark:'#004B4B', darker:'#003939', accent:'#006565', text:'#1E1E1E' } }, fontFamily: { sans: ['Poppins','sans-serif'] } } }
+            theme: { extend: { colors: { pharmacore: { bg: '#F7FAF9', dark: '#004B4B', darker: '#003939', accent: '#006565', text: '#1E1E1E' } }, fontFamily: { sans: ['Poppins', 'sans-serif'] } } }
         }
     </script>
 </head>
-<body class="bg-pharmacore-bg font-sans text-pharmacore-text antialiased min-h-screen flex flex-col selection:bg-pharmacore-accent selection:text-white">
 
-<header th:replace="~{fragments/layout :: topbar('Nueva Venta')}"></header>
+<body
+    class="bg-pharmacore-bg font-sans text-pharmacore-text antialiased min-h-screen flex flex-col selection:bg-pharmacore-accent selection:text-white">
 
-<div class="flex flex-1 relative min-h-[calc(100vh-4rem)]">
-    <div id="overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/60 z-10 hidden md:hidden transition-all duration-300"></div>
-    <aside th:replace="~{fragments/layout :: sidebar('ventas')}"></aside>
+    <header th:replace="~{fragments/layout :: topbar('Nueva Venta')}"></header>
 
-    <div class="flex-1 flex flex-col min-w-0 bg-pharmacore-bg">
-        <main class="flex-1 p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto w-full">
+    <div class="flex flex-1 relative min-h-[calc(100vh-4rem)]">
+        <div id="overlay" onclick="toggleSidebar()"
+            class="fixed inset-0 bg-slate-900/60 z-10 hidden md:hidden transition-all duration-300"></div>
+        <aside th:replace="~{fragments/layout :: sidebar('nueva-venta')}"></aside>
 
-            <div class="mb-6 flex items-center justify-between">
-                <div>
-                    <h1 class="text-xl sm:text-2xl font-bold text-pharmacore-dark uppercase tracking-wide">NUEVA VENTA</h1>
-                    <p class="text-xs sm:text-sm text-slate-500">Registre la dispensación de medicamentos y genere la factura de venta.</p>
+        <div class="flex-1 flex flex-col min-w-0 bg-pharmacore-bg">
+            <main class="flex-1 p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto w-full">
+
+                <div class="mb-6 flex items-center justify-between">
+                    <div>
+                        <h1 class="text-xl sm:text-2xl font-bold text-pharmacore-dark uppercase tracking-wide">NUEVA
+                            VENTA</h1>
+                        <p class="text-xs sm:text-sm text-slate-500">Registre la dispensación de medicamentos y genere
+                            la factura de venta.</p>
+                    </div>
+                    <a th:href="@{/view/dispensacion/historial}"
+                        class="bg-slate-200 text-slate-700 px-4 py-2 rounded-xl text-xs font-semibold hover:bg-slate-300 transition-colors">Ver
+                        historial →</a>
                 </div>
-                <a th:href="@{/view/dispensacion/historial}" class="bg-slate-200 text-slate-700 px-4 py-2 rounded-xl text-xs font-semibold hover:bg-slate-300 transition-colors">Ver historial →</a>
-            </div>
 
-            <div th:if="${mensaje}" class="bg-emerald-50 text-emerald-700 border border-emerald-200 p-3 mb-4 rounded-xl text-sm" th:text="${mensaje}"></div>
-            <div th:if="${error}" class="bg-red-50 text-red-700 border border-red-200 p-3 mb-4 rounded-xl text-sm" th:text="${error}"></div>
-            <div th:if="${param.exito}" class="bg-emerald-50 text-emerald-700 border border-emerald-200 p-3 mb-4 rounded-xl text-sm">Venta registrada correctamente.</div>
+                <div th:if="${mensaje}"
+                    class="bg-emerald-50 text-emerald-700 border border-emerald-200 p-3 mb-4 rounded-xl text-sm"
+                    th:text="${mensaje}"></div>
+                <div th:if="${error}" class="bg-red-50 text-red-700 border border-red-200 p-3 mb-4 rounded-xl text-sm"
+                    th:text="${error}"></div>
+                <div th:if="${param.exito}"
+                    class="bg-emerald-50 text-emerald-700 border border-emerald-200 p-3 mb-4 rounded-xl text-sm">Venta
+                    registrada correctamente.</div>
 
-            <form th:action="@{/view/ventas/nueva/guardar}" th:object="${venta}" method="post" class="space-y-6" id="form-venta">
+                <form th:action="@{/view/ventas/nueva/guardar}" th:object="${venta}" method="post" class="space-y-6"
+                    id="form-venta">
 
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
-                    <h2 class="text-xs font-bold text-pharmacore-accent uppercase tracking-wider mb-4">Datos de la Venta</h2>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Cliente / Paciente</label>
-                            <select th:field="*{idCliente}" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all">
-                                <option value="">Venta sin cliente registrado</option>
-                                <option th:each="c : ${clientes}" th:value="${c.id_cliente}" th:text="${c.nombreCompleto}"></option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Empleado que Atiende</label>
-                            <!-- Ya no se elige de una lista: se toma automático de la sesión iniciada
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
+                        <h2 class="text-xs font-bold text-pharmacore-accent uppercase tracking-wider mb-4">Datos de la
+                            Venta</h2>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                            <div>
+                                <label
+                                    class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Cliente
+                                    / Paciente</label>
+                                <select th:field="*{idCliente}"
+                                    class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all">
+                                    <option value="">Venta sin cliente registrado</option>
+                                    <option th:each="c : ${clientes}" th:value="${c.id_cliente}"
+                                        th:text="${c.nombreCompleto}"></option>
+                                </select>
+                            </div>
+                            <div>
+                                <label
+                                    class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Empleado
+                                    que Atiende</label>
+                                <!-- Ya no se elige de una lista: se toma automático de la sesión iniciada
                                  (ver VentasView.nuevaVenta/guardar), así nadie puede facturar a nombre
                                  de otro empleado. Se muestra solo de referencia, no se puede editar. -->
-                            <input type="text" th:value="${nombreEmpleadoActual}" disabled
-                                   class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-100 border border-slate-200 rounded-xl text-slate-500 cursor-not-allowed">
-                            <input type="hidden" th:field="*{idEmpleado}">
+                                <input type="text" th:value="${nombreEmpleadoActual}" disabled
+                                    class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-100 border border-slate-200 rounded-xl text-slate-500 cursor-not-allowed">
+                                <input type="hidden" th:field="*{idEmpleado}">
+                            </div>
+                            <div>
+                                <label
+                                    class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Método
+                                    de Pago</label>
+                                <select th:field="*{metodoPago}"
+                                    class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all">
+                                    <option value="EFECTIVO">Efectivo</option>
+                                    <option value="TARJETA_DEBITO">Tarjeta Débito</option>
+                                    <option value="TARJETA_CREDITO">Tarjeta Crédito</option>
+                                    <option value="TRANSFERENCIA">Transferencia</option>
+                                    <option value="NEQUI_DAVIPLATA">Nequi / Daviplata</option>
+                                    <option value="PAGO_MIXTO">Pago Mixto</option>
+                                </select>
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Método de Pago</label>
-                            <select th:field="*{metodoPago}" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all">
-                                <option value="EFECTIVO">Efectivo</option>
-                                <option value="TARJETA_DEBITO">Tarjeta Débito</option>
-                                <option value="TARJETA_CREDITO">Tarjeta Crédito</option>
-                                <option value="TRANSFERENCIA">Transferencia</option>
-                                <option value="NEQUI_DAVIPLATA">Nequi / Daviplata</option>
-                                <option value="PAGO_MIXTO">Pago Mixto</option>
-                            </select>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-6">
+                            <div>
+                                <label
+                                    class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Número
+                                    de Factura</label>
+                                <input type="text" th:field="*{numeroFactura}"
+                                    placeholder="Autogenerado si se deja vacío"
+                                    class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all">
+                            </div>
+                            <div>
+                                <label
+                                    class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Descuento</label>
+                                <input type="number" step="0.01" th:field="*{descuento}"
+                                    class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all">
+                            </div>
+                            <div>
+                                <label
+                                    class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">IVA</label>
+                                <input type="number" step="0.01" th:field="*{impuestoIva}"
+                                    class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all">
+                            </div>
+                        </div>
+
+                        <!-- Sección de Entrega a Domicilio -->
+                        <div class="mt-6 pt-6 border-t border-slate-100">
+                            <div class="flex items-center justify-between">
+                                <label class="inline-flex items-center gap-3 cursor-pointer select-none">
+                                    <input type="checkbox" id="esDomicilio" name="esDomicilio" value="true" onchange="alternarSeccionDomicilio()"
+                                           class="w-4 h-4 text-pharmacore-accent rounded border-slate-300 focus:ring-pharmacore-accent">
+                                    <div>
+                                        <span class="text-xs font-bold text-pharmacore-accent uppercase tracking-wider block">¿Venta con entrega a domicilio?</span>
+                                        <span class="text-[11px] text-slate-500">Marque esta casilla para registrar la orden de entrega sin cambiar de pantalla.</span>
+                                    </div>
+                                </label>
+                                <span id="badgeDomicilio" class="hidden text-[10px] font-semibold px-2.5 py-1 rounded-full bg-teal-50 text-teal-800 border border-teal-200">
+                                    Entrega a domicilio activa
+                                </span>
+                            </div>
+
+                            <div id="seccionDomicilio" class="hidden mt-4 p-5 bg-slate-50 border border-slate-200 rounded-2xl space-y-4">
+                                <div id="bannerClienteDomicilio" class="text-xs p-3 rounded-xl bg-teal-50 text-teal-800 border border-teal-200">
+                                    <span id="textoInfoCliente">Datos del destinatario y entrega a domicilio.</span>
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                    <div class="sm:col-span-2">
+                                        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Dirección de Entrega *</label>
+                                        <input type="text" id="direccionDomicilio" name="direccionDomicilio" placeholder="Ej: Carrera 15 # 45-20 Apto 302"
+                                               class="w-full px-3.5 py-2 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent">
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Teléfono de Contacto *</label>
+                                        <input type="text" id="telefonoDomicilio" name="telefonoDomicilio" placeholder="Ej: 3101234567"
+                                               class="w-full px-3.5 py-2 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent">
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Nombre Destinatario / Cliente</label>
+                                        <input type="text" id="nombreDestinatarioDomicilio" name="nombreDestinatarioDomicilio" placeholder="Nombre completo de quien recibe"
+                                               class="w-full px-3.5 py-2 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent">
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Documento Identidad (Opcional)</label>
+                                        <input type="text" id="documentoClienteDomicilio" name="documentoClienteDomicilio" placeholder="C.C. / Documento"
+                                               class="w-full px-3.5 py-2 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent">
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Domiciliario Asignado (Opcional)</label>
+                                        <input type="text" id="nombreDomiciliario" name="nombreDomiciliario" placeholder="Nombre del domiciliario"
+                                               class="w-full px-3.5 py-2 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent">
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Costo de Domicilio</label>
+                                        <input type="number" step="100" min="0" id="costoDomicilio" name="costoDomicilio" value="0"
+                                               class="w-full px-3.5 py-2 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent">
+                                    </div>
+
+                                    <div class="sm:col-span-2 lg:col-span-4">
+                                        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Instrucciones o Notas de Entrega (Opcional)</label>
+                                        <input type="text" id="observacionesDomicilio" name="observacionesDomicilio" placeholder="Ej: Timbrar en portería o pagar en efectivo"
+                                               class="w-full px-3.5 py-2 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent">
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-6">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Número de Factura</label>
-                            <input type="text" th:field="*{numeroFactura}" placeholder="Autogenerado si se deja vacío" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Descuento</label>
-                            <input type="number" step="0.01" th:field="*{descuento}" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">IVA</label>
-                            <input type="number" step="0.01" th:field="*{impuestoIva}" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all">
-                        </div>
-                    </div>
-                </div>
 
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
-                    <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-xs font-bold text-pharmacore-accent uppercase tracking-wider">Medicamentos Dispensados</h2>
-                        <button type="button" onclick="agregarLinea()" class="bg-pharmacore-accent/10 text-pharmacore-accent px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-pharmacore-accent/20 transition-colors">+ Agregar línea</button>
-                    </div>
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="text-xs font-bold text-pharmacore-accent uppercase tracking-wider">Medicamentos Dispensados</h2>
+                            <button type="button" onclick="agregarLinea()"
+                                class="bg-pharmacore-accent/10 text-pharmacore-accent px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-pharmacore-accent/20 transition-colors">+
+                                Agregar línea</button>
+                        </div>
 
-                    <div id="lineas-venta" class="space-y-3"></div>
+                        <!-- Encabezados de columnas (solo en pantallas sm en adelante) -->
+                        <div
+                            class="hidden sm:grid sm:grid-cols-12 gap-2 px-3 pb-1 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                            <div class="sm:col-span-5">Medicamento / Producto</div>
+                            <div class="sm:col-span-2">Formato</div>
+                            <div class="sm:col-span-2">Cantidad</div>
+                            <div class="sm:col-span-2">Precio unitario</div>
+                            <div class="sm:col-span-1 text-right">Acción</div>
+                        </div>
 
-                    <div class="flex justify-end mt-6 pt-4 border-t border-slate-100">
-                        <div class="text-sm font-bold text-pharmacore-dark">
-                            Subtotal estimado: <span id="subtotal-total">$0</span>
+                        <div id="lineas-venta" class="space-y-3"></div>
+
+                        <div class="flex justify-end mt-6 pt-4 border-t border-slate-100">
+                            <div class="text-sm font-bold text-pharmacore-dark">
+                                Subtotal estimado: <span id="subtotal-total">$0</span>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="flex items-center justify-end gap-3">
-                    <a th:href="@{/view/dispensacion/historial}" class="px-5 py-2.5 rounded-xl text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors">Cancelar</a>
-                    <button type="submit" class="px-5 py-2.5 rounded-xl text-xs font-semibold text-white bg-pharmacore-accent hover:opacity-90 transition-opacity cursor-pointer">Registrar Venta</button>
-                </div>
-            </form>
+                    <div class="flex items-center justify-end gap-3">
+                        <a th:href="@{/view/dispensacion/historial}"
+                            class="px-5 py-2.5 rounded-xl text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors">Cancelar</a>
+                        <button type="submit"
+                            class="px-5 py-2.5 rounded-xl text-xs font-semibold text-white bg-pharmacore-accent hover:opacity-90 transition-opacity cursor-pointer">Registrar
+                            Venta</button>
+                    </div>
+                </form>
 
-        </main>
-        <footer th:replace="~{fragments/layout :: footer}"></footer>
+            </main>
+            <footer th:replace="~{fragments/layout :: footer}"></footer>
+        </div>
     </div>
-</div>
 
-<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+    <th:block th:replace="~{fragments/layout :: scripts}"></th:block>
 
-<script th:inline="javascript">
-    const PRODUCTOS = /*[[${productos}]]*/ [];
-    const LOTES = /*[[${lotes}]]*/ [];
-    const FORMULAS_VIGENTES = /*[[${formulasVigentes}]]*/ [];
-    let contadorLineas = 0;
+    <script th:inline="javascript">
+        const PRODUCTOS = /*[[${productos}]]*/[];
+        const LOTES = /*[[${lotes}]]*/[];
+        const CLIENTES_DATA = /*[[${clientesJs}]]*/{};
+        let contadorLineas = 0;
 
-    function agregarLinea() {
-        const idx = contadorLineas++;
-        const div = document.createElement('div');
-        div.className = 'grid grid-cols-1 sm:grid-cols-12 gap-2 items-end bg-slate-50 border border-slate-200 rounded-xl p-3';
-        div.id = 'linea-' + idx;
+        function agregarLinea(productoPreseleccionadoId) {
+            const idx = contadorLineas++;
+            const div = document.createElement('div');
+            div.className = 'grid grid-cols-1 sm:grid-cols-12 gap-2 items-end bg-slate-50 border border-slate-200 rounded-xl p-3 relative';
+            div.id = 'linea-' + idx;
 
-        let opcionesProductos = '<option value="">Producto</option>';
-        PRODUCTOS.forEach(p => {
-            opcionesProductos += `<option value="${p.idProducto}" data-precio="${p.precioVenta}" data-requiere-formula="${p.requiereFormula}">${p.nombreComercial}${p.requiereFormula ? ' 🩺' : ''}</option>`;
-        });
+            let opcionesProductos = '<option value="">Producto</option>';
+            PRODUCTOS.forEach(p => {
+                opcionesProductos += `<option value="${p.idProducto}" data-precio="${p.precioVenta}" data-requiere-formula="${p.requiereFormula}">${p.nombreComercial}${p.requiereFormula ? ' (Fórmula)' : ''}</option>`;
+            });
 
-        div.innerHTML = `
-            <div class="sm:col-span-4">
-                <select class="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg producto-select" onchange="actualizarLotes(${idx}); actualizarPrecio(${idx}); actualizarFormula(${idx})">${opcionesProductos}</select>
-            </div>
-            <div class="sm:col-span-3">
-                <select class="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg lote-select"><option value="">Lote</option></select>
+            div.innerHTML = `
+            <div class="sm:col-span-5 relative">
+                <label class="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 sm:hidden">Medicamento</label>
+                <div class="relative">
+                    <input type="text"
+                           id="producto-buscar-${idx}"
+                           class="w-full pl-8 pr-7 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-pharmacore-accent focus:ring-1 focus:ring-pharmacore-accent transition-all producto-input"
+                           placeholder="Buscar por nombre, código o descripción..."
+                           autocomplete="off"
+                           onfocus="abrirDropdown(${idx})"
+                           oninput="filtrarProductos(${idx})"
+                           onkeydown="navegarTeclado(event, ${idx})">
+                    <svg class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <button type="button"
+                            id="producto-limpiar-${idx}"
+                            class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 hidden text-sm leading-none p-1 font-bold"
+                            onclick="limpiarProducto(${idx})"
+                            title="Limpiar selección">&times;</button>
+                </div>
+
+                <!-- Dropdown flotante con autocompletado y búsqueda en tiempo real -->
+                <div id="producto-dropdown-${idx}"
+                     class="absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-56 overflow-y-auto z-50 hidden divide-y divide-slate-100">
+                </div>
+
+                <!-- Select oculto para mantener compatibilidad total con el código existente -->
+                <select class="hidden producto-select" onchange="cambiarFormato(${idx}); actualizarFormula(${idx})">${opcionesProductos}</select>
             </div>
             <div class="sm:col-span-2">
-                <input type="number" min="1" value="1" class="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg cantidad-input" onchange="calcularTotales()">
+                <label class="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 sm:hidden">Formato</label>
+                <select id="formato-${idx}" class="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg formato-select font-medium text-slate-700 focus:outline-none focus:border-pharmacore-accent" onchange="cambiarFormato(${idx})">
+                    <option value="CAJA">Caja</option>
+                    <option value="BLISTER">Blíster</option>
+                    <option value="UNIDAD">Unidad</option>
+                </select>
             </div>
             <div class="sm:col-span-2">
-                <input type="number" step="0.01" class="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg precio-input" onchange="calcularTotales()">
+                <label class="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 sm:hidden">Cantidad</label>
+                <input type="number" min="1" value="1" class="w-full px-2 py-2 text-xs bg-white border border-slate-200 rounded-lg cantidad-input text-center" onchange="calcularTotales()" oninput="calcularTotales()">
+            </div>
+            <div class="sm:col-span-2">
+                <label class="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 sm:hidden">Precio Unitario</label>
+                <input type="number" step="0.01" class="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg precio-input" onchange="calcularTotales()" oninput="calcularTotales()">
             </div>
             <div class="sm:col-span-1 text-right">
                 <button type="button" onclick="eliminarLinea(${idx})" class="text-red-500 text-xs font-semibold hover:underline">Quitar</button>
             </div>
-            <div class="sm:col-span-12 formula-container hidden">
-                <label class="block text-[10px] font-semibold text-amber-700 uppercase tracking-wider mb-1">🩺 Requiere fórmula médica vigente del paciente</label>
-                <select class="w-full px-3 py-2 text-xs bg-amber-50 border border-amber-300 rounded-lg formula-select" onchange="calcularTotales()">
-                    <option value="">Seleccione la fórmula que respalda esta venta</option>
-                </select>
+            <div class="sm:col-span-12 formula-container hidden bg-amber-50/90 border border-amber-300 rounded-xl p-3 transition-colors duration-200">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                    <div class="flex items-center gap-2.5">
+                        <span class="w-2.5 h-2.5 rounded-full bg-amber-500 flex-shrink-0 animate-pulse"></span>
+                        <div>
+                            <span class="text-xs font-bold text-amber-950 block sm:inline">Medicamento bajo fórmula médica:</span>
+                            <span class="text-xs text-amber-800">Verifique la receta médica física en mostrador antes de entregar.</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <select class="px-3 py-1.5 text-xs bg-white border border-amber-300 rounded-lg formula-select font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-pharmacore-accent" onchange="verificarFormulaEstado(${idx})">
+                            <option value="VERIFICADA">Receta física verificada en mostrador</option>
+                            <option value="NO_VERIFICADA">Receta física NO verificada</option>
+                        </select>
+                    </div>
+                </div>
             </div>
             <input type="hidden" name="idProductos" class="producto-hidden">
-            <input type="hidden" name="idLotes" class="lote-hidden">
+            <input type="hidden" name="formatos" class="formato-hidden">
             <input type="hidden" name="cantidades" class="cantidad-hidden">
             <input type="hidden" name="preciosUnitarios" class="precio-hidden">
-            <input type="hidden" name="idDetallesFormula" class="formula-hidden">
         `;
-        document.getElementById('lineas-venta').appendChild(div);
-    }
+            document.getElementById('lineas-venta').appendChild(div);
 
-    function actualizarLotes(idx) {
-        const linea = document.getElementById('linea-' + idx);
-        const idProducto = linea.querySelector('.producto-select').value;
-        const loteSelect = linea.querySelector('.lote-select');
-        loteSelect.innerHTML = '<option value="">Lote</option>';
-        LOTES.filter(l => String(l.idProducto) === String(idProducto)).forEach(l => {
-            loteSelect.innerHTML += `<option value="${l.idLote}">${l.numeroLote} (vence: ${l.fechaVencimiento})</option>`;
-        });
-    }
-
-    function actualizarPrecio(idx) {
-        const linea = document.getElementById('linea-' + idx);
-        const select = linea.querySelector('.producto-select');
-        const precio = select.selectedOptions[0] ? select.selectedOptions[0].dataset.precio : '';
-        linea.querySelector('.precio-input').value = precio || '';
-        calcularTotales();
-    }
-
-    // NUEVO (Día 5): si el producto seleccionado requiere fórmula, muestra el selector
-    // de fórmula filtrado por el cliente elegido arriba y por ese producto.
-    function actualizarFormula(idx) {
-        const linea = document.getElementById('linea-' + idx);
-        const select = linea.querySelector('.producto-select');
-        const requiereFormula = select.selectedOptions[0] && select.selectedOptions[0].dataset.requiereFormula === 'true';
-        const contenedor = linea.querySelector('.formula-container');
-        const formulaSelect = linea.querySelector('.formula-select');
-        const idProducto = select.value;
-        const idCliente = document.querySelector('[name="idCliente"]').value;
-
-        if (!requiereFormula) {
-            contenedor.classList.add('hidden');
-            formulaSelect.innerHTML = '<option value=""></option>';
-            calcularTotales();
-            return;
+            if (productoPreseleccionadoId) {
+                seleccionarProducto(idx, productoPreseleccionadoId);
+            }
         }
 
-        contenedor.classList.remove('hidden');
-        const opciones = FORMULAS_VIGENTES.filter(f => String(f.idProducto) === String(idProducto) && String(f.idCliente) === String(idCliente));
-        if (opciones.length === 0) {
-            formulaSelect.innerHTML = '<option value="">⚠ El paciente seleccionado no tiene una fórmula vigente para este medicamento</option>';
-        } else {
-            formulaSelect.innerHTML = '<option value="">Seleccione la fórmula</option>' +
-                opciones.map(f => `<option value="${f.idDetalleFormula}">${f.medico} — ${f.dosis}, ${f.frecuencia}</option>`).join('');
+        // ==========================================
+        // AUTOCOMPLETADO Y BÚSQUEDA RÁPIDA DE PRODUCTOS
+        // ==========================================
+        function abrirDropdown(idx) {
+            cerrarDropdowns(idx);
+            filtrarProductos(idx);
+            const dropdown = document.getElementById('producto-dropdown-' + idx);
+            if (dropdown) dropdown.classList.remove('hidden');
         }
-        calcularTotales();
-    }
 
-    // Si cambia el cliente, se refrescan las fórmulas disponibles de todas las líneas ya agregadas.
-    document.querySelector('[name="idCliente"]').addEventListener('change', function() {
-        document.querySelectorAll('#lineas-venta > div').forEach((linea, i) => {
-            const match = linea.id.match(/linea-(\d+)/);
-            if (match) actualizarFormula(parseInt(match[1]));
-        });
-    });
-
-    function eliminarLinea(idx) {
-        const linea = document.getElementById('linea-' + idx);
-        if (linea) linea.remove();
-        calcularTotales();
-    }
-
-    function calcularTotales() {
-        let total = 0;
-        document.querySelectorAll('#lineas-venta > div').forEach(linea => {
-            const cantidad = parseFloat(linea.querySelector('.cantidad-input').value) || 0;
-            const precio = parseFloat(linea.querySelector('.precio-input').value) || 0;
-            total += cantidad * precio;
-
-            linea.querySelector('.producto-hidden').value = linea.querySelector('.producto-select').value;
-            linea.querySelector('.lote-hidden').value = linea.querySelector('.lote-select').value;
-            linea.querySelector('.cantidad-hidden').value = cantidad;
-            linea.querySelector('.precio-hidden').value = precio;
-            const formulaSelect = linea.querySelector('.formula-select');
-            linea.querySelector('.formula-hidden').value = formulaSelect ? formulaSelect.value : '';
-        });
-        document.getElementById('subtotal-total').innerText = '$' + total.toLocaleString('es-CO');
-    }
-
-    document.getElementById('form-venta').addEventListener('submit', function(e) {
-        calcularTotales();
-        const lineas = document.querySelectorAll('#lineas-venta > div');
-        if (lineas.length === 0) {
-            e.preventDefault();
-            alert('Agregue al menos un medicamento antes de registrar la venta.');
-            return;
+        function cerrarDropdowns(exceptIdx) {
+            document.querySelectorAll('[id^="producto-dropdown-"]').forEach(d => {
+                const match = d.id.match(/producto-dropdown-(\d+)/);
+                if (!match || parseInt(match[1]) !== exceptIdx) {
+                    d.classList.add('hidden');
+                }
+            });
         }
-        let hayLineaCompleta = false;
-        let faltaFormula = false;
-        lineas.forEach(linea => {
-            const producto = linea.querySelector('.producto-select').value;
-            const lote = linea.querySelector('.lote-select').value;
-            const cantidad = linea.querySelector('.cantidad-input').value;
-            const precio = linea.querySelector('.precio-input').value;
-            if (producto && lote && cantidad && precio) hayLineaCompleta = true;
 
-            const requiereFormula = !linea.querySelector('.formula-container').classList.contains('hidden');
-            if (producto && requiereFormula && !linea.querySelector('.formula-select').value) {
-                faltaFormula = true;
+        function normalizar(texto) {
+            return (texto || '')
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .toLowerCase();
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const d = document.createElement('div');
+            d.textContent = text;
+            return d.innerHTML;
+        }
+
+        function filtrarProductos(idx) {
+            const input = document.getElementById('producto-buscar-' + idx);
+            const dropdown = document.getElementById('producto-dropdown-' + idx);
+            const btnLimpiar = document.getElementById('producto-limpiar-' + idx);
+            if (!input || !dropdown) return;
+
+            const rawQuery = input.value.trim();
+            const queryNorm = normalizar(rawQuery);
+            const palabras = queryNorm.split(/\s+/).filter(Boolean);
+
+            if (btnLimpiar) {
+                btnLimpiar.classList.toggle('hidden', rawQuery.length === 0);
+            }
+
+            if (PRODUCTOS.length === 0) {
+                dropdown.innerHTML = '<div class="p-3 text-xs text-slate-400 text-center">No hay productos registrados en el sistema.</div>';
+                dropdown.classList.remove('hidden');
+                return;
+            }
+
+            const filtrados = PRODUCTOS.filter(p => {
+                if (palabras.length === 0) return true;
+                const campoComercial = normalizar(p.nombreComercial);
+                const campoGenerico = normalizar(p.nombreGenerico);
+                const campoDesc = normalizar(p.descripcion);
+                const campoPres = normalizar(p.presentacion);
+                const campoConc = normalizar(p.concentracion);
+                const campoCodigo = normalizar(p.codigoBarras || '');
+                const combinado = `${campoComercial} ${campoGenerico} ${campoDesc} ${campoPres} ${campoConc} ${campoCodigo}`;
+                return palabras.every(palabra => combinado.includes(palabra));
+            });
+
+            if (filtrados.length === 0) {
+                dropdown.innerHTML = `<div class="p-3 text-xs text-slate-400 text-center">Sin resultados para "<b>${escapeHtml(rawQuery)}</b>"</div>`;
+                dropdown.classList.remove('hidden');
+                return;
+            }
+
+            const lista = filtrados.slice(0, 20);
+            let html = '';
+            lista.forEach(p => {
+                const precioFormatted = Number(p.precioVenta || 0).toLocaleString('es-CO');
+                const formulaBadge = p.requiereFormula
+                    ? '<span class="text-[10px] bg-teal-50 text-teal-800 border border-teal-200 font-bold px-1.5 py-0.5 rounded-full whitespace-nowrap ml-1.5">Requiere fórmula</span>'
+                    : '';
+                const genericoYDesc = [
+                    p.nombreGenerico ? `<span class="italic font-medium text-slate-600">${escapeHtml(p.nombreGenerico)}</span>` : '',
+                    p.concentracion ? escapeHtml(p.concentracion) : '',
+                    p.presentacion ? escapeHtml(p.presentacion) : '',
+                    p.descripcion ? escapeHtml(p.descripcion) : ''
+                ].filter(Boolean).join(' • ');
+
+                html += `
+                <div class="dropdown-item px-3 py-2 text-xs hover:bg-slate-50 cursor-pointer flex items-center justify-between transition-colors select-none"
+                     data-id="${p.idProducto}"
+                     onmousedown="seleccionarProducto(${idx}, ${p.idProducto})">
+                    <div class="flex-1 min-w-0 pr-2">
+                        <div class="font-semibold text-slate-800 truncate flex items-center">
+                            <span class="truncate">${escapeHtml(p.nombreComercial)}</span>
+                            ${formulaBadge}
+                        </div>
+                        <div class="text-[11px] text-slate-400 truncate mt-0.5">
+                            ${genericoYDesc || 'Medicamento'}
+                        </div>
+                    </div>
+                    <div class="text-right flex-shrink-0">
+                        <span class="font-bold text-pharmacore-accent text-xs">$${precioFormatted}</span>
+                        ${p.stockTotal !== undefined ? `<div class="text-[10px] text-slate-400">Stock: ${p.stockTotal}</div>` : ''}
+                    </div>
+                </div>
+            `;
+            });
+
+            dropdown.innerHTML = html;
+            dropdown.classList.remove('hidden');
+        }
+
+        function seleccionarProducto(idx, idProducto) {
+            const p = PRODUCTOS.find(prod => String(prod.idProducto) === String(idProducto));
+            if (!p) return;
+
+            const input = document.getElementById('producto-buscar-' + idx);
+            const dropdown = document.getElementById('producto-dropdown-' + idx);
+            const btnLimpiar = document.getElementById('producto-limpiar-' + idx);
+            const linea = document.getElementById('linea-' + idx);
+
+            if (input) {
+                input.value = p.nombreComercial + (p.concentracion ? ' ' + p.concentracion : '');
+            }
+            if (dropdown) dropdown.classList.add('hidden');
+            if (btnLimpiar) btnLimpiar.classList.remove('hidden');
+
+            if (linea) {
+                const select = linea.querySelector('.producto-select');
+                if (select) select.value = String(p.idProducto);
+                const hidden = linea.querySelector('.producto-hidden');
+                if (hidden) hidden.value = String(p.idProducto);
+
+                adaptarOpcionesFormato(idx, p);
+                cambiarFormato(idx);
+                actualizarFormula(idx);
+
+                const cantInput = linea.querySelector('.cantidad-input');
+                if (cantInput) {
+                    setTimeout(() => cantInput.focus(), 60);
+                }
+            }
+        }
+
+        function limpiarProducto(idx) {
+            const input = document.getElementById('producto-buscar-' + idx);
+            const dropdown = document.getElementById('producto-dropdown-' + idx);
+            const btnLimpiar = document.getElementById('producto-limpiar-' + idx);
+            const linea = document.getElementById('linea-' + idx);
+
+            if (input) {
+                input.value = '';
+                input.focus();
+            }
+            if (btnLimpiar) btnLimpiar.classList.add('hidden');
+
+            if (linea) {
+                const select = linea.querySelector('.producto-select');
+                if (select) select.value = '';
+                const hidden = linea.querySelector('.producto-hidden');
+                if (hidden) hidden.value = '';
+                adaptarOpcionesFormato(idx, null);
+                cambiarFormato(idx);
+                actualizarFormula(idx);
+            }
+            filtrarProductos(idx);
+        }
+
+        function navegarTeclado(event, idx) {
+            const dropdown = document.getElementById('producto-dropdown-' + idx);
+            if (!dropdown || dropdown.classList.contains('hidden')) return;
+
+            const items = dropdown.querySelectorAll('.dropdown-item');
+            if (items.length === 0) return;
+
+            let indexActivo = -1;
+            items.forEach((item, i) => {
+                if (item.classList.contains('bg-pharmacore-accent/10')) {
+                    indexActivo = i;
+                }
+            });
+
+            if (event.key === 'ArrowDown') {
+                event.preventDefault();
+                indexActivo = (indexActivo + 1) % items.length;
+                items.forEach((item, i) => {
+                    item.classList.toggle('bg-pharmacore-accent/10', i === indexActivo);
+                });
+                items[indexActivo].scrollIntoView({ block: 'nearest' });
+            } else if (event.key === 'ArrowUp') {
+                event.preventDefault();
+                indexActivo = (indexActivo - 1 + items.length) % items.length;
+                items.forEach((item, i) => {
+                    item.classList.toggle('bg-pharmacore-accent/10', i === indexActivo);
+                });
+                items[indexActivo].scrollIntoView({ block: 'nearest' });
+            } else if (event.key === 'Enter') {
+                event.preventDefault();
+                if (indexActivo >= 0 && items[indexActivo]) {
+                    const id = items[indexActivo].getAttribute('data-id');
+                    seleccionarProducto(idx, id);
+                } else if (items.length > 0) {
+                    const id = items[0].getAttribute('data-id');
+                    seleccionarProducto(idx, id);
+                }
+            } else if (event.key === 'Escape') {
+                dropdown.classList.add('hidden');
+            }
+        }
+
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('.producto-input') && !e.target.closest('[id^="producto-dropdown-"]')) {
+                cerrarDropdowns();
             }
         });
-        if (!hayLineaCompleta) {
-            e.preventDefault();
-            alert('Complete producto, lote, cantidad y precio en al menos un medicamento. Si los selectores de Producto/Lote están vacíos, primero debe registrar medicamentos en /view/medicamentos y lotes en la tabla "lotes".');
-            return;
+
+        // ==========================================
+        // CÁLCULO DE PRECIOS POR FORMATO DE VENTA (CAJA / BLÍSTER / UNIDAD)
+        // ==========================================
+        function calcularPrecioPorFormato(p, formato) {
+            if (!p || !p.precioVenta) return 0;
+            const precioBase = parseFloat(p.precioVenta) || 0;
+            if (formato === 'CAJA') {
+                return precioBase;
+            }
+
+            const texto = ((p.presentacion || '') + ' ' + (p.descripcion || '')).toLowerCase();
+
+            // Si es una presentación líquida o en crema que no se fracciona en pastillas/blísteres
+            const esNoDivisible = /jarabe|suspensi|soluci|gotas|frasco|crema|gel|pomada|ung|spray|aerosol|tubo|shampoo|locion|colirio/.test(texto)
+                && !/tableta|c[aá]psula|comprimido|gragea/.test(texto);
+
+            if (esNoDivisible && (!p.unidadesPorCaja || p.unidadesPorCaja <= 1)) {
+                return precioBase;
+            }
+
+            // Buscar cantidad total de unidades contenidas (usar campo maestro si existe, o regex)
+            let totalUnidades = (p.unidadesPorCaja && p.unidadesPorCaja > 1) ? p.unidadesPorCaja : 1;
+            if (totalUnidades === 1) {
+                const matchCajaX = texto.match(/x\s*(\d+)/i) || texto.match(/(\d+)\s*(tab|cap|comp|sob|grag|amp|unid|pild)/i);
+                if (matchCajaX) {
+                    totalUnidades = parseInt(matchCajaX[1], 10) || 1;
+                }
+            }
+
+            // Determinar blísteres por caja (usar campo maestro si existe, o regex)
+            let blisteresPorCaja = (p.blisteresPorCaja && p.blisteresPorCaja > 1) ? p.blisteresPorCaja : 0;
+            if (blisteresPorCaja === 0) {
+                const matchBlister = texto.match(/(\d+)\s*bl[ií]ster/i);
+                if (matchBlister) {
+                    blisteresPorCaja = parseInt(matchBlister[1], 10);
+                } else if (totalUnidades > 1) {
+                    blisteresPorCaja = Math.max(1, Math.round(totalUnidades / 10));
+                } else {
+                    blisteresPorCaja = 1;
+                }
+            }
+
+            if (formato === 'BLISTER') {
+                if (blisteresPorCaja <= 1 && totalUnidades <= 1) {
+                    return precioBase;
+                }
+                // Precio por blíster con 15% de margen por fraccionamiento, redondeado a múltiplos de 50 COP
+                let precio = (precioBase / blisteresPorCaja) * 1.15;
+                precio = Math.min(precioBase, Math.round(precio / 50) * 50);
+                return Math.max(50, precio);
+            }
+
+            if (formato === 'UNIDAD') {
+                if (totalUnidades <= 1) {
+                    return precioBase;
+                }
+                // Precio por unidad individual con 25% de margen comercial por unidad, redondeado a múltiplos de 50 COP
+                let precio = (precioBase / totalUnidades) * 1.25;
+                precio = Math.min(precioBase, Math.round(precio / 50) * 50);
+                return Math.max(50, precio);
+            }
+
+            return precioBase;
         }
-        if (faltaFormula) {
-            e.preventDefault();
-            alert('Hay un medicamento que requiere fórmula médica y no tiene una fórmula vigente seleccionada.');
+
+        function adaptarOpcionesFormato(idx, p) {
+            const formatoSelect = document.getElementById('formato-' + idx);
+            if (!formatoSelect) return;
+            if (!p) {
+                formatoSelect.innerHTML = `
+                <option value="CAJA">Caja</option>
+                <option value="BLISTER">Blíster</option>
+                <option value="UNIDAD">Unidad</option>
+            `;
+                formatoSelect.value = 'CAJA';
+                return;
+            }
+
+            const texto = ((p.presentacion || '') + ' ' + (p.descripcion || '')).toLowerCase();
+            const esNoDivisible = /jarabe|suspensi|soluci|gotas|frasco|crema|gel|pomada|ung|spray|aerosol|tubo|shampoo|locion|colirio/.test(texto)
+                && !/tableta|c[aá]psula|comprimido|gragea/.test(texto);
+
+            if (esNoDivisible) {
+                formatoSelect.innerHTML = `
+                <option value="UNIDAD">Unidad</option>
+                <option value="CAJA">Caja</option>
+            `;
+                formatoSelect.value = 'UNIDAD';
+            } else {
+                formatoSelect.innerHTML = `
+                <option value="CAJA">Caja</option>
+                <option value="BLISTER">Blíster</option>
+                <option value="UNIDAD">Unidad</option>
+            `;
+                formatoSelect.value = 'CAJA';
+            }
         }
-    });
-    document.addEventListener('DOMContentLoaded', agregarLinea);
-</script>
+
+        function cambiarFormato(idx) {
+            const linea = document.getElementById('linea-' + idx);
+            if (!linea) return;
+            const idProducto = linea.querySelector('.producto-select').value;
+            const p = PRODUCTOS.find(prod => String(prod.idProducto) === String(idProducto));
+            const formatoSelect = document.getElementById('formato-' + idx);
+            const formato = formatoSelect ? formatoSelect.value : 'CAJA';
+
+            if (p) {
+                const precioCalculado = calcularPrecioPorFormato(p, formato);
+                linea.querySelector('.precio-input').value = precioCalculado;
+            } else {
+                linea.querySelector('.precio-input').value = '';
+            }
+            calcularTotales();
+        }
+
+        function actualizarPrecio(idx) {
+            cambiarFormato(idx);
+        }
+
+        // Verificación física de medicamentos bajo fórmula médica en mostrador
+        function actualizarFormula(idx) {
+            const linea = document.getElementById('linea-' + idx);
+            if (!linea) return;
+            const idProducto = linea.querySelector('.producto-select').value;
+            const p = PRODUCTOS.find(prod => String(prod.idProducto) === String(idProducto));
+            const requiereFormula = p ? p.requiereFormula : (linea.querySelector('.producto-select').selectedOptions[0] && linea.querySelector('.producto-select').selectedOptions[0].dataset.requiereFormula === 'true');
+            const contenedor = linea.querySelector('.formula-container');
+            const formulaSelect = linea.querySelector('.formula-select');
+
+            if (!requiereFormula) {
+                contenedor.classList.add('hidden');
+                if (formulaSelect) formulaSelect.value = 'VERIFICADA';
+                return;
+            }
+
+            contenedor.classList.remove('hidden');
+            if (formulaSelect && !formulaSelect.value) {
+                formulaSelect.value = 'VERIFICADA';
+            }
+            verificarFormulaEstado(idx);
+        }
+
+        function verificarFormulaEstado(idx) {
+            const linea = document.getElementById('linea-' + idx);
+            if (!linea) return;
+            const formulaSelect = linea.querySelector('.formula-select');
+            const contenedor = linea.querySelector('.formula-container');
+            if (!formulaSelect || !contenedor) return;
+
+            if (formulaSelect.value === 'NO_VERIFICADA') {
+                contenedor.classList.remove('bg-amber-50/90', 'border-amber-300');
+                contenedor.classList.add('bg-red-50', 'border-red-300');
+            } else {
+                contenedor.classList.remove('bg-red-50', 'border-red-300');
+                contenedor.classList.add('bg-amber-50/90', 'border-amber-300');
+            }
+        }
+
+        // ==========================================
+        // GESTIÓN DE ENTREGA A DOMICILIO Y AUTOCOMPLETADO
+        // ==========================================
+        function alternarSeccionDomicilio() {
+            const chk = document.getElementById('esDomicilio');
+            const seccion = document.getElementById('seccionDomicilio');
+            const badge = document.getElementById('badgeDomicilio');
+            const dirInput = document.getElementById('direccionDomicilio');
+            const telInput = document.getElementById('telefonoDomicilio');
+
+            if (!chk || !seccion) return;
+
+            if (chk.checked) {
+                seccion.classList.remove('hidden');
+                if (badge) badge.classList.remove('hidden');
+                if (dirInput) dirInput.setAttribute('required', 'required');
+                if (telInput) telInput.setAttribute('required', 'required');
+                actualizarDatosClienteParaDomicilio();
+            } else {
+                seccion.classList.add('hidden');
+                if (badge) badge.classList.add('hidden');
+                if (dirInput) {
+                    dirInput.removeAttribute('required');
+                    dirInput.value = '';
+                    delete dirInput.dataset.autocompletado;
+                }
+                if (telInput) {
+                    telInput.removeAttribute('required');
+                    telInput.value = '';
+                    delete telInput.dataset.autocompletado;
+                }
+                const nomInput = document.getElementById('nombreDestinatarioDomicilio');
+                if (nomInput) {
+                    nomInput.value = '';
+                    delete nomInput.dataset.autocompletado;
+                }
+                const docInput = document.getElementById('documentoClienteDomicilio');
+                if (docInput) {
+                    docInput.value = '';
+                    delete docInput.dataset.autocompletado;
+                }
+            }
+        }
+
+        function actualizarDatosClienteParaDomicilio() {
+            const selectCliente = document.querySelector('[name="idCliente"]');
+            if (!selectCliente) return;
+            const idCliente = selectCliente.value;
+            const dirInput = document.getElementById('direccionDomicilio');
+            const telInput = document.getElementById('telefonoDomicilio');
+            const nomInput = document.getElementById('nombreDestinatarioDomicilio');
+            const docInput = document.getElementById('documentoClienteDomicilio');
+            const infoTexto = document.getElementById('textoInfoCliente');
+
+            if (idCliente && CLIENTES_DATA && CLIENTES_DATA[idCliente]) {
+                const c = CLIENTES_DATA[idCliente];
+                if (dirInput && (!dirInput.value || dirInput.dataset.autocompletado === 'true')) {
+                    dirInput.value = c.direccion || '';
+                    dirInput.dataset.autocompletado = 'true';
+                }
+                if (telInput && (!telInput.value || telInput.dataset.autocompletado === 'true')) {
+                    telInput.value = c.telefono || '';
+                    telInput.dataset.autocompletado = 'true';
+                }
+                if (nomInput && (!nomInput.value || nomInput.dataset.autocompletado === 'true')) {
+                    nomInput.value = c.nombre || '';
+                    nomInput.dataset.autocompletado = 'true';
+                }
+                if (docInput && (!docInput.value || docInput.dataset.autocompletado === 'true')) {
+                    docInput.value = c.documento || '';
+                    docInput.dataset.autocompletado = 'true';
+                }
+
+                if (infoTexto) {
+                    infoTexto.innerHTML = `Cliente registrado: <strong>${escapeHtml(c.nombre)}</strong> (Doc: ${escapeHtml(c.documento || 'S/N')}). Dirección y teléfono autocompletados. Puede editarlos si requiere entrega en otra dirección.`;
+                }
+            } else {
+                if (dirInput && dirInput.dataset.autocompletado === 'true') {
+                    dirInput.value = '';
+                    delete dirInput.dataset.autocompletado;
+                }
+                if (telInput && telInput.dataset.autocompletado === 'true') {
+                    telInput.value = '';
+                    delete telInput.dataset.autocompletado;
+                }
+                if (nomInput && nomInput.dataset.autocompletado === 'true') {
+                    nomInput.value = '';
+                    delete nomInput.dataset.autocompletado;
+                }
+                if (docInput && docInput.dataset.autocompletado === 'true') {
+                    docInput.value = '';
+                    delete docInput.dataset.autocompletado;
+                }
+                if (infoTexto) {
+                    infoTexto.innerHTML = 'Cliente no registrado o venta rápida. Diligencie los campos abiertos para registrar el domicilio de forma ágil.';
+                }
+            }
+        }
+
+        ['direccionDomicilio', 'telefonoDomicilio', 'nombreDestinatarioDomicilio', 'documentoClienteDomicilio'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.addEventListener('input', function() {
+                    delete this.dataset.autocompletado;
+                });
+            }
+        });
+
+        // Si cambia el cliente, se actualizan los datos de entrega si la opción de domicilio está activa.
+        document.querySelector('[name="idCliente"]').addEventListener('change', function () {
+            const chk = document.getElementById('esDomicilio');
+            if (chk && chk.checked) {
+                actualizarDatosClienteParaDomicilio();
+            }
+        });
+
+        function eliminarLinea(idx) {
+            const linea = document.getElementById('linea-' + idx);
+            if (linea) linea.remove();
+            calcularTotales();
+        }
+
+        function calcularTotales() {
+            let total = 0;
+            document.querySelectorAll('#lineas-venta > div').forEach(linea => {
+                const cantidad = parseFloat(linea.querySelector('.cantidad-input').value) || 0;
+                const precio = parseFloat(linea.querySelector('.precio-input').value) || 0;
+                total += cantidad * precio;
+
+                linea.querySelector('.producto-hidden').value = linea.querySelector('.producto-select').value;
+                const formatoEl = linea.querySelector('.formato-select');
+                linea.querySelector('.formato-hidden').value = formatoEl ? formatoEl.value : 'CAJA';
+                linea.querySelector('.cantidad-hidden').value = cantidad;
+                linea.querySelector('.precio-hidden').value = precio;
+            });
+            document.getElementById('subtotal-total').innerText = '$' + total.toLocaleString('es-CO');
+        }
+
+        document.getElementById('form-venta').addEventListener('submit', function (e) {
+            calcularTotales();
+            const lineas = document.querySelectorAll('#lineas-venta > div');
+            if (lineas.length === 0) {
+                e.preventDefault();
+                alert('Agregue al menos un medicamento antes de registrar la venta.');
+                return;
+            }
+
+            // Validar bloqueo normativo: ningún producto bajo fórmula médica puede despacharse sin verificación física
+            let hayFormulaSinVerificar = false;
+            let nombreProdSinVerificar = '';
+            lineas.forEach(linea => {
+                const idProducto = linea.querySelector('.producto-select').value;
+                if (!idProducto) return;
+                const p = PRODUCTOS.find(prod => String(prod.idProducto) === String(idProducto));
+                const requiere = p ? p.requiereFormula : (linea.querySelector('.producto-select').selectedOptions[0] && linea.querySelector('.producto-select').selectedOptions[0].dataset.requiereFormula === 'true');
+                if (requiere) {
+                    const formulaSelect = linea.querySelector('.formula-select');
+                    if (formulaSelect && formulaSelect.value === 'NO_VERIFICADA') {
+                        hayFormulaSinVerificar = true;
+                        nombreProdSinVerificar = p ? p.nombreComercial : 'Medicamento bajo fórmula';
+                    }
+                }
+            });
+
+            if (hayFormulaSinVerificar) {
+                e.preventDefault();
+                alert('Venta bloqueada: El medicamento "' + nombreProdSinVerificar + '" requiere prescripción médica y está marcado como "Receta física NO verificada". Por normativa de farmacia debe inspeccionar la receta física antes de despachar.');
+                return;
+            }
+
+            let hayLineaCompleta = false;
+            lineas.forEach(linea => {
+                const producto = linea.querySelector('.producto-select').value;
+                const cantidad = parseFloat(linea.querySelector('.cantidad-input').value) || 0;
+                const precio = parseFloat(linea.querySelector('.precio-input').value) || 0;
+                if (producto && cantidad > 0 && precio > 0) {
+                    hayLineaCompleta = true;
+                    linea.querySelectorAll('input, select').forEach(el => el.disabled = false);
+                } else {
+                    // Deshabilitar inputs de líneas vacías para no enviar datos incompletos al servidor
+                    linea.querySelectorAll('input, select').forEach(el => el.disabled = true);
+                }
+            });
+            if (!hayLineaCompleta) {
+                e.preventDefault();
+                // Si ninguna línea estaba completa, reactivar inputs para que el usuario pueda corregir
+                lineas.forEach(linea => {
+                    linea.querySelectorAll('input, select').forEach(el => el.disabled = false);
+                });
+                alert('Complete producto, cantidad y precio en al menos un medicamento.');
+                return;
+            }
+        });
+        document.addEventListener('DOMContentLoaded', agregarLinea);
+    </script>
 </body>
+
 </html>

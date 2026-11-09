@@ -5,6 +5,7 @@ import com.pharmacore.pharmacore.model.DetallesCompras;
 import com.pharmacore.pharmacore.model.Empleados;
 import com.pharmacore.pharmacore.model.Lotes;
 import com.pharmacore.pharmacore.model.Usuarios;
+import com.pharmacore.pharmacore.model.Productos;
 import com.pharmacore.pharmacore.repository.*;
 import com.pharmacore.pharmacore.service.InventarioService;
 import jakarta.validation.Valid;
@@ -19,10 +20,10 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
 
 @Controller
 public class ComprasView {
@@ -51,6 +52,9 @@ public class ComprasView {
     @Autowired
     private InventarioService inventarioService;
 
+    @Autowired
+    private com.pharmacore.pharmacore.service.FinanzasService finanzasService;
+
     // LISTA
     @GetMapping("/view/ordenes-compra")
     public String lista(Model model) {
@@ -72,7 +76,8 @@ public class ComprasView {
         return "compras/comprasForm";
     }
 
-    // FORMULARIO EDITAR CABECERA (solo datos generales; las líneas se editan aparte)
+    // FORMULARIO EDITAR CABECERA (solo datos generales; las líneas se editan
+    // aparte)
     @GetMapping("/view/ordenes-compra/edit/{id}")
     public String edit(@PathVariable Integer id, Model model) {
         Compras compra = comprasRepository.findById(id).orElse(null);
@@ -80,7 +85,8 @@ public class ComprasView {
             return "redirect:/view/ordenes-compra";
         }
         model.addAttribute("compra", compra);
-        // En edición se muestra el empleado que registró la compra originalmente (no se reasigna)
+        // En edición se muestra el empleado que registró la compra originalmente (no se
+        // reasigna)
         model.addAttribute("nombreEmpleado", empleadosRepository.findById(compra.getIdEmpleado())
                 .map(Empleados::getNombre_completo).orElse("Empleado #" + compra.getIdEmpleado()));
         cargarListasApoyo(model);
@@ -89,14 +95,15 @@ public class ComprasView {
 
     @PostMapping("/view/ordenes-compra/save")
     public String save(@Valid @ModelAttribute("compra") Compras compra, BindingResult result,
-                        Authentication authentication, Model model, RedirectAttributes ra) {
+            Authentication authentication, Model model, RedirectAttributes ra) {
 
         Empleados empleadoActual = empleadoDeLaSesion(authentication);
         if (compra.getIdCompra() == null) {
             compra.setIdEmpleado(empleadoActual.getId_empleado());
         } else {
             Compras original = comprasRepository.findById(compra.getIdCompra()).orElse(null);
-            if (original != null) compra.setIdEmpleado(original.getIdEmpleado());
+            if (original != null)
+                compra.setIdEmpleado(original.getIdEmpleado());
         }
         if (result.hasErrors()) {
             model.addAttribute("error", "Verifica los campos obligatorios.");
@@ -113,7 +120,8 @@ public class ComprasView {
             Compras existente = comprasRepository.findById(compra.getIdCompra()).orElse(null);
             if (existente != null) {
                 compra.setSubtotal(existente.getSubtotal());
-                compra.setTotal(existente.getSubtotal().add(compra.getImpuestos() != null ? compra.getImpuestos() : BigDecimal.ZERO));
+                compra.setTotal(existente.getSubtotal()
+                        .add(compra.getImpuestos() != null ? compra.getImpuestos() : BigDecimal.ZERO));
             }
         }
         Compras guardada = comprasRepository.save(compra);
@@ -129,7 +137,8 @@ public class ComprasView {
         return "redirect:/view/ordenes-compra";
     }
 
-    // DETALLE: cabecera + líneas + formulario para agregar línea + accesos a Recibir/Cancelar
+    // DETALLE: cabecera + líneas + formulario para agregar línea + accesos a
+    // Recibir/Cancelar
     @GetMapping("/view/ordenes-compra/detalle/{id}")
     public String detalle(@PathVariable Integer id, Model model) {
         Compras compra = comprasRepository.findById(id).orElse(null);
@@ -156,10 +165,10 @@ public class ComprasView {
     // AGREGAR LÍNEA (solo tiene sentido mientras la compra sigue PENDIENTE)
     @PostMapping("/view/ordenes-compra/detalle/{id}/agregar-linea")
     public String agregarLinea(@PathVariable Integer id,
-                                @RequestParam Integer idProducto,
-                                @RequestParam Integer cantidad,
-                                @RequestParam BigDecimal precioUnitario,
-                                RedirectAttributes ra) {
+            @RequestParam Integer idProducto,
+            @RequestParam Integer cantidad,
+            @RequestParam BigDecimal precioUnitario,
+            RedirectAttributes ra) {
         Compras compra = comprasRepository.findById(id).orElse(null);
         if (compra == null) {
             return "redirect:/view/ordenes-compra";
@@ -223,15 +232,16 @@ public class ComprasView {
         return "compras/comprasRecibir";
     }
 
-    // CONFIRMAR RECEPCIÓN: crea un lote por línea y registra la entrada en InventarioService
+    // CONFIRMAR RECEPCIÓN: crea un lote por línea y registra la entrada en
+    // InventarioService
     @Transactional
     @PostMapping("/view/ordenes-compra/recibir/{id}/confirmar")
     public String confirmarRecibir(@PathVariable Integer id,
-                                    @RequestParam List<Integer> idDetalle,
-                                    @RequestParam List<String> numeroLote,
-                                    @RequestParam List<String> fechaVencimiento,
-                                    @RequestParam Integer idUsuario,
-                                    RedirectAttributes ra) {
+            @RequestParam List<Integer> idDetalle,
+            @RequestParam List<String> numeroLote,
+            @RequestParam List<String> fechaVencimiento,
+            @RequestParam Integer idUsuario,
+            RedirectAttributes ra) {
         Compras compra = comprasRepository.findById(id).orElse(null);
         if (compra == null) {
             return "redirect:/view/ordenes-compra";
@@ -242,6 +252,7 @@ public class ComprasView {
         }
 
         try {
+            List<com.pharmacore.pharmacore.model.MovimientosInventario> movsCompra = new ArrayList<>();
             for (int i = 0; i < idDetalle.size(); i++) {
                 DetallesCompras linea = detallesComprasRepository.findById(idDetalle.get(i))
                         .orElseThrow(() -> new IllegalStateException("Una de las líneas ya no existe."));
@@ -251,32 +262,50 @@ public class ComprasView {
                     throw new IllegalStateException("Falta número de lote o fecha de vencimiento en alguna línea.");
                 }
 
+                Productos prod = productosRepository.findById(linea.getIdProducto()).orElse(null);
+                int factorCaja = (prod != null && prod.getUnidadesPorCaja() != null && prod.getUnidadesPorCaja() > 0)
+                        ? prod.getUnidadesPorCaja()
+                        : 1;
+                int cantidadUnidadesBase = linea.getCantidad() * factorCaja;
+
                 Lotes lote = Lotes.builder()
                         .idProducto(linea.getIdProducto())
                         .numeroLote(numeroLote.get(i))
                         .fechaFabricacion(LocalDate.now())
                         .fechaVencimiento(LocalDate.parse(fechaVencimiento.get(i)))
-                        .cantidadInicial(linea.getCantidad())
+                        .cantidadInicial(cantidadUnidadesBase)
                         .cantidadActual(0) // arranca en 0: InventarioService lo sube al registrar la entrada
                         .estado("DISPONIBLE")
                         .build();
                 Lotes loteGuardado = lotesRepository.save(lote);
 
-                inventarioService.registrarMovimiento(
+                com.pharmacore.pharmacore.model.MovimientosInventario mov = inventarioService.registrarMovimiento(
                         "ENTRADA_COMPRA",
                         linea.getIdProducto(),
                         loteGuardado.getIdLote(),
-                        linea.getCantidad(),
+                        cantidadUnidadesBase,
                         idUsuario,
                         "Recepción de compra #" + compra.getIdCompra()
-                                + (compra.getNumeroFacturaProveedor() != null ? " (" + compra.getNumeroFacturaProveedor() + ")" : "")
-                );
+                                + (factorCaja > 1
+                                        ? " (" + linea.getCantidad() + " caja(s) = " + cantidadUnidadesBase + " unid.)"
+                                        : "")
+                                + (compra.getNumeroFacturaProveedor() != null
+                                        ? " (" + compra.getNumeroFacturaProveedor() + ")"
+                                        : ""));
+                if (mov != null) {
+                    movsCompra.add(mov);
+                }
             }
 
             compra.setEstado("RECIBIDA");
             comprasRepository.save(compra);
 
-            ra.addFlashAttribute("mensaje", "Compra recibida: se generaron los lotes y se actualizó el inventario.");
+            // Registrar salida de dinero por compras a proveedores y vincular trazabilidad
+            // a movimientos de inventario
+            finanzasService.registrarEgresoCompra(compra, idUsuario, movsCompra);
+
+            ra.addFlashAttribute("mensaje",
+                    "Compra recibida: se generaron los lotes, se actualizó el inventario y se registró el egreso financiero.");
             return "redirect:/view/ordenes-compra/detalle/" + id;
         } catch (Exception e) {
             ra.addFlashAttribute("error", "No se pudo recibir la compra: " + e.getMessage());

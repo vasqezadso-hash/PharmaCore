@@ -71,7 +71,7 @@
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                         </span>
-                        <input type="text" name="q" th:value="${q}" placeholder="Buscar por nombre comercial, genérico o código..." class="w-full pl-9 pr-4 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all">
+                        <input type="text" name="q" th:value="${q}" placeholder="Buscar por nombre comercial, genérico o código de barras..." class="w-full pl-9 pr-4 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all">
                     </form>
                     <div class="text-xs sm:text-sm font-medium text-slate-600">
                         Total registros: <span class="font-bold text-pharmacore-dark" th:text="${#lists.size(productos)}">0</span>
@@ -82,7 +82,7 @@
                     <table class="w-full text-sm text-left">
                         <thead class="bg-pharmacore-dark text-white text-xs uppercase tracking-wider">
                         <tr>
-                            <th class="p-4">Código</th>
+                            <th class="p-4">Cód. Barras</th>
                             <th class="p-4">Medicamento</th>
                             <th class="p-4">Categoría</th>
                             <th class="p-4">Precio Venta</th>
@@ -97,7 +97,7 @@
                             <td colspan="8" class="p-6 text-center text-slate-400 text-xs">No hay medicamentos registrados todavía.</td>
                         </tr>
                         <tr th:each="p : ${productos}" class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-                            <td class="p-4 font-mono text-xs text-slate-600" th:text="${p.codigoInterno}"></td>
+                            <td class="p-4 font-mono text-xs text-slate-600 font-medium" th:text="${p.codigoBarras}"></td>
                             <td class="p-4">
                                 <div class="font-semibold text-pharmacore-dark" th:text="${p.nombreComercial}"></div>
                                 <div class="text-xs text-slate-400" th:text="${p.nombreGenerico}"></div>
@@ -105,12 +105,20 @@
                             <td class="p-4 text-xs text-slate-600" th:text="${p.categoria != null ? p.categoria.nombre : '-'}"></td>
                             <td class="p-4 text-xs font-semibold" th:text="${'$' + #numbers.formatDecimal(p.precioVenta, 0, 'COMMA', 0, 'POINT')}"></td>
                             <td class="p-4 text-xs">
-                                <span th:text="${p.stockTotal}"></span>
-                                <span th:if="${p.stockBajo}" class="ml-1 inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-700">Stock bajo</span>
+                                <div class="font-semibold text-slate-800">
+                                    <span th:text="${p.stockTotal != null ? p.stockTotal : 0}"></span> unid.
+                                    <span th:if="${p.unidadesPorCaja != null and p.unidadesPorCaja > 1}" class="text-[11px] text-slate-500 font-normal block"
+                                          th:text="${'(' + ((p.stockTotal != null ? p.stockTotal : 0) / p.unidadesPorCaja) + ' cajas ' + ((p.stockTotal != null ? p.stockTotal : 0) % p.unidadesPorCaja) + ' u.)'}"></span>
+                                </div>
+                                <div class="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1">
+                                    <span class="inline-block w-1.5 h-1.5 rounded-full bg-pharmacore-accent"></span>
+                                    <span th:text="${(conteoLotes != null && conteoLotes.get(p.idProducto) != null) ? (conteoLotes.get(p.idProducto) + ' lote(s)') : 'Sin lotes'}"></span>
+                                </div>
+                                <span th:if="${p.stockBajo}" class="mt-1 inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-700">Stock bajo</span>
                             </td>
                             <td class="p-4 text-xs">
                                 <span th:if="${p.esControlado}" class="inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-100 text-red-700 mr-1">Controlado</span>
-                                <span th:if="${p.requiereFormula}" class="inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-100 text-indigo-700 mr-1">Requiere fórmula</span>
+                                <span th:if="${p.requiereFormula}" class="inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold bg-teal-50 text-teal-800 border border-teal-200 mr-1">Requiere fórmula</span>
                                 <span th:if="${p.esVentaLibre and !p.esControlado and !p.requiereFormula}" class="inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-700">Venta libre</span>
                             </td>
                             <td class="p-4 text-xs">
@@ -119,9 +127,15 @@
                                       class="inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold"></span>
                             </td>
                             <td class="p-4 text-center whitespace-nowrap">
-                                <a th:href="@{/view/medicamentos/edit/{id}(id=${p.idProducto})}" class="text-pharmacore-accent font-semibold mr-3 hover:underline">Editar</a>
+                                <a th:href="@{/view/medicamentos/detalle/{id}(id=${p.idProducto})}"
+                                   class="text-pharmacore-dark bg-teal-50 hover:bg-teal-100 border border-teal-200 px-2.5 py-1 rounded-lg text-xs font-semibold mr-2 transition-colors inline-flex items-center gap-1.5"
+                                   title="Consultar historial de lotes y existencias de este medicamento maestro">
+                                    <svg class="w-3.5 h-3.5 text-pharmacore-accent" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                                    <span>Ver Lotes</span>
+                                </a>
+                                <a th:href="@{/view/medicamentos/edit/{id}(id=${p.idProducto})}" class="text-pharmacore-accent font-semibold mr-2 hover:underline">Editar</a>
                                 <form th:action="@{/view/medicamentos/delete/{id}(id=${p.idProducto})}" method="post" class="inline">
-                                    <button type="submit" class="text-red-600 font-semibold hover:underline" onclick="return confirm('¿Eliminar este medicamento?');">Eliminar</button>
+                                    <button type="submit" class="text-red-600 font-semibold hover:underline cursor-pointer" onclick="return confirm('¿Eliminar este medicamento?');">Eliminar</button>
                                 </form>
                             </td>
                         </tr>

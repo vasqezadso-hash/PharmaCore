@@ -40,6 +40,10 @@ public class Devoluciones {
     @Column(name = "id_producto", nullable = false)
     private Integer idProducto;
 
+    @Builder.Default
+    @Column(name = "formato", length = 20, nullable = false)
+    private String formato = "UNIDAD";
+
     @NotNull(message = "La cantidad es obligatoria")
     @Min(value = 1, message = "La cantidad debe ser mayor a cero")
     @Column(nullable = false)

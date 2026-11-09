@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Formulario Rol - PharmaCore</title>
+    <title>Formulario Rol y Permisos - PharmaCore</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
@@ -32,10 +32,10 @@
     </script>
 </head>
 
-<body class="bg-pharmacore-bg text-pharmacore-text antialiased min-h-screen flex flex-col text-xs font-sans">
+<body class="bg-pharmacore-bg text-pharmacore-text antialiased min-h-screen flex flex-col text-xs font-sans selection:bg-pharmacore-accent selection:text-white">
 
 <!-- TOPBAR GLOBAL -->
-<header th:replace="fragments/layout :: topbar('Gestión de Roles')"></header>
+<header th:replace="fragments/layout :: topbar('Gestión de Roles y Permisos')"></header>
 
 <!-- CONTENEDOR CENTRAL -->
 <div class="flex flex-1 min-h-screen relative bg-pharmacore-bg">
@@ -47,65 +47,266 @@
 
     <!-- AREA PRINCIPAL CON SCROLL FLUIDO -->
     <div class="flex-1 flex flex-col min-w-0 overflow-y-auto">
-        <main class="flex-1 p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto w-full pb-16">
+        <main class="flex-1 p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto w-full pb-16">
 
             <!-- ENCABEZADO -->
-            <section class="mb-5">
-                <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-                    <div>
-                        <h1 class="text-xl md:text-2xl font-extrabold text-pharmacore-dark uppercase tracking-tight">
-                            Módulo de Roles
-                        </h1>
-                        <p class="text-xs text-slate-500 mt-1">
-                            Formulario para registrar o actualizar un perfil de rol dentro del sistema PharmaCore.
-                        </p>
-                    </div>
+            <section class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h1 class="text-xl md:text-2xl font-extrabold text-pharmacore-dark uppercase tracking-tight"
+                        th:text="${rol.idRol != null} ? 'EDITAR ROL Y PERMISOS' : 'NUEVO ROL Y PERMISOS'">
+                        ROLES Y PERMISOS
+                    </h1>
+                    <p class="text-xs text-slate-500 mt-1">
+                        Defina la identidad del rol y asigne qué módulos puede visualizar y operar dentro de PharmaCore.
+                    </p>
+                </div>
+                <div>
+                    <a th:href="@{/view/roles}"
+                       class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 transition-colors shadow-xs">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                        </svg>
+                        Volver al listado
+                    </a>
                 </div>
             </section>
 
             <form th:action="@{/view/roles/save}"
                   th:object="${rol}"
                   method="post"
+                  id="formRol"
                   novalidate>
 
                 <!-- ID Oculto para identificar si es edición -->
                 <input type="hidden" th:field="*{idRol}" />
 
-                <!-- SECCIÓN DEL FORMULARIO -->
-                <section class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden flex flex-col">
-                    <div class="px-5 py-3.5 border-b border-slate-100 bg-slate-50/50 flex items-center gap-2">
+                <!-- SECCIÓN 1: DATOS GENERALES DEL ROL -->
+                <section class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden mb-6">
+                    <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex items-center gap-2">
                         <svg class="w-4 h-4 text-pharmacore-accent shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
                         </svg>
-                        <h2 class="text-xs font-extrabold text-pharmacore-dark uppercase tracking-wider">
+                        <h2 class="text-xs font-bold text-pharmacore-dark uppercase tracking-wider">
                             Información del Rol
                         </h2>
                     </div>
 
-                    <div class="p-6 grid grid-cols-1 gap-4">
+                    <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
-                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">
+                            <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">
                                 Nombre del Rol <span class="text-rose-500">*</span>
                             </label>
                             <input type="text" th:field="*{nombre}" required
-                                   placeholder="Ej: ADMINISTRADOR, FARMACEUTICO, etc."
-                                   class="w-full rounded-lg border border-slate-200 bg-slate-50/50 px-3.5 py-2 text-xs outline-none focus:border-pharmacore-accent focus:bg-white focus:ring-2 focus:ring-pharmacore-accent/20 transition">
+                                   placeholder="Ej: ADMINISTRADOR, FARMACEUTICO, VENDEDOR"
+                                   class="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-xs outline-none focus:border-pharmacore-accent focus:bg-white focus:ring-1 focus:ring-pharmacore-accent transition">
+                            <p class="text-[10px] text-slate-400 mt-1">Identificador único del rol en el sistema.</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+                                Descripción o Alcance
+                            </label>
+                            <input type="text" th:field="*{descripcion}"
+                                   placeholder="Ej: Personal de mostrador para dispensación y ventas rápidas"
+                                   class="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-xs outline-none focus:border-pharmacore-accent focus:bg-white focus:ring-1 focus:ring-pharmacore-accent transition">
+                            <p class="text-[10px] text-slate-400 mt-1">Breve resumen de las responsabilidades asociadas.</p>
                         </div>
                     </div>
                 </section>
 
+                <!-- SECCIÓN 2: MATRIZ DE PERMISOS POR MÓDULOS -->
+                <section class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden mb-6">
+                    <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div class="flex items-center gap-2">
+                            <svg class="w-4 h-4 text-pharmacore-accent shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                            </svg>
+                            <h2 class="text-xs font-bold text-pharmacore-dark uppercase tracking-wider">
+                                Permisos de Acceso a Módulos Funcionales
+                            </h2>
+                        </div>
+
+                        <!-- Botones de ayuda rápida -->
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="marcarTodos(true)"
+                                    class="px-2.5 py-1 text-[11px] font-semibold text-pharmacore-accent bg-teal-50 hover:bg-teal-100 border border-teal-200 rounded-lg transition cursor-pointer">
+                                Marcar Todos
+                            </button>
+                            <button type="button" onclick="marcarTodos(false)"
+                                    class="px-2.5 py-1 text-[11px] font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition cursor-pointer">
+                                Desmarcar Todos
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="p-6 space-y-6">
+
+                        <!-- CATEGORÍA 1: MOSTRADOR Y VENTAS -->
+                        <div>
+                            <div class="flex items-center gap-2 pb-2 mb-3 border-b border-slate-100">
+                                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider">1. Mostrador y Ventas</h3>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                
+                                <label class="permiso-card flex items-start gap-3 p-3 rounded-xl border border-slate-200 hover:border-pharmacore-accent/40 hover:bg-slate-50 transition cursor-pointer select-none">
+                                    <input type="checkbox" th:field="*{accesoPos}" class="w-4 h-4 mt-0.5 text-pharmacore-accent rounded border-slate-300 focus:ring-pharmacore-accent cursor-pointer">
+                                    <div>
+                                        <span class="block text-xs font-bold text-slate-800">Punto de Venta (POS)</span>
+                                        <span class="block text-[11px] text-slate-400">Dispensación rápida y facturación en mostrador</span>
+                                    </div>
+                                </label>
+
+                                <label class="permiso-card flex items-start gap-3 p-3 rounded-xl border border-slate-200 hover:border-pharmacore-accent/40 hover:bg-slate-50 transition cursor-pointer select-none">
+                                    <input type="checkbox" th:field="*{accesoVentasHistorial}" class="w-4 h-4 mt-0.5 text-pharmacore-accent rounded border-slate-300 focus:ring-pharmacore-accent cursor-pointer">
+                                    <div>
+                                        <span class="block text-xs font-bold text-slate-800">Historial de Ventas</span>
+                                        <span class="block text-[11px] text-slate-400">Consulta de facturas emitidas y reimpresión</span>
+                                    </div>
+                                </label>
+
+                                <label class="permiso-card flex items-start gap-3 p-3 rounded-xl border border-slate-200 hover:border-pharmacore-accent/40 hover:bg-slate-50 transition cursor-pointer select-none">
+                                    <input type="checkbox" th:field="*{accesoClientes}" class="w-4 h-4 mt-0.5 text-pharmacore-accent rounded border-slate-300 focus:ring-pharmacore-accent cursor-pointer">
+                                    <div>
+                                        <span class="block text-xs font-bold text-slate-800">Pacientes y Clientes</span>
+                                        <span class="block text-[11px] text-slate-400">Directorio de pacientes y datos de contacto</span>
+                                    </div>
+                                </label>
+
+                                <label class="permiso-card flex items-start gap-3 p-3 rounded-xl border border-slate-200 hover:border-pharmacore-accent/40 hover:bg-slate-50 transition cursor-pointer select-none">
+                                    <input type="checkbox" th:field="*{accesoDevoluciones}" class="w-4 h-4 mt-0.5 text-pharmacore-accent rounded border-slate-300 focus:ring-pharmacore-accent cursor-pointer">
+                                    <div>
+                                        <span class="block text-xs font-bold text-slate-800">Devoluciones</span>
+                                        <span class="block text-[11px] text-slate-400">Reintegros parciales y devoluciones en mostrador</span>
+                                    </div>
+                                </label>
+
+                                <label class="permiso-card flex items-start gap-3 p-3 rounded-xl border border-slate-200 hover:border-pharmacore-accent/40 hover:bg-slate-50 transition cursor-pointer select-none">
+                                    <input type="checkbox" th:field="*{accesoDomicilios}" class="w-4 h-4 mt-0.5 text-pharmacore-accent rounded border-slate-300 focus:ring-pharmacore-accent cursor-pointer">
+                                    <div>
+                                        <span class="block text-xs font-bold text-slate-800">Entregas a Domicilio</span>
+                                        <span class="block text-[11px] text-slate-400">Despacho y asignación de órdenes de entrega</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- CATEGORÍA 2: CATÁLOGO Y STOCK -->
+                        <div>
+                            <div class="flex items-center gap-2 pb-2 mb-3 border-b border-slate-100">
+                                <span class="w-2 h-2 rounded-full bg-cyan-600"></span>
+                                <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider">2. Catálogo y Stock</h3>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+
+                                <label class="permiso-card flex items-start gap-3 p-3 rounded-xl border border-slate-200 hover:border-pharmacore-accent/40 hover:bg-slate-50 transition cursor-pointer select-none">
+                                    <input type="checkbox" th:field="*{accesoProductos}" class="w-4 h-4 mt-0.5 text-pharmacore-accent rounded border-slate-300 focus:ring-pharmacore-accent cursor-pointer">
+                                    <div>
+                                        <span class="block text-xs font-bold text-slate-800">Catálogo de Medicamentos</span>
+                                        <span class="block text-[11px] text-slate-400">Productos, presentaciones, empaques y precios</span>
+                                    </div>
+                                </label>
+
+                                <label class="permiso-card flex items-start gap-3 p-3 rounded-xl border border-slate-200 hover:border-pharmacore-accent/40 hover:bg-slate-50 transition cursor-pointer select-none">
+                                    <input type="checkbox" th:field="*{accesoCategorias}" class="w-4 h-4 mt-0.5 text-pharmacore-accent rounded border-slate-300 focus:ring-pharmacore-accent cursor-pointer">
+                                    <div>
+                                        <span class="block text-xs font-bold text-slate-800">Categorías de Medicamentos</span>
+                                        <span class="block text-[11px] text-slate-400">Familias terapéuticas y taxonomía</span>
+                                    </div>
+                                </label>
+
+                                <label class="permiso-card flex items-start gap-3 p-3 rounded-xl border border-slate-200 hover:border-pharmacore-accent/40 hover:bg-slate-50 transition cursor-pointer select-none">
+                                    <input type="checkbox" th:field="*{accesoLotes}" class="w-4 h-4 mt-0.5 text-pharmacore-accent rounded border-slate-300 focus:ring-pharmacore-accent cursor-pointer">
+                                    <div>
+                                        <span class="block text-xs font-bold text-slate-800">Lotes y Vencimientos</span>
+                                        <span class="block text-[11px] text-slate-400">Control de remesas, caducidad y alertas PEFO</span>
+                                    </div>
+                                </label>
+
+                                <label class="permiso-card flex items-start gap-3 p-3 rounded-xl border border-slate-200 hover:border-pharmacore-accent/40 hover:bg-slate-50 transition cursor-pointer select-none">
+                                    <input type="checkbox" th:field="*{accesoInventario}" class="w-4 h-4 mt-0.5 text-pharmacore-accent rounded border-slate-300 focus:ring-pharmacore-accent cursor-pointer">
+                                    <div>
+                                        <span class="block text-xs font-bold text-slate-800">Movimientos de Stock (Kardex)</span>
+                                        <span class="block text-[11px] text-slate-400">Historial de entradas, salidas y existencias</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- CATEGORÍA 3: COMPRAS Y PROVEEDORES -->
+                        <div>
+                            <div class="flex items-center gap-2 pb-2 mb-3 border-b border-slate-100">
+                                <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+                                <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider">3. Compras y Proveedores</h3>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+
+                                <label class="permiso-card flex items-start gap-3 p-3 rounded-xl border border-slate-200 hover:border-pharmacore-accent/40 hover:bg-slate-50 transition cursor-pointer select-none">
+                                    <input type="checkbox" th:field="*{accesoCompras}" class="w-4 h-4 mt-0.5 text-pharmacore-accent rounded border-slate-300 focus:ring-pharmacore-accent cursor-pointer">
+                                    <div>
+                                        <span class="block text-xs font-bold text-slate-800">Órdenes de Compra</span>
+                                        <span class="block text-[11px] text-slate-400">Compras a proveedores y recepción de mercancía</span>
+                                    </div>
+                                </label>
+
+                                <label class="permiso-card flex items-start gap-3 p-3 rounded-xl border border-slate-200 hover:border-pharmacore-accent/40 hover:bg-slate-50 transition cursor-pointer select-none">
+                                    <input type="checkbox" th:field="*{accesoProveedores}" class="w-4 h-4 mt-0.5 text-pharmacore-accent rounded border-slate-300 focus:ring-pharmacore-accent cursor-pointer">
+                                    <div>
+                                        <span class="block text-xs font-bold text-slate-800">Directorio de Proveedores</span>
+                                        <span class="block text-[11px] text-slate-400">Gestión de laboratorios y distribuidores mayoristas</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- CATEGORÍA 4: FINANZAS Y ADMINISTRACIÓN -->
+                        <div>
+                            <div class="flex items-center gap-2 pb-2 mb-3 border-b border-slate-100">
+                                <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                                <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider">4. Finanzas y Administración</h3>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+
+                                <label class="permiso-card flex items-start gap-3 p-3 rounded-xl border border-slate-200 hover:border-pharmacore-accent/40 hover:bg-slate-50 transition cursor-pointer select-none">
+                                    <input type="checkbox" th:field="*{accesoFinanzas}" class="w-4 h-4 mt-0.5 text-pharmacore-accent rounded border-slate-300 focus:ring-pharmacore-accent cursor-pointer">
+                                    <div>
+                                        <span class="block text-xs font-bold text-slate-800">Caja e Ingresos / Egresos</span>
+                                        <span class="block text-[11px] text-slate-400">Tesoreria, balance contable y arqueo de caja</span>
+                                    </div>
+                                </label>
+
+                                <label class="permiso-card flex items-start gap-3 p-3 rounded-xl border border-slate-200 hover:border-pharmacore-accent/40 hover:bg-slate-50 transition cursor-pointer select-none">
+                                    <input type="checkbox" th:field="*{accesoReportes}" class="w-4 h-4 mt-0.5 text-pharmacore-accent rounded border-slate-300 focus:ring-pharmacore-accent cursor-pointer">
+                                    <div>
+                                        <span class="block text-xs font-bold text-slate-800">Reportes del Sistema</span>
+                                        <span class="block text-[11px] text-slate-400">Consolidados analíticos y reportes de gestión</span>
+                                    </div>
+                                </label>
+
+                                <label class="permiso-card flex items-start gap-3 p-3 rounded-xl border border-slate-200 hover:border-pharmacore-accent/40 hover:bg-slate-50 transition cursor-pointer select-none bg-amber-50/20">
+                                    <input type="checkbox" th:field="*{accesoUsuarios}" class="w-4 h-4 mt-0.5 text-pharmacore-accent rounded border-slate-300 focus:ring-pharmacore-accent cursor-pointer">
+                                    <div>
+                                        <span class="block text-xs font-bold text-amber-900">Usuarios, Personal y Roles</span>
+                                        <span class="block text-[11px] text-amber-700">Acceso a seguridad y administración de roles</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                    </div>
+                </section>
+
                 <!-- BOTONERA DE ACCIÓN -->
-                <div class="flex items-center justify-end gap-3 mt-5">
+                <div class="flex items-center justify-end gap-3 mt-6">
                     <a th:href="@{/view/roles}"
-                       class="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-5 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-pharmacore-accent transition shadow-xs cursor-pointer">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                        Cancelar / Volver
+                       class="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition shadow-xs cursor-pointer">
+                        Cancelar
                     </a>
 
                     <button type="submit"
-                            class="inline-flex items-center gap-2 rounded-lg bg-pharmacore-accent px-6 py-2 text-xs font-bold text-white shadow-sm hover:opacity-90 transition cursor-pointer">
+                            class="inline-flex items-center gap-2 rounded-xl bg-pharmacore-accent hover:opacity-90 px-6 py-2.5 text-xs font-bold text-white shadow-sm transition cursor-pointer">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
-                        Guardar Rol
+                        Guardar Rol y Permisos
                     </button>
                 </div>
 
@@ -121,6 +322,14 @@
 <!-- Scripts del sidebar -->
 <div th:replace="fragments/layout :: scripts"></div>
 <script th:src="@{/js/script.js}" defer></script>
+
+<script>
+    function marcarTodos(estado) {
+        document.querySelectorAll('#formRol input[type="checkbox"]').forEach(chk => {
+            chk.checked = estado;
+        });
+    }
+</script>
 
 </body>
 </html>

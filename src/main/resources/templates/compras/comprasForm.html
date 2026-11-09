@@ -12,7 +12,22 @@
     <link rel="icon" type="image/png" th:href="@{/img/img.png}">
     <script>
         tailwind.config = {
-            theme: { extend: { colors: { pharmacore: { bg:'#F7FAF9', dark:'#004B4B', darker:'#003939', accent:'#006565', text:'#1E1E1E' } }, fontFamily: { sans: ['Poppins','sans-serif'] } } }
+            theme: {
+                extend: {
+                    colors: {
+                        pharmacore: {
+                            bg: '#F7FAF9',
+                            dark: '#004B4B',
+                            darker: '#003939',
+                            accent: '#006565',
+                            text: '#1E1E1E'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif']
+                    }
+                }
+            }
         }
     </script>
 </head>
@@ -27,17 +42,27 @@
     <div class="flex-1 flex flex-col min-w-0 bg-pharmacore-bg">
         <main class="flex-1 p-4 sm:p-6 lg:p-8 max-w-3xl mx-auto w-full">
 
-            <div class="mb-6 flex items-center justify-between">
+            <div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h1 class="text-xl sm:text-2xl font-bold text-pharmacore-dark uppercase tracking-wide"
                         th:text="${compra.idCompra == null ? 'NUEVA ORDEN DE COMPRA' : 'EDITAR DATOS GENERALES'}"></h1>
                     <p class="text-xs sm:text-sm text-slate-500"
-                       th:text="${compra.idCompra == null ? 'Primero registre los datos generales; los productos se agregan en el siguiente paso.' : 'Los productos y el total se administran desde el detalle de la compra.'}"></p>
+                       th:text="${compra.idCompra == null ? 'Registre los datos de la compra para continuar con los productos.' : 'Actualice los datos generales de la orden de compra.'}"></p>
                 </div>
-                <a th:href="@{/view/ordenes-compra}" class="bg-slate-200 text-slate-700 px-4 py-2 rounded-xl text-xs font-semibold hover:bg-slate-300 transition-colors">← Volver</a>
+                <a th:href="@{/view/ordenes-compra}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 transition-colors shadow-xs self-start sm:self-auto">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Volver a órdenes
+                </a>
             </div>
 
-            <div th:if="${error}" class="bg-red-50 text-red-700 border border-red-200 p-3 mb-4 rounded-xl text-sm" th:text="${error}"></div>
+            <div th:if="${error}" class="bg-red-50 text-red-700 border border-red-200 p-4 mb-6 rounded-2xl text-xs sm:text-sm flex items-center gap-3">
+                <svg class="w-5 h-5 text-red-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+                <span th:text="${error}"></span>
+            </div>
 
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden p-6 sm:p-8">
                 <form th:action="@{/view/ordenes-compra/save}" th:object="${compra}" method="post" class="space-y-6">
@@ -45,47 +70,43 @@
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Proveedor</label>
-                            <select th:field="*{idProveedor}" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all" required>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Proveedor *</label>
+                            <select th:field="*{idProveedor}" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all font-medium text-slate-800" required>
                                 <option value="">Seleccione un proveedor</option>
                                 <option th:each="p : ${proveedores}" th:value="${p.id_proveedor}" th:text="${p.razon_social}"></option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Empleado que registra</label>
-                            <!-- Ya no se elige de una lista: se toma automático de la sesión iniciada
-                                 (ver ComprasView.form/save). Se muestra solo de referencia. -->
                             <input type="text" th:value="${nombreEmpleado}" disabled
-                                   class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-100 border border-slate-200 rounded-xl text-slate-500 cursor-not-allowed">
+                                   class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-100 border border-slate-200 rounded-xl text-slate-500 cursor-not-allowed font-medium">
                             <input type="hidden" th:field="*{idEmpleado}">
                         </div>
-                    </div>
 
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Número Factura Proveedor</label>
-                        <input type="text" th:field="*{numeroFacturaProveedor}" placeholder="Ej: FAC-0001" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all">
-                    </div>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Impuestos</label>
-                            <input type="number" step="0.01" th:field="*{impuestos}" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all">
-                            <p class="text-[10px] text-slate-400 mt-1">El subtotal y el total se calculan solos a partir de los productos que agregues.</p>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Número Factura Proveedor</label>
+                            <input type="text" th:field="*{numeroFacturaProveedor}" placeholder="Ej: FAC-0001" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all font-mono">
                         </div>
+
                         <div>
                             <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Forma de Pago</label>
-                            <select th:field="*{formaPago}" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all">
+                            <select th:field="*{formaPago}" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all font-medium text-slate-800">
                                 <option value="EFECTIVO">Efectivo</option>
                                 <option value="TRANSFERENCIA">Transferencia</option>
                                 <option value="CREDITO_PROVEEDOR">Crédito Proveedor</option>
                             </select>
                         </div>
+
+                        <div class="sm:col-span-2">
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Impuestos (IVA u otros)</label>
+                            <input type="number" step="0.01" min="0" th:field="*{impuestos}" placeholder="0.00" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all font-medium">
+                        </div>
                     </div>
 
                     <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
                         <a th:href="@{/view/ordenes-compra}" class="px-5 py-2.5 rounded-xl text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors">Cancelar</a>
-                        <button type="submit" class="px-5 py-2.5 rounded-xl text-xs font-semibold text-white bg-pharmacore-accent hover:opacity-90 transition-opacity cursor-pointer"
-                                th:text="${compra.idCompra == null ? 'Guardar y agregar productos →' : 'Guardar cambios'}"></button>
+                        <button type="submit" class="px-6 py-2.5 rounded-xl text-xs font-semibold text-white bg-pharmacore-accent hover:opacity-90 transition-opacity cursor-pointer shadow-sm"
+                                th:text="${compra.idCompra == null ? 'Guardar y agregar productos' : 'Guardar cambios'}"></button>
                     </div>
                 </form>
             </div>

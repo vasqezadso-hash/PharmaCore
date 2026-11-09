@@ -25,24 +25,29 @@
     <aside th:replace="~{fragments/layout :: sidebar('ventas')}"></aside>
 
     <div class="flex-1 flex flex-col min-w-0 bg-pharmacore-bg">
-        <main class="flex-1 p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto w-full">
+        <main class="flex-1 p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto w-full">
 
-            <div class="mb-6 flex items-center justify-between">
+            <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h1 class="text-xl sm:text-2xl font-bold text-pharmacore-dark uppercase tracking-wide" th:text="'FACTURA ' + ${venta.numeroFactura}"></h1>
                     <p class="text-xs sm:text-sm text-slate-500" th:text="${#temporals.format(venta.fechaVenta, 'dd/MM/yyyy HH:mm')}"></p>
                 </div>
-                <div class="flex gap-2 ">
+                <div class="flex flex-wrap gap-2">
                     <a th:href="@{/view/ventas/detalle/{id}/factura-pdf(id=${venta.idVenta})}"
                        class="bg-pharmacore-accent text-white px-4 py-2 rounded-xl text-xs font-semibold hover:opacity-90 transition-opacity">
-                        ⬇ Descargar Factura PDF</a>
+                        Descargar Factura PDF</a>
                     <form th:if="${venta.estado == 'PAGADA'}" th:action="@{/view/ventas/anular/{id}(id=${venta.idVenta})}" method="post">
-                        <button type="submit" class="bg-red-100 text-red-700 px-4 py-2 rounded-xl text-xs font-semibold hover:bg-red-200 transition-colors"
-                                onclick="return confirm('¿Anular esta venta? Esto devuelve el stock a los lotes originales.');">
-                            ✕ Anular Venta
+                        <button type="submit" class="bg-red-100 text-red-700 px-4 py-2 rounded-xl text-xs font-semibold hover:bg-red-200 transition-colors cursor-pointer"
+                                onclick="return confirm('¿Anular esta venta? Esto devuelve el stock no retornado a los lotes originales.');">
+                            Anular Venta
                         </button>
                     </form>
-                    <a th:href="@{/view/dispensacion/historial}" class="bg-slate-200 text-slate-700 px-4 py-2 rounded-xl text-xs font-semibold hover:bg-slate-300 transition-colors">← Volver</a>
+                    <a th:href="@{/view/dispensacion/historial}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 transition-colors shadow-xs">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                        </svg>
+                        Volver al historial
+                    </a>
                 </div>
             </div>
 
@@ -55,41 +60,114 @@
                 <div><span class="text-slate-400 block">Método de Pago</span><span class="font-semibold" th:text="${venta.metodoPago}"></span></div>
                 <div>
                     <span class="text-slate-400 block">Estado</span>
-                    <span th:text="${venta.estado}"
-                          th:classappend="${venta.estado == 'PAGADA'} ? 'bg-emerald-100 text-emerald-700' : (${venta.estado == 'ANULADA'} ? 'bg-red-100 text-red-700' : 'bg-slate-200 text-slate-600')"
-                          class="inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold"></span>
+                    <div class="flex flex-wrap gap-1 items-center mt-0.5">
+                        <span th:text="${venta.estado}"
+                              th:classappend="${venta.estado == 'PAGADA'} ? 'bg-emerald-100 text-emerald-700' : (${venta.estado == 'DEVUELTA'} ? 'bg-amber-100 text-amber-800' : (${venta.estado == 'ANULADA'} ? 'bg-red-100 text-red-700' : 'bg-slate-200 text-slate-600'))"
+                              class="inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold"></span>
+                        <span th:if="${venta.estado == 'PAGADA' and totalUnidadesDevueltas > 0 and totalUnidadesDevueltas < totalUnidadesVendidas}"
+                              class="inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-700"
+                              th:text="'Devolución parcial (' + ${totalUnidadesDevueltas} + '/' + ${totalUnidadesVendidas} + ')'"></span>
+                    </div>
                 </div>
             </div>
 
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <table class="w-full text-sm text-left">
-                    <thead class="bg-pharmacore-dark text-white text-xs uppercase tracking-wider">
-                    <tr>
-                        <th class="p-4">Producto</th>
-                        <th class="p-4">Lote</th>
-                        <th class="p-4">Cantidad</th>
-                        <th class="p-4">Precio Unitario</th>
-                        <th class="p-4">Subtotal</th>
-                        <th class="p-4">Fórmula</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:if="${#lists.isEmpty(detalles)}">
-                        <td colspan="6" class="p-6 text-center text-slate-400 text-xs">Esta venta no tiene líneas registradas.</td>
-                    </tr>
-                    <tr th:each="d : ${detalles}" class="border-b border-slate-100">
-                        <td class="p-4 text-xs" th:text="${nombresProductos.get(d.idProducto) ?: ('Producto #' + d.idProducto)}"></td>
-                        <td class="p-4 text-xs" th:text="${nombresLotes.get(d.idLote) ?: ('Lote #' + d.idLote)}"></td>
-                        <td class="p-4 text-xs" th:text="${d.cantidad}"></td>
-                        <td class="p-4 text-xs" th:text="${'$' + #numbers.formatDecimal(d.precioUnitario, 0, 'COMMA', 0, 'POINT')}"></td>
-                        <td class="p-4 text-xs font-semibold" th:text="${'$' + #numbers.formatDecimal(d.subtotal, 0, 'COMMA', 0, 'POINT')}"></td>
-                        <td class="p-4 text-xs">
-                            <span th:if="${d.idDetalleFormula != null}" class="inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold bg-purple-100 text-purple-700" th:text="${'Fórmula #' + d.idDetalleFormula}"></span>
-                            <span th:if="${d.idDetalleFormula == null}" class="text-slate-400">—</span>
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
+            <!-- Información de Entrega a Domicilio -->
+            <div th:if="${domicilio != null}" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
+                <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-pharmacore-accent"></span>
+                        <h2 class="text-xs font-bold text-pharmacore-accent uppercase tracking-wider">Información de Entrega a Domicilio</h2>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold"
+                              th:classappend="${domicilio.estado == 'ENTREGADO'} ? 'bg-emerald-100 text-emerald-700' : (${domicilio.estado == 'CANCELADO'} ? 'bg-red-100 text-red-700' : (${domicilio.estado == 'EN_CAMINO'} ? 'bg-amber-100 text-amber-700' : 'bg-teal-50 text-teal-800 border border-teal-200'))"
+                              th:text="${domicilio.estado}"></span>
+                        <a th:href="@{/view/domicilios}" class="text-xs text-pharmacore-accent font-semibold hover:underline">
+                            Ir a Domicilios
+                        </a>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+                    <div>
+                        <span class="text-slate-400 block">Dirección de Entrega</span>
+                        <span class="font-semibold text-slate-800" th:text="${domicilio.direccionEntrega}"></span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block">Teléfono de Contacto</span>
+                        <span class="font-semibold text-slate-800" th:text="${domicilio.telefonoContacto}"></span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block">Domiciliario</span>
+                        <span class="font-semibold text-slate-800" th:text="${domicilio.nombreDomiciliario != null and !domicilio.nombreDomiciliario.isBlank() ? domicilio.nombreDomiciliario : 'Sin asignar'}"></span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block">Costo de Domicilio</span>
+                        <span class="font-semibold text-pharmacore-dark" th:text="${'$' + #numbers.formatDecimal(domicilio.costoDomicilio != null ? domicilio.costoDomicilio : 0, 0, 'COMMA', 0, 'POINT')}"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabla de Líneas de la Factura -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-6">
+                <div class="p-4 sm:p-6 border-b border-slate-100">
+                    <h2 class="text-xs font-bold text-pharmacore-accent uppercase tracking-wider">Productos Vendidos</h2>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-pharmacore-dark text-white text-xs uppercase tracking-wider">
+                        <tr>
+                            <th class="p-4">Producto</th>
+                            <th class="p-4">Lote</th>
+                            <th class="p-4 text-center">Cant. Vendida</th>
+                            <th class="p-4 text-center">Devueltas</th>
+                            <th class="p-4 text-center">Disponibles</th>
+                            <th class="p-4">Precio Unitario</th>
+                            <th class="p-4">Subtotal</th>
+                            <th class="p-4 text-center">Acción</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:if="${#lists.isEmpty(detalles)}">
+                            <td colspan="8" class="p-6 text-center text-slate-400 text-xs">Esta venta no tiene líneas registradas.</td>
+                        </tr>
+                        <tr th:each="d : ${detalles}" class="border-b border-slate-100">
+                            <td class="p-4 text-xs font-medium text-slate-800" th:text="${nombresProductos.get(d.idProducto) ?: ('Producto #' + d.idProducto)}"></td>
+                            <td class="p-4 text-xs font-mono text-slate-600" th:text="${nombresLotes.get(d.idLote) ?: ('Lote #' + d.idLote)}"></td>
+                            <td class="p-4 text-xs text-center font-semibold">
+                                <span th:text="${d.cantidad}"></span>
+                                <span class="text-[10px] text-slate-500 uppercase font-normal block" th:text="${d.formato ?: 'CAJA'}"></span>
+                            </td>
+                            <td class="p-4 text-xs text-center">
+                                <span th:text="${devueltasPorProducto.get(d.idProducto) ?: 0}"
+                                      th:classappend="${(devueltasPorProducto.get(d.idProducto) ?: 0) > 0} ? 'text-amber-700 font-semibold' : 'text-slate-400'"></span>
+                            </td>
+                            <td class="p-4 text-xs text-center">
+                                <span th:with="disp=${d.cantidad - (devueltasPorProducto.get(d.idProducto) ?: 0)}"
+                                      th:text="${disp}"
+                                      th:classappend="${disp > 0} ? 'text-emerald-700 font-semibold' : 'text-slate-400 font-normal'"></span>
+                            </td>
+                            <td class="p-4 text-xs" th:text="${'$' + #numbers.formatDecimal(d.precioUnitario, 0, 'COMMA', 0, 'POINT')}"></td>
+                            <td class="p-4 text-xs font-semibold" th:text="${'$' + #numbers.formatDecimal(d.subtotal, 0, 'COMMA', 0, 'POINT')}"></td>
+                            <td class="p-4 text-xs text-center" th:with="disp=${d.cantidad - (devueltasPorProducto.get(d.idProducto) ?: 0)}">
+                                <button th:if="${venta.estado == 'PAGADA' and disp > 0}"
+                                        type="button"
+                                        class="px-3 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-lg text-xs font-semibold hover:bg-amber-100 transition-colors cursor-pointer"
+                                        th:data-id-detalle="${d.idDetalleVenta}"
+                                        th:data-producto="${nombresProductos.get(d.idProducto) ?: ('Producto #' + d.idProducto)}"
+                                        th:data-lote="${nombresLotes.get(d.idLote) ?: ('Lote #' + d.idLote)}"
+                                        th:data-disponible="${disp}"
+                                        onclick="abrirModalDesdeBoton(this)">
+                                    Devolver
+                                </button>
+                                <span th:if="${disp <= 0}" class="inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-500">
+                                    Totalmente devuelto
+                                </span>
+                                <span th:if="${venta.estado != 'PAGADA' and disp > 0}" class="text-slate-400">—</span>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
                 <div class="p-6 border-t border-slate-100 flex justify-end">
                     <div class="text-sm space-y-1 text-right">
                         <div>Subtotal: <span class="font-semibold" th:text="${'$' + #numbers.formatDecimal(venta.subtotal, 0, 'COMMA', 0, 'POINT')}"></span></div>
@@ -100,11 +178,156 @@
                 </div>
             </div>
 
+            <!-- Historial de Devoluciones de esta Factura -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="p-4 sm:p-6 border-b border-slate-100 flex items-center justify-between">
+                    <div>
+                        <h2 class="text-xs font-bold text-pharmacore-accent uppercase tracking-wider">Historial de Devoluciones de esta Factura</h2>
+                        <p class="text-xs text-slate-500 mt-0.5">Devoluciones individuales procesadas sobre esta venta.</p>
+                    </div>
+                    <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600"
+                          th:text="${#lists.size(devolucionesVenta)} + ' registro(s)'"></span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-slate-50 text-slate-600 text-xs uppercase tracking-wider border-b border-slate-200">
+                        <tr>
+                            <th class="p-4">Fecha</th>
+                            <th class="p-4">Producto</th>
+                            <th class="p-4 text-center">Cantidad</th>
+                            <th class="p-4">Motivo</th>
+                            <th class="p-4">Disposición</th>
+                            <th class="p-4">Inventario</th>
+                            <th class="p-4">Registrada por</th>
+                            <th class="p-4">Observaciones</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:if="${#lists.isEmpty(devolucionesVenta)}">
+                            <td colspan="8" class="p-6 text-center text-slate-400 text-xs">No se han registrado devoluciones para esta factura.</td>
+                        </tr>
+                        <tr th:each="dev : ${devolucionesVenta}" class="border-b border-slate-100 text-xs hover:bg-slate-50 transition-colors">
+                            <td class="p-4 text-slate-600" th:text="${#temporals.format(dev.fechaDevolucion, 'dd/MM/yyyy HH:mm')}"></td>
+                            <td class="p-4 font-medium text-slate-800" th:text="${nombresProductos.get(dev.idProducto) ?: ('Producto #' + dev.idProducto)}"></td>
+                            <td class="p-4 text-center font-bold text-pharmacore-dark" th:text="${dev.cantidad}"></td>
+                            <td class="p-4 text-slate-600" th:text="${#strings.replace(dev.motivo, '_', ' ')}"></td>
+                            <td class="p-4">
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold"
+                                      th:classappend="${dev.estadoProducto == 'APTO_PARA_REINGRESO'} ? 'bg-emerald-100 text-emerald-700' : (${dev.estadoProducto == 'DESECHADO'} ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700')"
+                                      th:text="${#strings.replace(dev.estadoProducto, '_', ' ')}"></span>
+                            </td>
+                            <td class="p-4">
+                                <span th:if="${dev.estadoProducto == 'APTO_PARA_REINGRESO'}" class="inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                    Reintegrado a lote
+                                </span>
+                                <span th:if="${dev.estadoProducto != 'APTO_PARA_REINGRESO'}" class="inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-500">
+                                    Sin reingreso
+                                </span>
+                            </td>
+                            <td class="p-4 text-slate-600" th:text="${nombresUsuarios.get(dev.idUsuarioRegente) ?: ('Usuario #' + dev.idUsuarioRegente)}"></td>
+                            <td class="p-4 text-slate-500 italic" th:text="${dev.observaciones != null and !dev.observaciones.isBlank() ? dev.observaciones : '—'}"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
         </main>
         <footer th:replace="~{fragments/layout :: footer}"></footer>
     </div>
 </div>
 
+<!-- Modal de Devolución Individual -->
+<div id="modalDevolucion" class="fixed inset-0 z-50 bg-slate-900/60 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 sm:p-8 relative">
+        <div class="mb-4">
+            <h3 class="text-base font-bold text-pharmacore-dark uppercase tracking-wide">Devolver Producto</h3>
+            <p class="text-xs text-slate-500 mt-1">Registre la devolución individual para este producto de la factura.</p>
+        </div>
+
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 mb-4 text-xs space-y-1">
+            <div><span class="text-slate-500">Producto: </span><span id="modalNombreProducto" class="font-semibold text-slate-800"></span></div>
+            <div><span class="text-slate-500">Lote original: </span><span id="modalNombreLote" class="font-mono text-slate-700"></span></div>
+            <div><span class="text-slate-500">Disponible para devolver: </span><span id="modalMaxDisponible" class="font-bold text-pharmacore-accent"></span> unidad(es)</div>
+        </div>
+
+        <form th:action="@{/view/ventas/detalle/{idVenta}/devolver-item(idVenta=${venta.idVenta})}" method="post" class="space-y-4">
+            <input type="hidden" id="modalIdDetalleVenta" name="idDetalleVenta">
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Cantidad a devolver</label>
+                <input type="number" id="modalCantidadADevolver" name="cantidadADevolver" min="1" value="1" required
+                       class="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent">
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Motivo de devolución</label>
+                <select id="modalMotivo" name="motivo" required
+                        class="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent">
+                    <option value="">Seleccione motivo...</option>
+                    <option th:each="m : ${motivosDevolucion}" th:value="${m}" th:text="${#strings.replace(m, '_', ' ')}"></option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Disposición del producto</label>
+                <select id="modalEstadoProducto" name="estadoProducto" required
+                        class="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent">
+                    <option value="">Seleccione disposición...</option>
+                    <option th:each="e : ${estadosProductoDevolucion}" th:value="${e}" th:text="${#strings.replace(e, '_', ' ')}"></option>
+                </select>
+                <p class="text-[11px] text-slate-400 mt-1">Apto para reingreso devolverá las unidades automáticamente al lote en inventario.</p>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Observaciones (opcional)</label>
+                <textarea id="modalObservaciones" name="observaciones" rows="2" placeholder="Detalles de la devolución..."
+                          class="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent"></textarea>
+            </div>
+
+            <div class="flex items-center justify-end gap-2 pt-2">
+                <button type="button" onclick="cerrarModalDevolucion()"
+                        class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer">
+                    Cancelar
+                </button>
+                <button type="submit"
+                        class="px-4 py-2 rounded-xl text-xs font-semibold text-white bg-pharmacore-accent hover:opacity-90 transition-opacity cursor-pointer">
+                    Registrar Devolución
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+
+<script>
+    function abrirModalDesdeBoton(btn) {
+        const idDetalle = btn.getAttribute('data-id-detalle');
+        const producto = btn.getAttribute('data-producto');
+        const lote = btn.getAttribute('data-lote');
+        const disponible = parseInt(btn.getAttribute('data-disponible'), 10) || 1;
+        abrirModalDevolucion(idDetalle, producto, lote, disponible);
+    }
+
+    function abrirModalDevolucion(idDetalleVenta, nombreProducto, nombreLote, maxDisponible) {
+        document.getElementById('modalIdDetalleVenta').value = idDetalleVenta;
+        document.getElementById('modalNombreProducto').textContent = nombreProducto;
+        document.getElementById('modalNombreLote').textContent = nombreLote;
+        const cantInput = document.getElementById('modalCantidadADevolver');
+        cantInput.value = 1;
+        cantInput.max = maxDisponible;
+        document.getElementById('modalMaxDisponible').textContent = maxDisponible;
+        const modal = document.getElementById('modalDevolucion');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+
+    function cerrarModalDevolucion() {
+        const modal = document.getElementById('modalDevolucion');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+</script>
 </body>
 </html>

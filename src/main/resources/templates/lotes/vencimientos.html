@@ -32,7 +32,12 @@
                     <h1 class="text-xl sm:text-2xl font-bold text-pharmacore-dark uppercase tracking-wide">ALERTAS DE VENCIMIENTO</h1>
                     <p class="text-xs sm:text-sm text-slate-500">Lotes vencidos y lotes que vencen en los próximos 30 días.</p>
                 </div>
-                <a th:href="@{/view/lotes}" class="bg-slate-200 text-slate-700 px-4 py-2 rounded-xl text-xs font-semibold hover:bg-slate-300 transition-colors">← Ver todos los lotes</a>
+                <a th:href="@{/view/lotes}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 transition-colors shadow-xs self-start sm:self-auto">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Ver todos los lotes
+                </a>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
@@ -61,10 +66,17 @@
                     </thead>
                     <tbody>
                     <tr th:if="${#lists.isEmpty(vencidos)}">
-                        <td colspan="4" class="p-6 text-center text-slate-400 text-xs">No hay lotes vencidos. 🎉</td>
+                        <td colspan="4" class="p-6 text-center text-slate-400 text-xs">No hay lotes vencidos en este momento.</td>
                     </tr>
                     <tr th:each="l : ${vencidos}" class="border-b border-slate-100">
-                        <td class="p-4 text-xs" th:text="${nombresProductos.get(l.idProducto) ?: ('Producto #' + l.idProducto)}"></td>
+                        <td class="p-4 text-xs">
+                            <a th:href="@{/view/medicamentos/detalle/{id}(id=${l.idProducto})}"
+                               class="font-semibold text-pharmacore-dark hover:text-pharmacore-accent hover:underline flex items-center gap-1.5"
+                               title="Ver Ficha Maestra e Historial de Lotes de este producto">
+                                <span th:text="${nombresProductos.get(l.idProducto) ?: ('Producto #' + l.idProducto)}"></span>
+                                <span class="text-[9px] text-teal-700 bg-teal-50 px-1.5 py-0.5 rounded border border-teal-200">Maestro</span>
+                            </a>
+                        </td>
                         <td class="p-4 text-xs font-semibold" th:text="${l.numeroLote}"></td>
                         <td class="p-4 text-xs text-red-600 font-semibold" th:text="${#temporals.format(l.fechaVencimiento, 'dd/MM/yyyy')}"></td>
                         <td class="p-4 text-xs" th:text="${l.cantidadActual}"></td>
@@ -91,7 +103,14 @@
                         <td colspan="4" class="p-6 text-center text-slate-400 text-xs">No hay lotes próximos a vencer.</td>
                     </tr>
                     <tr th:each="l : ${proximosAVencer}" class="border-b border-slate-100">
-                        <td class="p-4 text-xs" th:text="${nombresProductos.get(l.idProducto) ?: ('Producto #' + l.idProducto)}"></td>
+                        <td class="p-4 text-xs">
+                            <a th:href="@{/view/medicamentos/detalle/{id}(id=${l.idProducto})}"
+                               class="font-semibold text-pharmacore-dark hover:text-pharmacore-accent hover:underline flex items-center gap-1.5"
+                               title="Ver Ficha Maestra e Historial de Lotes de este producto">
+                                <span th:text="${nombresProductos.get(l.idProducto) ?: ('Producto #' + l.idProducto)}"></span>
+                                <span class="text-[9px] text-teal-700 bg-teal-50 px-1.5 py-0.5 rounded border border-teal-200">Maestro</span>
+                            </a>
+                        </td>
                         <td class="p-4 text-xs font-semibold" th:text="${l.numeroLote}"></td>
                         <td class="p-4 text-xs text-amber-700 font-semibold" th:text="${#temporals.format(l.fechaVencimiento, 'dd/MM/yyyy')}"></td>
                         <td class="p-4 text-xs" th:text="${l.cantidadActual}"></td>

@@ -12,7 +12,22 @@
     <link rel="icon" type="image/png" th:href="@{/img/img.png}">
     <script>
         tailwind.config = {
-            theme: { extend: { colors: { pharmacore: { bg:'#F7FAF9', dark:'#004B4B', darker:'#003939', accent:'#006565', text:'#1E1E1E' } }, fontFamily: { sans: ['Poppins','sans-serif'] } } }
+            theme: {
+                extend: {
+                    colors: {
+                        pharmacore: {
+                            bg: '#F7FAF9',
+                            dark: '#004B4B',
+                            darker: '#003939',
+                            accent: '#006565',
+                            text: '#1E1E1E'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif']
+                    }
+                }
+            }
         }
     </script>
 </head>
@@ -27,16 +42,26 @@
     <div class="flex-1 flex flex-col min-w-0 bg-pharmacore-bg">
         <main class="flex-1 p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto w-full">
 
-            <div class="mb-6 flex items-center justify-between">
+            <div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h1 class="text-xl sm:text-2xl font-bold text-pharmacore-dark uppercase tracking-wide"
                         th:text="${proveedor.id_proveedor == null ? 'REGISTRAR NUEVO PROVEEDOR' : 'EDITAR PROVEEDOR'}"></h1>
-                    <p class="text-xs sm:text-sm text-slate-500">Complete los datos requeridos para dar de alta o actualizar un proveedor en el sistema.</p>
+                    <p class="text-xs sm:text-sm text-slate-500">Complete los datos de contacto y comerciales del proveedor o distribuidor.</p>
                 </div>
-                <a th:href="@{/view/proveedores}" class="bg-slate-200 text-slate-700 px-4 py-2 rounded-xl text-xs font-semibold hover:bg-slate-300 transition-colors">← Volver</a>
+                <a th:href="@{/view/proveedores}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 transition-colors shadow-xs self-start sm:self-auto">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Volver a proveedores
+                </a>
             </div>
 
-            <div th:if="${error}" class="bg-red-50 text-red-700 border border-red-200 p-3 mb-4 rounded-xl text-sm" th:text="${error}"></div>
+            <div th:if="${error}" class="bg-red-50 text-red-700 border border-red-200 p-4 mb-6 rounded-2xl text-xs sm:text-sm flex items-center gap-3">
+                <svg class="w-5 h-5 text-red-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+                <span th:text="${error}"></span>
+            </div>
 
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden p-6 sm:p-8">
                 <form th:action="@{/view/proveedores/save}" th:object="${proveedor}" method="post" class="space-y-6">
@@ -44,47 +69,45 @@
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">NIT</label>
-                            <input type="text" th:field="*{nit}" placeholder="Ej: 900123456-1" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all" required>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">NIT / Identificación Fiscal *</label>
+                            <input type="text" th:field="*{nit}" placeholder="Ej: 900123456-1" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all font-mono" required>
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Razón Social</label>
-                            <input type="text" th:field="*{razon_social}" placeholder="Ej: Distribuidora S.A.S." class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all" required>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Razón Social *</label>
+                            <input type="text" th:field="*{razon_social}" placeholder="Ej: Distribuidora Farmacéutica S.A.S." class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all font-medium text-slate-800" required>
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Teléfono</label>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Teléfono *</label>
                             <input type="text" th:field="*{telefono}" placeholder="Ej: 3112233445" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all" required>
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Correo</label>
-                            <input type="email" th:field="*{correo}" placeholder="Ej: contacto@proveedor.com" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all" required>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Correo Electrónico *</label>
+                            <input type="email" th:field="*{correo}" placeholder="contacto@proveedor.com" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all" required>
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Nombre de Contacto</label>
-                            <input type="text" th:field="*{nombre_contacto}" placeholder="Ej: Sandra Gil" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all" required>
+                            <input type="text" th:field="*{nombre_contacto}" placeholder="Ej: Sandra Gil" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all">
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Tipo de Productos</label>
-                            <input type="text" th:field="*{tipo_productos}" placeholder="Ej: Medicamentos Genéricos" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all" required>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Línea o Tipo de Productos</label>
+                            <input type="text" th:field="*{tipo_productos}" placeholder="Ej: Medicamentos Genéricos y Hospitalarios" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all">
                         </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Dirección</label>
-                        <input type="text" th:field="*{direccion}" placeholder="Ej: Cra 5 #10-20" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all" required>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Estado</label>
-                        <select th:field="*{estado}" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all">
-                            <option value="ACTIVO">ACTIVO</option>
-                            <option value="INACTIVO">INACTIVO</option>
-                        </select>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Dirección Principal</label>
+                            <input type="text" th:field="*{direccion}" placeholder="Ej: Cra 5 #10-20" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Estado</label>
+                            <select th:field="*{estado}" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all font-medium text-slate-800">
+                                <option value="ACTIVO">ACTIVO</option>
+                                <option value="INACTIVO">INACTIVO</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
                         <a th:href="@{/view/proveedores}" class="px-5 py-2.5 rounded-xl text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors">Cancelar</a>
-                        <button type="submit" class="px-5 py-2.5 rounded-xl text-xs font-semibold text-white bg-pharmacore-accent hover:opacity-90 transition-opacity cursor-pointer">Guardar Proveedor</button>
+                        <button type="submit" class="px-6 py-2.5 rounded-xl text-xs font-semibold text-white bg-pharmacore-accent hover:opacity-90 transition-opacity cursor-pointer shadow-sm">Guardar Proveedor</button>
                     </div>
                 </form>
             </div>

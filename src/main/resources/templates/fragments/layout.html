@@ -1,22 +1,36 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-<head>
+<head th:fragment="head">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PharmaCore - Pharma System</title>
 
     <th:block th:fragment="styles">
+        <script>
+            (function() {
+                try {
+                    var theme = localStorage.getItem('pharmacore-theme');
+                    if (theme === 'dark' || (!theme && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                        document.documentElement.classList.add('dark');
+                    } else {
+                        document.documentElement.classList.remove('dark');
+                    }
+                } catch (e) {}
+            })();
+        </script>
+
         <script src="https://cdn.tailwindcss.com"></script>
 
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <link rel="icon" type="image/png" th:href="@{/img/img.png}">
+        <link rel="icon" type="image/png" th:href="@{/img/img.png}">
         <link rel="stylesheet" th:href="@{/css/style.css}">
 
         <script>
             tailwind.config = {
+                darkMode: 'class',
                 theme: {
                     extend: {
                         colors: {
@@ -50,7 +64,7 @@
 
 <header th:fragment="topbar(title)" class="app-topbar">
     <div class="app-brand-row">
-        <button type="button" onclick="toggleSidebar()" class="mobile-menu-button" aria-label="Abrir menú">
+        <button type="button" id="sidebar-toggle-btn" onclick="toggleSidebar()" class="sidebar-toggle-button" aria-label="Mostrar u ocultar menú lateral" title="Mostrar u ocultar menú lateral">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
         </button>
         <a th:href="@{/view/home}" class="app-brand" title="Ir al inicio">PHARMACORE</a>
@@ -58,12 +72,27 @@
         <span class="app-tagline">Administración de farmacias ágil, normativa y libre de errores.</span>
     </div>
 
-    <div class="app-topbar-actions">
+    <div class="app-topbar-actions flex items-center gap-1.5 sm:gap-2">
+        <!-- Selector Modo Oscuro / Claro -->
+        <button type="button" id="theme-toggle-btn" onclick="toggleTheme()" 
+                class="flex items-center justify-center w-8 h-8 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-colors focus:outline-none cursor-pointer" 
+                title="Cambiar a Modo Oscuro / Modo Claro" aria-label="Cambiar tema">
+            <!-- Icono Sol (se muestra en modo oscuro) -->
+            <svg id="theme-icon-sun" class="w-4 h-4 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+            <!-- Icono Luna (se muestra en modo claro) -->
+            <svg id="theme-icon-moon" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+            </svg>
+        </button>
+
         <div class="flex items-center gap-2 pl-2 ml-1 border-l border-white/10">
             <span class="text-[11px] text-white/70 hidden sm:inline" sec:authentication="name">usuario</span>
             <form th:action="@{/logout}" method="post" class="inline">
-                <button type="submit" class="text-[11px] text-white/70 hover:text-white transition-colors cursor-pointer" title="Cerrar sesión">
-                    Salir ↦
+                <button type="submit" class="text-[11px] text-white/70 hover:text-white transition-colors cursor-pointer inline-flex items-center gap-1.5" title="Cerrar sesión">
+                    <span>Salir</span>
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
                 </button>
             </form>
         </div>
@@ -76,8 +105,27 @@
 
     <aside th:fragment="sidebar(activeMenu)" id="pharmacore-sidebar"
            class="app-sidebar flex flex-col fixed md:sticky top-0 z-40 transition-transform duration-300 ease-out -translate-x-full md:translate-x-0 flex-shrink-0">
+        <script>
+            try {
+                if (window.innerWidth >= 768 && localStorage.getItem('pharmacore-sidebar-collapsed') === 'true') {
+                    document.getElementById('pharmacore-sidebar').classList.add('is-collapsed');
+                }
+            } catch (e) {}
+        </script>
 
-        <div class="sidebar-section-title">NAVEGACIÓN</div>
+        <div class="sidebar-section-title flex items-center justify-between">
+            <span>NAVEGACIÓN</span>
+            <button type="button" onclick="toggleSidebar()" class="hidden md:flex items-center justify-center w-5 h-5 rounded text-white/50 hover:text-white hover:bg-white/10 transition-colors cursor-pointer" title="Ocultar menú lateral" aria-label="Ocultar menú lateral">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/>
+                </svg>
+            </button>
+            <button type="button" onclick="toggleSidebar()" class="md:hidden flex items-center justify-center w-5 h-5 rounded text-white/50 hover:text-white hover:bg-white/10 transition-colors cursor-pointer" title="Cerrar menú" aria-label="Cerrar menú">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
 
         <!-- LISTA DE MÓDULOS -->
         <nav class="sidebar-nav flex-1 overflow-y-auto">
@@ -94,9 +142,22 @@
                 <span>Inicio</span>
             </a>
 
+            <!-- Nueva Venta -->
+            <a th:href="@{/view/ventas/nueva}"
+               th:if="${permisosModulos != null and permisosModulos['MOD_POS']}"
+               th:classappend="${activeMenu == 'nueva-venta' or activeMenu == 'pos'} ? 'is-active' : ''"
+               class="text-slate-300 hover:bg-white/10 hover:text-white flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-colors duration-200 group cursor-pointer"
+               title="Registrar una nueva venta en mostrador">
+                <div class="w-6 h-6 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors duration-200">
+                    <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/>
+                    </svg>
+                </div>
+                <span>Nueva Venta</span>
+            </a>
+
             <!-- Catálogo y Stock (Desplegable) -->
-            <!-- El Vendedor no lo necesita para su trabajo en el mostrador, así que lo oculto para ese rol -->
-            <div class="space-y-1" sec:authorize="hasAnyRole('ADMINISTRADOR','FARMACEUTICO')">
+            <div class="space-y-1" th:if="${permisosModulos != null and (permisosModulos['MOD_PRODUCTOS'] or permisosModulos['MOD_CATEGORIAS'] or permisosModulos['MOD_LOTES'] or permisosModulos['MOD_INVENTARIO'])}">
                 <button type="button" onclick="toggleSubmenu('submenu-inventario')"
                         class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-colors duration-200 group focus:outline-none cursor-pointer">
                     <div class="flex items-center gap-3">
@@ -113,27 +174,27 @@
                 </button>
 
                 <div id="submenu-inventario" class="submenu-container pl-4 space-y-1 pt-1 border-l border-white/10 ml-5 my-1" style="max-height:0px;overflow:hidden;opacity:0;">
-                    <a th:href="@{/view/medicamentos}"
+                    <a th:href="@{/view/medicamentos}" th:if="${permisosModulos['MOD_PRODUCTOS']}"
                        class="block px-3 py-1.5 rounded-lg text-[11px] text-slate-400 hover:text-white hover:bg-white/10 transition-colors duration-200 cursor-pointer">
                         Productos
                     </a>
-                    <a th:href="@{/view/categorias}"
+                    <a th:href="@{/view/categorias}" th:if="${permisosModulos['MOD_CATEGORIAS']}"
                        class="block px-3 py-1.5 rounded-lg text-[11px] text-slate-400 hover:text-white hover:bg-white/10 transition-colors duration-200 cursor-pointer">
                         Categorías
                     </a>
-                    <a th:href="@{/view/lotes}"
+                    <a th:href="@{/view/lotes}" th:if="${permisosModulos['MOD_LOTES']}"
                        class="block px-3 py-1.5 rounded-lg text-[11px] text-slate-400 hover:text-white hover:bg-white/10 transition-colors duration-200 cursor-pointer">
                         Control de Lotes
                     </a>
-                    <a th:href="@{/view/vencimientos}"
+                    <a th:href="@{/view/vencimientos}" th:if="${permisosModulos['MOD_LOTES']}"
                        class="block px-3 py-1.5 rounded-lg text-[11px] text-slate-400 hover:text-white hover:bg-white/10 transition-colors duration-200 cursor-pointer">
                         Alertas de Vencimiento
                     </a>
-                    <a th:href="@{/view/inventario/movimientos}"
+                    <a th:href="@{/view/inventario/movimientos}" th:if="${permisosModulos['MOD_INVENTARIO']}"
                        class="block px-3 py-1.5 rounded-lg text-[11px] text-slate-400 hover:text-white hover:bg-white/10 transition-colors duration-200 cursor-pointer">
                         Movimientos de Inventario
                     </a>
-                    <a th:href="@{/view/inventario/stock}"
+                    <a th:href="@{/view/inventario/stock}" th:if="${permisosModulos['MOD_INVENTARIO']}"
                        class="block px-3 py-1.5 rounded-lg text-[11px] text-slate-400 hover:text-white hover:bg-white/10 transition-colors duration-200 cursor-pointer">
                         Consulta de Stock
                     </a>
@@ -141,7 +202,7 @@
             </div>
 
             <!-- Dispensación / POS (Desplegable) -->
-            <div class="space-y-1">
+            <div class="space-y-1" th:if="${permisosModulos != null and (permisosModulos['MOD_VENTAS_HISTORIAL'] or permisosModulos['MOD_DEVOLUCIONES'] or permisosModulos['MOD_DOMICILIOS'])}">
                 <button type="button" onclick="toggleSubmenu('submenu-dispensacion')"
                         class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-colors duration-200 group focus:outline-none cursor-pointer">
                     <div class="flex items-center gap-3">
@@ -158,24 +219,15 @@
                 </button>
 
                 <div id="submenu-dispensacion" class="submenu-container pl-4 space-y-1 pt-1 border-l border-white/10 ml-5 my-1" style="max-height:0px;overflow:hidden;opacity:0;">
-                    <a th:href="@{/view/ventas/nueva}"
-                       class="block px-3 py-1.5 rounded-lg text-[11px] text-slate-400 hover:text-white hover:bg-white/10 transition-colors duration-200 cursor-pointer">
-                        Nueva Venta
-                    </a>
-                    <a th:href="@{/view/dispensacion/historial}"
+                    <a th:href="@{/view/dispensacion/historial}" th:if="${permisosModulos['MOD_VENTAS_HISTORIAL']}"
                        class="block px-3 py-1.5 rounded-lg text-[11px] text-slate-400 hover:text-white hover:bg-white/10 transition-colors duration-200 cursor-pointer">
                         Historial de Ventas
                     </a>
-                    <a th:href="@{/view/formulas}"
-                       class="block px-3 py-1.5 rounded-lg text-[11px] text-slate-400 hover:text-white hover:bg-white/10 transition-colors duration-200 cursor-pointer">
-                        Fórmulas Médicas
-                    </a>
-                    <!-- Devoluciones y Domicilios: el Vendedor también los usa (ver nota en SecurityConfig) -->
-                    <a th:href="@{/view/devoluciones}"
+                    <a th:href="@{/view/devoluciones}" th:if="${permisosModulos['MOD_DEVOLUCIONES']}"
                        class="block px-3 py-1.5 rounded-lg text-[11px] text-slate-400 hover:text-white hover:bg-white/10 transition-colors duration-200 cursor-pointer">
                         Devoluciones
                     </a>
-                    <a th:href="@{/view/domicilios}"
+                    <a th:href="@{/view/domicilios}" th:if="${permisosModulos['MOD_DOMICILIOS']}"
                        class="block px-3 py-1.5 rounded-lg text-[11px] text-slate-400 hover:text-white hover:bg-white/10 transition-colors duration-200 cursor-pointer">
                         Domicilios
                     </a>
@@ -183,7 +235,7 @@
             </div>
 
             <!-- Proveedores (Desplegable) -->
-            <div class="space-y-1" sec:authorize="hasAnyRole('ADMINISTRADOR','FARMACEUTICO')">
+            <div class="space-y-1" th:if="${permisosModulos != null and (permisosModulos['MOD_PROVEEDORES'] or permisosModulos['MOD_COMPRAS'])}">
                 <button type="button" onclick="toggleSubmenu('submenu-proveedores')"
                         class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-colors duration-200 group focus:outline-none cursor-pointer">
                     <div class="flex items-center gap-3">
@@ -200,11 +252,11 @@
                 </button>
 
                 <div id="submenu-proveedores" class="submenu-container pl-4 space-y-1 pt-1 border-l border-white/10 ml-5 my-1" style="max-height:0px;overflow:hidden;opacity:0;">
-                    <a th:href="@{/view/proveedores}"
+                    <a th:href="@{/view/proveedores}" th:if="${permisosModulos['MOD_PROVEEDORES']}"
                        class="block px-3 py-1.5 rounded-lg text-[11px] text-slate-400 hover:text-white hover:bg-white/10 transition-colors duration-200 cursor-pointer">
                         Registro de Proveedores
                     </a>
-                    <a th:href="@{/view/ordenes-compra}"
+                    <a th:href="@{/view/ordenes-compra}" th:if="${permisosModulos['MOD_COMPRAS']}"
                        class="block px-3 py-1.5 rounded-lg text-[11px] text-slate-400 hover:text-white hover:bg-white/10 transition-colors duration-200 cursor-pointer">
                         Órdenes de Compra
                     </a>
@@ -213,6 +265,7 @@
 
             <!-- Pacientes -->
             <a th:href="@{/view/clientes}"
+               th:if="${permisosModulos != null and permisosModulos['MOD_CLIENTES']}"
                th:classappend="${activeMenu == 'clientes'} ? 'is-active' : ''"
                class="text-slate-300 hover:bg-white/10 hover:text-white flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-colors duration-200 group cursor-pointer">
                 <div class="w-6 h-6 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors duration-200">
@@ -224,8 +277,7 @@
             </a>
 
             <!-- Usuarios y Personal (Desplegable actualizado con Empleados, Usuarios y Roles) -->
-            <!-- Solo visible para Administrador: coincide con la restricción real en SecurityConfig -->
-            <div class="space-y-1" sec:authorize="hasRole('ADMINISTRADOR')">
+            <div class="space-y-1" th:if="${permisosModulos != null and permisosModulos['MOD_USUARIOS']}">
                 <button type="button" onclick="toggleSubmenu('submenu-empleados')"
                         class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-colors duration-200 group focus:outline-none cursor-pointer">
                     <div class="flex items-center gap-3">
@@ -252,13 +304,28 @@
                     </a>
                     <a th:href="@{/view/roles}"
                        class="block px-3 py-1.5 rounded-lg text-[11px] text-slate-400 hover:text-white hover:bg-white/10 transition-colors duration-200 cursor-pointer">
-                        Roles
+                        Roles y Permisos
                     </a>
                 </div>
             </div>
 
+            <!-- Ingresos y Egresos -->
+            <a th:href="@{/view/finanzas}"
+               th:if="${permisosModulos != null and permisosModulos['MOD_FINANZAS']}"
+               th:classappend="${activeMenu == 'finanzas'} ? 'is-active' : ''"
+               class="text-slate-300 hover:bg-white/10 hover:text-white flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-colors duration-200 group cursor-pointer"
+               title="Gestion de ingresos, egresos y flujo de caja">
+                <div class="w-6 h-6 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors duration-200">
+                    <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <span>Ingresos y Egresos</span>
+            </a>
+
             <!-- Reportes -->
-            <a th:href="@{/view/reportes}" sec:authorize="hasAnyRole('ADMINISTRADOR','FARMACEUTICO')"
+            <a th:href="@{/view/reportes}"
+               th:if="${permisosModulos != null and permisosModulos['MOD_REPORTES']}"
                th:classappend="${activeMenu == 'reportes'} ? 'is-active' : ''"
                class="text-slate-300 hover:bg-white/10 hover:text-white flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-colors duration-200 group cursor-pointer">
                 <div class="w-6 h-6 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors duration-200">
@@ -313,20 +380,60 @@
             const overlay = document.getElementById('overlay');
             if (!sidebar) return;
 
-            const isOpen = sidebar.dataset.open === 'true';
+            const isMobile = window.innerWidth < 768;
 
-            if (isOpen) {
-                sidebar.classList.add('-translate-x-full');
-                sidebar.dataset.open = 'false';
-                if (overlay) overlay.classList.add('hidden');
-                document.body.classList.remove('overflow-hidden');
+            if (isMobile) {
+                const isOpen = sidebar.dataset.open === 'true';
+                if (isOpen) {
+                    sidebar.classList.add('-translate-x-full');
+                    sidebar.dataset.open = 'false';
+                    if (overlay) overlay.classList.add('hidden');
+                    document.body.classList.remove('overflow-hidden');
+                } else {
+                    sidebar.classList.remove('-translate-x-full');
+                    sidebar.dataset.open = 'true';
+                    if (overlay) overlay.classList.remove('hidden');
+                    document.body.classList.add('overflow-hidden');
+                }
             } else {
-                sidebar.classList.remove('-translate-x-full');
-                sidebar.dataset.open = 'true';
-                if (overlay) overlay.classList.remove('hidden');
-                document.body.classList.add('overflow-hidden');
+                // Modo escritorio: alternar colapso / visibilidad
+                const isCollapsed = sidebar.classList.toggle('is-collapsed');
+                try {
+                    localStorage.setItem('pharmacore-sidebar-collapsed', isCollapsed ? 'true' : 'false');
+                } catch (e) {}
             }
         };
+
+        function restaurarPreferenciaSidebar() {
+            const sidebar = document.getElementById('pharmacore-sidebar');
+            if (!sidebar) return;
+            if (window.innerWidth >= 768) {
+                try {
+                    const guardado = localStorage.getItem('pharmacore-sidebar-collapsed');
+                    if (guardado === 'true') {
+                        sidebar.classList.add('is-collapsed');
+                    } else if (guardado === 'false') {
+                        sidebar.classList.remove('is-collapsed');
+                    }
+                } catch (e) {}
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', restaurarPreferenciaSidebar);
+        } else {
+            restaurarPreferenciaSidebar();
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && (e.key === 'b' || e.key === 'B')) {
+                const tag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
+                if (tag !== 'input' && tag !== 'textarea' && tag !== 'select') {
+                    e.preventDefault();
+                    window.toggleSidebar();
+                }
+            }
+        });
 
         window.toggleSubmenu = function(id) {
             const submenu = document.getElementById(id);
@@ -397,6 +504,38 @@
                 }
             });
         });
+
+        /* ===================== CONTROL MODO OSCURO ===================== */
+        window.toggleTheme = function() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            try {
+                localStorage.setItem('pharmacore-theme', isDark ? 'dark' : 'light');
+            } catch (e) {}
+            actualizarIconoTema(isDark);
+        };
+
+        window.actualizarIconoTema = function(isDark) {
+            if (typeof isDark === 'undefined') {
+                isDark = document.documentElement.classList.contains('dark');
+            }
+            const sun = document.getElementById('theme-icon-sun');
+            const moon = document.getElementById('theme-icon-moon');
+            if (sun && moon) {
+                if (isDark) {
+                    sun.classList.remove('hidden');
+                    moon.classList.add('hidden');
+                } else {
+                    sun.classList.add('hidden');
+                    moon.classList.remove('hidden');
+                }
+            }
+        };
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() { window.actualizarIconoTema(); });
+        } else {
+            window.actualizarIconoTema();
+        }
     </script>
 </th:block>
 

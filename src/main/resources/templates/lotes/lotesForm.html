@@ -12,7 +12,22 @@
     <link rel="icon" type="image/png" th:href="@{/img/img.png}">
     <script>
         tailwind.config = {
-            theme: { extend: { colors: { pharmacore: { bg:'#F7FAF9', dark:'#004B4B', darker:'#003939', accent:'#006565', text:'#1E1E1E' } }, fontFamily: { sans: ['Poppins','sans-serif'] } } }
+            theme: {
+                extend: {
+                    colors: {
+                        pharmacore: {
+                            bg: '#F7FAF9',
+                            dark: '#004B4B',
+                            darker: '#003939',
+                            accent: '#006565',
+                            text: '#1E1E1E'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif']
+                    }
+                }
+            }
         }
     </script>
 </head>
@@ -27,64 +42,76 @@
     <div class="flex-1 flex flex-col min-w-0 bg-pharmacore-bg">
         <main class="flex-1 p-4 sm:p-6 lg:p-8 max-w-3xl mx-auto w-full">
 
-            <div class="mb-6 flex items-center justify-between">
+            <div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h1 class="text-xl sm:text-2xl font-bold text-pharmacore-dark uppercase tracking-wide"
                         th:text="${lote.idLote == null ? 'NUEVO LOTE' : 'EDITAR LOTE'}"></h1>
-                    <p class="text-xs sm:text-sm text-slate-500">Registre el número de lote, fechas y cantidades de un producto.</p>
+                    <p class="text-xs sm:text-sm text-slate-500">Registre los datos de lote, fechas de vencimiento y existencias de un medicamento.</p>
                 </div>
-                <a th:href="@{/view/lotes}" class="bg-slate-200 text-slate-700 px-4 py-2 rounded-xl text-xs font-semibold hover:bg-slate-300 transition-colors">← Volver</a>
+                <a th:href="${origen == 'detalle' and lote.idProducto != null ? ('/view/medicamentos/detalle/' + lote.idProducto) : '/view/lotes'}"
+                   class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 transition-colors shadow-xs self-start sm:self-auto">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Volver
+                </a>
             </div>
 
-            <div th:if="${error}" class="bg-red-50 text-red-700 border border-red-200 p-3 mb-4 rounded-xl text-sm" th:text="${error}"></div>
+            <div th:if="${error}" class="bg-red-50 text-red-700 border border-red-200 p-4 mb-6 rounded-2xl text-xs sm:text-sm flex items-center gap-3">
+                <svg class="w-5 h-5 text-red-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+                <span th:text="${error}"></span>
+            </div>
 
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden p-6 sm:p-8">
                 <form th:action="@{/view/lotes/save}" th:object="${lote}" method="post" class="space-y-6">
                     <input type="hidden" th:field="*{idLote}"/>
+                    <input type="hidden" name="origen" th:value="${origen}"/>
 
                     <div>
-                        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Producto</label>
-                        <select th:field="*{idProducto}" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all" required>
-                            <option value="">Seleccione un producto</option>
-                            <option th:each="p : ${productos}" th:value="${p.idProducto}" th:text="${p.nombreComercial}"></option>
+                        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Medicamento / Producto *</label>
+                        <select th:field="*{idProducto}" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all font-medium text-slate-800" required>
+                            <option value="">Seleccione el medicamento...</option>
+                            <option th:each="p : ${productos}" th:value="${p.idProducto}" th:text="${p.nombreComercial + (p.concentracion != null ? ' (' + p.concentracion + ')' : '') + ' • Cód: ' + p.codigoBarras}"></option>
                         </select>
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Número de Lote</label>
-                            <input type="text" th:field="*{numeroLote}" placeholder="Ej: L-ACE-2026-01" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all" required>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Número de Lote *</label>
+                            <input type="text" th:field="*{numeroLote}" placeholder="Ej: L-ACE-2026-01" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all font-mono font-medium" required>
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Estado Manual</label>
-                            <select th:field="*{estado}" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all">
-                                <option value="DISPONIBLE">Disponible (automático por fecha)</option>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Estado del Lote</label>
+                            <select th:field="*{estado}" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all font-medium text-slate-800">
+                                <option value="DISPONIBLE">Disponible</option>
                                 <option value="RETIRADO">Retirado</option>
                                 <option value="DEVUELTO">Devuelto</option>
                             </select>
-                            <p class="text-[10px] text-slate-400 mt-1">Vencido / Próximo a vencer se calculan solos según la fecha de vencimiento.</p>
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Fecha de Fabricación</label>
                             <input type="date" th:field="*{fechaFabricacion}" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all">
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Fecha de Vencimiento</label>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Fecha de Vencimiento *</label>
                             <input type="date" th:field="*{fechaVencimiento}" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all" required>
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Cantidad Inicial</label>
-                            <input type="number" min="0" th:field="*{cantidadInicial}" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all" required>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Cantidad Inicial *</label>
+                            <input type="number" min="0" th:field="*{cantidadInicial}" placeholder="0" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all font-bold text-slate-800" required>
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Cantidad Actual</label>
-                            <input type="number" min="0" th:field="*{cantidadActual}" placeholder="Si se deja vacío, igual a la cantidad inicial" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all">
+                            <input type="number" min="0" th:field="*{cantidadActual}" placeholder="Igual a la inicial si es nuevo" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all font-bold text-slate-800">
                         </div>
                     </div>
 
                     <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
-                        <a th:href="@{/view/lotes}" class="px-5 py-2.5 rounded-xl text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors">Cancelar</a>
-                        <button type="submit" class="px-5 py-2.5 rounded-xl text-xs font-semibold text-white bg-pharmacore-accent hover:opacity-90 transition-opacity cursor-pointer">Guardar Lote</button>
+                        <a th:href="${origen == 'detalle' and lote.idProducto != null ? ('/view/medicamentos/detalle/' + lote.idProducto) : '/view/lotes'}"
+                           class="px-5 py-2.5 rounded-xl text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors">Cancelar</a>
+                        <button type="submit" class="px-6 py-2.5 rounded-xl text-xs font-semibold text-white bg-pharmacore-accent hover:opacity-90 transition-opacity cursor-pointer shadow-sm">Guardar Lote</button>
                     </div>
                 </form>
             </div>

@@ -37,22 +37,35 @@
                         <span class="text-xs text-slate-500" th:text="${(nombresProveedores.get(compra.idProveedor) ?: ('Proveedor #' + compra.idProveedor)) + ' — ' + (nombresEmpleados.get(compra.idEmpleado) ?: ('Empleado #' + compra.idEmpleado))}"></span>
                     </div>
                 </div>
-                <a th:href="@{/view/ordenes-compra}" class="bg-slate-200 text-slate-700 px-4 py-2 rounded-xl text-xs font-semibold hover:bg-slate-300 transition-colors">← Volver</a>
+                <a th:href="@{/view/ordenes-compra}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 transition-colors shadow-xs self-start sm:self-auto">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Volver a órdenes
+                </a>
             </div>
 
-            <div th:if="${mensaje}" class="bg-emerald-50 text-emerald-700 border border-emerald-200 p-3 mb-4 rounded-xl text-sm" th:text="${mensaje}"></div>
-            <div th:if="${error}" class="bg-red-50 text-red-700 border border-red-200 p-3 mb-4 rounded-xl text-sm" th:text="${error}"></div>
+            <div th:if="${mensaje}" class="bg-emerald-50 text-emerald-700 border border-emerald-200 p-4 mb-6 rounded-2xl text-xs sm:text-sm flex items-center gap-3">
+                <svg class="w-5 h-5 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                <span th:text="${mensaje}"></span>
+            </div>
+            <div th:if="${error}" class="bg-red-50 text-red-700 border border-red-200 p-4 mb-6 rounded-2xl text-xs sm:text-sm flex items-center gap-3">
+                <svg class="w-5 h-5 text-red-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                <span th:text="${error}"></span>
+            </div>
 
             <div th:if="${compra.estado == 'PENDIENTE'}" class="flex gap-3 mb-6">
-                <a th:href="@{/view/ordenes-compra/recibir/{id}(id=${compra.idCompra})}" class="bg-pharmacore-accent text-white px-4 py-2 rounded-xl text-xs font-semibold hover:opacity-90 transition-opacity">
-                    ✓ Recibir Compra (genera lotes y suma inventario)
+                <a th:href="@{/view/ordenes-compra/recibir/{id}(id=${compra.idCompra})}" class="bg-pharmacore-accent text-white px-4 py-2.5 rounded-xl text-xs font-semibold hover:opacity-90 transition-opacity inline-flex items-center gap-2 shadow-sm">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                    <span>Recibir Compra</span>
                 </a>
                 <form th:action="@{/view/ordenes-compra/cancelar/{id}(id=${compra.idCompra})}" method="post">
-                    <button type="submit" class="bg-red-100 text-red-700 px-4 py-2 rounded-xl text-xs font-semibold hover:bg-red-200 transition-colors" onclick="return confirm('¿Cancelar esta orden de compra?');">Cancelar Orden</button>
+                    <button type="submit" class="bg-red-50 border border-red-200 text-red-700 px-4 py-2.5 rounded-xl text-xs font-semibold hover:bg-red-100 transition-colors" onclick="return confirm('¿Cancelar esta orden de compra?');">Cancelar Orden</button>
                 </form>
             </div>
-            <div th:if="${compra.estado == 'RECIBIDA'}" class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-6 text-xs text-emerald-700">
-                Esta compra ya fue recibida: los lotes se generaron y el inventario ya quedó actualizado. No se pueden modificar las líneas.
+            <div th:if="${compra.estado == 'RECIBIDA'}" class="bg-teal-50 border border-teal-200 rounded-2xl p-4 mb-6 text-xs text-teal-800 flex items-center gap-2">
+                <svg class="w-4 h-4 text-teal-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                <span>Esta compra ya fue recibida. Las líneas no pueden ser modificadas.</span>
             </div>
 
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-6">
@@ -92,23 +105,29 @@
                 </div>
             </div>
 
-            <div th:if="${compra.estado == 'PENDIENTE'}" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                <h2 class="text-xs font-bold text-pharmacore-accent uppercase tracking-wider mb-4">Agregar Producto</h2>
+            <div th:if="${compra.estado == 'PENDIENTE'}" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-7">
+                <div class="flex items-center gap-2 mb-4">
+                    <span class="w-2.5 h-2.5 rounded-full bg-pharmacore-accent"></span>
+                    <h2 class="text-xs font-bold text-pharmacore-accent uppercase tracking-wider">Agregar Producto a la Compra</h2>
+                </div>
                 <form th:action="@{/view/ordenes-compra/detalle/{id}/agregar-linea(id=${compra.idCompra})}" method="post" class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
                     <div class="sm:col-span-5">
-                        <select name="idProducto" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg" required>
-                            <option value="">Producto</option>
+                        <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Producto</label>
+                        <select name="idProducto" class="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all font-medium text-slate-800" required>
+                            <option value="">Seleccione producto...</option>
                             <option th:each="p : ${productos}" th:value="${p.idProducto}" th:text="${p.nombreComercial}" th:attr="data-precio=${p.precioCompra}"></option>
                         </select>
                     </div>
                     <div class="sm:col-span-2">
-                        <input type="number" name="cantidad" min="1" placeholder="Cantidad" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg" required>
+                        <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Cantidad</label>
+                        <input type="number" name="cantidad" min="1" placeholder="Ej: 10" class="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all font-bold text-slate-800 text-center" required>
                     </div>
                     <div class="sm:col-span-3">
-                        <input type="number" step="0.01" name="precioUnitario" placeholder="Precio unitario" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg" required>
+                        <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Precio Unitario</label>
+                        <input type="number" step="0.01" name="precioUnitario" placeholder="0.00" class="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all font-medium" required>
                     </div>
                     <div class="sm:col-span-2">
-                        <button type="submit" class="w-full px-3 py-2 rounded-lg text-xs font-semibold text-white bg-pharmacore-accent hover:opacity-90 transition-opacity cursor-pointer">+ Agregar</button>
+                        <button type="submit" class="w-full px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-pharmacore-accent hover:opacity-90 transition-opacity cursor-pointer shadow-sm">+ Agregar</button>
                     </div>
                 </form>
             </div>

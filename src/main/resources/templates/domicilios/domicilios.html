@@ -70,7 +70,7 @@
                                       th:classappend="${
                                         d.estado == 'ENTREGADO' ? 'bg-emerald-50 text-emerald-700' :
                                         (d.estado == 'CANCELADO' ? 'bg-red-50 text-red-700' :
-                                        (d.estado == 'EN_CAMINO' ? 'bg-blue-50 text-blue-700' :
+                                        (d.estado == 'EN_CAMINO' ? 'bg-teal-50 text-teal-800 border border-teal-200' :
                                         (d.estado == 'EN_PREPARACION' ? 'bg-amber-50 text-amber-700' : 'bg-slate-100 text-slate-600')))
                                       }"
                                       th:text="${#strings.replace(d.estado, '_', ' ')}"></span>

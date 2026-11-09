@@ -45,8 +45,11 @@ public class GlobalWebExceptionHandler {
         return "redirect:" + destinoSeguro(request);
     }
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(GlobalWebExceptionHandler.class);
+
     @ExceptionHandler(Exception.class)
     public String manejarErrorGenerico(Exception ex, HttpServletRequest request, RedirectAttributes ra) {
+        log.error("Error no controlado en la ruta {}: {}", request.getRequestURI(), ex.getMessage(), ex);
         ra.addFlashAttribute("error", "Ocurrió un error inesperado al procesar la solicitud. " +
                 "Si el problema persiste, contacte al administrador del sistema.");
         return "redirect:" + destinoSeguro(request);
@@ -54,8 +57,15 @@ public class GlobalWebExceptionHandler {
 
     private String destinoSeguro(HttpServletRequest request) {
         String referer = request.getHeader("Referer");
+        String uriActual = request.getRequestURI();
         if (referer != null && referer.contains("://" + request.getServerName())) {
-            return referer;
+            // Evita redirigir a /login o a la misma ruta que originó el error para no generar un bucle infinito
+            if (!referer.contains("/login") && !referer.endsWith(uriActual)) {
+                return referer;
+            }
+        }
+        if (uriActual != null && (uriActual.equals("/view/home") || uriActual.equals("/"))) {
+            return "/view/medicamentos";
         }
         return "/view/home";
     }

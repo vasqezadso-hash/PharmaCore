@@ -25,8 +25,8 @@ public class DetallesVentas {
     @Column(name = "id_lote", nullable = false)
     private Integer idLote;
 
-    @Column(name = "id_detalle_formula")
-    private Integer idDetalleFormula;
+    @Column(name = "formato", length = 20)
+    private String formato = "CAJA";
 
     @Column(nullable = false)
     private Integer cantidad;

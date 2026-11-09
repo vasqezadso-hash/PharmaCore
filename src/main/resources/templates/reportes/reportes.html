@@ -46,8 +46,14 @@
                 </div>
                 <button type="submit" class="bg-pharmacore-accent text-white px-5 py-2.5 rounded-xl text-xs font-semibold hover:opacity-90 transition-opacity">Filtrar</button>
                 <div class="flex items-center gap-2">
-                    <a th:href="@{/view/reportes/exportar/ventas/pdf(desde=${desde},hasta=${hasta})}" class="bg-slate-100 text-slate-700 px-4 py-2.5 rounded-xl text-xs font-semibold hover:bg-slate-200 transition-colors">⭳ Ventas PDF</a>
-                    <a th:href="@{/view/reportes/exportar/ventas/excel(desde=${desde},hasta=${hasta})}" class="bg-slate-100 text-slate-700 px-4 py-2.5 rounded-xl text-xs font-semibold hover:bg-slate-200 transition-colors">⭳ Ventas Excel</a>
+                    <a th:href="@{/view/reportes/exportar/ventas/pdf(desde=${desde},hasta=${hasta})}" class="bg-slate-100 text-slate-700 px-4 py-2.5 rounded-xl text-xs font-semibold hover:bg-slate-200 transition-colors inline-flex items-center gap-1.5">
+                        <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                        <span>Ventas PDF</span>
+                    </a>
+                    <a th:href="@{/view/reportes/exportar/ventas/excel(desde=${desde},hasta=${hasta})}" class="bg-slate-100 text-slate-700 px-4 py-2.5 rounded-xl text-xs font-semibold hover:bg-slate-200 transition-colors inline-flex items-center gap-1.5">
+                        <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                        <span>Ventas Excel</span>
+                    </a>
                 </div>
             </form>
 

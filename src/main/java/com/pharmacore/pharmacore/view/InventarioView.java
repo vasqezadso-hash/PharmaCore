@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Controller
@@ -38,6 +39,9 @@ public class InventarioView {
     @Autowired
     private LotesRepository lotesRepository;
 
+    @Autowired
+    private com.pharmacore.pharmacore.repository.TransaccionesFinancierasRepository transaccionesRepository;
+
     // KARDEX: historial de movimientos
     @GetMapping("/view/inventario/movimientos")
     public String movimientos(Model model) {
@@ -48,6 +52,10 @@ public class InventarioView {
                 .collect(Collectors.toMap(com.pharmacore.pharmacore.model.Lotes::getIdLote, com.pharmacore.pharmacore.model.Lotes::getNumeroLote)));
         model.addAttribute("nombresUsuarios", usuariosRepository.findAll().stream()
                 .collect(Collectors.toMap(u -> u.getIdUsuario().intValue(), u -> u.getUsername())));
+
+        Map<Integer, com.pharmacore.pharmacore.model.TransaccionesFinancieras> transaccionesMap = transaccionesRepository.findAll().stream()
+                .collect(Collectors.toMap(com.pharmacore.pharmacore.model.TransaccionesFinancieras::getIdTransaccion, t -> t, (a, b) -> a));
+        model.addAttribute("transaccionesMap", transaccionesMap);
         return "inventario/movimientos";
     }
 

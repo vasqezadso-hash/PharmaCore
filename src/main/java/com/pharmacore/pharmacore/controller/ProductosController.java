@@ -33,7 +33,7 @@ public class ProductosController {
     @GetMapping("/buscar")
     public List<Productos> buscar(@RequestParam("q") String texto) {
         return productosRepository
-                .findByNombreComercialContainingIgnoreCaseOrNombreGenericoContainingIgnoreCaseOrCodigoInternoContainingIgnoreCase(
+                .findByNombreComercialContainingIgnoreCaseOrNombreGenericoContainingIgnoreCaseOrCodigoBarrasContainingIgnoreCase(
                         texto, texto, texto);
     }
 
@@ -77,12 +77,8 @@ public class ProductosController {
         return ResponseEntity.noContent().build();
     }
 
-    // Evita chocar con el UNIQUE de codigo_interno / codigo_barras antes de llegar a la base de datos
+    // Evita chocar con el UNIQUE de codigo_barras antes de llegar a la base de datos
     private String validarDuplicados(Productos producto) {
-        var porCodigoInterno = productosRepository.findByCodigoInterno(producto.getCodigoInterno());
-        if (porCodigoInterno.isPresent() && !porCodigoInterno.get().getIdProducto().equals(producto.getIdProducto())) {
-            return "Ya existe un producto con ese código interno.";
-        }
         var porCodigoBarras = productosRepository.findByCodigoBarras(producto.getCodigoBarras());
         if (porCodigoBarras.isPresent() && !porCodigoBarras.get().getIdProducto().equals(producto.getIdProducto())) {
             return "Ya existe un producto con ese código de barras.";

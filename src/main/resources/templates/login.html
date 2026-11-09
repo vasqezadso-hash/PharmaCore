@@ -4,13 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PharmaCore - Iniciar Sesión</title>
+    <script>
+        (function() {
+            try {
+                var theme = localStorage.getItem('pharmacore-theme');
+                if (theme === 'dark' || (!theme && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            } catch (e) {}
+        })();
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" th:href="@{/img/img.png}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: { extend: { colors: { pharmacore: { bg:'#F7FAF9', dark:'#004B4B', darker:'#003939', accent:'#006565', text:'#1E1E1E' } }, fontFamily: { sans: ['Poppins','sans-serif'] } } }
         }
     </script>
@@ -41,6 +55,13 @@
             <div>
                 <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Contraseña</label>
                 <input type="password" name="password" class="w-full px-4 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all" required>
+            </div>
+            <div class="flex items-center justify-between text-xs pt-1">
+                <label class="inline-flex items-center gap-2 cursor-pointer select-none text-slate-600">
+                    <input type="checkbox" name="remember-me" checked
+                           class="w-4 h-4 text-pharmacore-accent rounded border-slate-300 focus:ring-pharmacore-accent">
+                    <span>Recordar sesión en este equipo</span>
+                </label>
             </div>
             <button type="submit" class="w-full bg-pharmacore-accent text-white py-2.5 rounded-xl text-sm font-semibold hover:opacity-90 transition-opacity cursor-pointer">
                 Entrar

@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.text.Normalizer;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -29,11 +30,23 @@ public class PharmaCoreUserDetailsService implements UserDetailsService {
 
         boolean habilitado = usuario.getEstado() == Usuarios.EstadoUsuario.ACTIVO;
 
+        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(new SimpleGrantedAuthority(autoridadDeRol(usuario)));
+
+        // Cargar permisos dinámicos asignados al rol en la tabla roles (MOD_POS, MOD_PRODUCTOS, etc.)
+        if (usuario.getRol() != null) {
+            usuario.getRol().obtenerMapaPermisos().forEach((modulo, tieneAcceso) -> {
+                if (Boolean.TRUE.equals(tieneAcceso)) {
+                    authorities.add(new SimpleGrantedAuthority(modulo));
+                }
+            });
+        }
+
         return User.builder()
                 .username(usuario.getUsername())
                 .password(usuario.getPasswordHash())
                 .disabled(!habilitado)
-                .authorities(List.of(new SimpleGrantedAuthority(autoridadDeRol(usuario))))
+                .authorities(authorities)
                 .build();
     }
 

@@ -71,7 +71,7 @@
                             <td class="p-4 text-xs text-slate-600" th:text="${v.metodoPago}"></td>
                             <td class="p-4 text-xs">
                                 <span th:text="${v.estado}"
-                                      th:classappend="${v.estado == 'PAGADA'} ? 'bg-emerald-100 text-emerald-700' : (${v.estado == 'PENDIENTE'} ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700')"
+                                      th:classappend="${v.estado == 'PAGADA'} ? 'bg-emerald-100 text-emerald-700' : (${v.estado == 'DEVUELTA'} ? 'bg-amber-100 text-amber-800' : (${v.estado == 'PENDIENTE'} ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'))"
                                       class="inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold"></span>
                             </td>
                             <td class="p-4 text-center">

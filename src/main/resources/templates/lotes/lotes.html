@@ -33,7 +33,10 @@
                     <p class="text-xs sm:text-sm text-slate-500">Gestione los lotes por producto: fechas de vencimiento y cantidades disponibles.</p>
                 </div>
                 <div class="flex gap-2">
-                    <a th:href="@{/view/vencimientos}" class="bg-amber-100 text-amber-800 px-4 py-2 rounded-xl text-xs font-semibold hover:bg-amber-200 transition-colors">⚠ Ver Alertas</a>
+                    <a th:href="@{/view/vencimientos}" class="bg-amber-100 text-amber-800 px-4 py-2 rounded-xl text-xs font-semibold hover:bg-amber-200 transition-colors inline-flex items-center gap-1.5">
+                        <svg class="w-3.5 h-3.5 text-amber-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                        <span>Ver Alertas</span>
+                    </a>
                     <a th:href="@{/view/lotes/form}" class="bg-pharmacore-accent text-white px-4 py-2 rounded-xl text-xs font-semibold hover:opacity-90 transition-opacity">+ Nuevo Lote</a>
                 </div>
             </div>
@@ -66,7 +69,14 @@
                         </tr>
                         <tr th:each="l : ${lotes}" class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
                             <td class="p-4 font-mono text-xs text-slate-600" th:text="${'#' + l.idLote}"></td>
-                            <td class="p-4 text-xs text-slate-600" th:text="${nombresProductos.get(l.idProducto) ?: ('Producto #' + l.idProducto)}"></td>
+                            <td class="p-4 text-xs">
+                                <a th:href="@{/view/medicamentos/detalle/{id}(id=${l.idProducto})}"
+                                   class="font-semibold text-pharmacore-dark hover:text-pharmacore-accent hover:underline flex items-center gap-1.5"
+                                   title="Ver Ficha Maestra e Historial de Lotes de este producto">
+                                    <span th:text="${nombresProductos.get(l.idProducto) ?: ('Producto #' + l.idProducto)}"></span>
+                                    <span class="text-[9px] text-teal-700 bg-teal-50 px-1.5 py-0.5 rounded border border-teal-200">Maestro</span>
+                                </a>
+                            </td>
                             <td class="p-4 text-xs font-semibold text-slate-700" th:text="${l.numeroLote}"></td>
                             <td class="p-4 text-xs text-slate-600" th:text="${#temporals.format(l.fechaVencimiento, 'dd/MM/yyyy')}"></td>
                             <td class="p-4 text-xs text-slate-600" th:text="${l.cantidadActual + ' / ' + l.cantidadInicial}"></td>

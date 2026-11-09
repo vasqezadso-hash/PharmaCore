@@ -12,7 +12,22 @@
     <link rel="icon" type="image/png" th:href="@{/img/img.png}">
     <script>
         tailwind.config = {
-            theme: { extend: { colors: { pharmacore: { bg:'#F7FAF9', dark:'#004B4B', darker:'#003939', accent:'#006565', text:'#1E1E1E' } }, fontFamily: { sans: ['Poppins','sans-serif'] } } }
+            theme: {
+                extend: {
+                    colors: {
+                        pharmacore: {
+                            bg: '#F7FAF9',
+                            dark: '#004B4B',
+                            darker: '#003939',
+                            accent: '#006565',
+                            text: '#1E1E1E'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif']
+                    }
+                }
+            }
         }
     </script>
 </head>
@@ -27,19 +42,31 @@
     <div class="flex-1 flex flex-col min-w-0 bg-pharmacore-bg">
         <main class="flex-1 p-4 sm:p-6 lg:p-8 max-w-3xl mx-auto w-full">
 
-            <div class="mb-6 flex items-center justify-between">
+            <div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h1 class="text-xl sm:text-2xl font-bold text-pharmacore-dark uppercase tracking-wide">NUEVO DOMICILIO</h1>
-                    <p class="text-xs sm:text-sm text-slate-500">Registre la entrega a domicilio de una venta ya facturada.</p>
+                    <p class="text-xs sm:text-sm text-slate-500">Registre la orden de entrega a domicilio para una factura emitida.</p>
                 </div>
-                <a th:href="@{/view/domicilios}" class="bg-slate-200 text-slate-700 px-4 py-2 rounded-xl text-xs font-semibold hover:bg-slate-300 transition-colors">← Volver</a>
+                <a th:href="@{/view/domicilios}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 transition-colors shadow-xs self-start sm:self-auto">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Volver al listado
+                </a>
             </div>
 
-            <div th:if="${error}" class="bg-red-50 text-red-700 border border-red-200 p-3 mb-4 rounded-xl text-sm" th:text="${error}"></div>
+            <div th:if="${error}" class="bg-red-50 text-red-700 border border-red-200 p-4 mb-6 rounded-2xl text-xs sm:text-sm flex items-center gap-3">
+                <svg class="w-5 h-5 text-red-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+                <span th:text="${error}"></span>
+            </div>
 
-            <div th:if="${#lists.isEmpty(ventas)}" class="bg-amber-50 text-amber-800 border border-amber-200 p-4 rounded-xl text-sm mb-4">
-                No hay ventas disponibles para domicilio. Solo aparecen las ventas PAGADAS que tienen cliente registrado
-                y que todavía no tienen domicilio. Si la venta se hizo "sin cliente registrado", no se puede enviar a domicilio.
+            <div th:if="${#lists.isEmpty(ventas)}" class="bg-amber-50 text-amber-800 border border-amber-200 p-4 rounded-2xl text-xs sm:text-sm mb-6 flex items-start gap-3">
+                <svg class="w-5 h-5 text-amber-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+                <span>No hay ventas pendientes disponibles para entrega a domicilio.</span>
             </div>
 
             <form th:unless="${#lists.isEmpty(ventas)}" th:action="@{/view/domicilios/guardar}" th:object="${domicilio}" method="post" class="space-y-6">
@@ -47,34 +74,42 @@
                 <input type="hidden" id="idCliente" th:field="*{idCliente}">
 
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
-                    <h2 class="text-xs font-bold text-pharmacore-accent uppercase tracking-wider mb-4">Venta y Entrega</h2>
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="w-2.5 h-2.5 rounded-full bg-pharmacore-accent"></span>
+                        <h2 class="text-xs font-bold text-pharmacore-accent uppercase tracking-wider">Datos de Entrega</h2>
+                    </div>
+
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div class="sm:col-span-2">
-                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Venta</label>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Venta / Factura *</label>
                             <select id="idVenta" th:field="*{idVenta}" onchange="autocompletar()"
-                                    class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all" required>
-                                <option value="">Seleccione una venta</option>
+                                    class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all font-medium text-slate-800" required>
+                                <option value="">Seleccione una venta...</option>
                                 <option th:each="v : ${ventas}" th:value="${v.idVenta}" th:text="${v.numeroFactura}"></option>
                             </select>
                         </div>
-                        <div class="sm:col-span-2">
-                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Dirección de entrega</label>
-                            <input type="text" id="direccionEntrega" th:field="*{direccionEntrega}" placeholder="Ej: Cra 45 #12-30, apto 501"
-                                   class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all" required>
-                        </div>
+
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Teléfono de contacto</label>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Teléfono de Contacto *</label>
                             <input type="text" id="telefonoContacto" th:field="*{telefonoContacto}" placeholder="Ej: 3011234567"
                                    class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all" required>
                         </div>
+
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Domiciliario asignado (opcional)</label>
-                            <input type="text" th:field="*{nombreDomiciliario}" placeholder="Ej: Carlos Ramírez"
-                                   class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all">
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Costo del Domicilio</label>
+                            <input type="number" step="0.01" min="0" th:field="*{costoDomicilio}" placeholder="0.00"
+                                   class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all font-medium">
                         </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Costo del domicilio</label>
-                            <input type="number" step="0.01" min="0" th:field="*{costoDomicilio}"
+
+                        <div class="sm:col-span-2">
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Dirección de Entrega *</label>
+                            <input type="text" id="direccionEntrega" th:field="*{direccionEntrega}" placeholder="Ej: Cra 45 #12-30, apto 501"
+                                   class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all" required>
+                        </div>
+
+                        <div class="sm:col-span-2">
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Domiciliario Asignado (Opcional)</label>
+                            <input type="text" th:field="*{nombreDomiciliario}" placeholder="Ej: Carlos Ramírez"
                                    class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all">
                         </div>
                     </div>
@@ -82,7 +117,7 @@
 
                 <div class="flex items-center justify-end gap-3">
                     <a th:href="@{/view/domicilios}" class="px-5 py-2.5 rounded-xl text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors">Cancelar</a>
-                    <button type="submit" class="px-5 py-2.5 rounded-xl text-xs font-semibold text-white bg-pharmacore-accent hover:opacity-90 transition-opacity cursor-pointer">Registrar Domicilio</button>
+                    <button type="submit" class="px-6 py-2.5 rounded-xl text-xs font-semibold text-white bg-pharmacore-accent hover:opacity-90 transition-opacity cursor-pointer shadow-sm">Registrar Domicilio</button>
                 </div>
             </form>
 
@@ -97,9 +132,6 @@
     const VENTAS_CLIENTE = /*[[${ventasJs}]]*/ {};
     const CLIENTES = /*[[${clientesJs}]]*/ {};
 
-    // Al elegir la venta, autocompleta cliente/dirección/teléfono a partir de sus datos
-    // registrados (el usuario los puede editar antes de guardar, por si la entrega es en
-    // otra dirección distinta a la que tiene el cliente en su ficha).
     function autocompletar() {
         const idVenta = document.getElementById('idVenta').value;
         const idCliente = VENTAS_CLIENTE[idVenta];

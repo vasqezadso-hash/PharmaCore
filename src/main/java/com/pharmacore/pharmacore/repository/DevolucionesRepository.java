@@ -9,4 +9,8 @@ import java.util.List;
 @Repository
 public interface DevolucionesRepository extends JpaRepository<Devoluciones, Integer> {
     List<Devoluciones> findAllByOrderByFechaDevolucionDesc();
+
+    List<Devoluciones> findByIdVenta(Long idVenta);
+
+    List<Devoluciones> findByIdVentaAndIdProducto(Long idVenta, Integer idProducto);
 }

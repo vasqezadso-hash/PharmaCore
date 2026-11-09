@@ -6,6 +6,7 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -38,7 +39,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, PharmaCoreUserDetailsService userDetailsService) throws Exception {
         http
 
                 .csrf(csrf -> csrf
@@ -47,44 +48,80 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Público: login y recursos estáticos
                         .requestMatchers("/login", "/css/**", "/js/**", "/img/**", "/webjars/**").permitAll()
-                        // Estas rutas son las que manejan usuarios/empleados/roles del sistema,
-                        // así que las dejo solo para el rol Administrador. El resto de módulos
-                        // (ventas, inventario, devoluciones, etc.) cualquier empleado logueado
-                        // los puede usar, porque son el trabajo del día a día de la farmacia.
-                        .requestMatchers("/view/usuarios/**", "/view/empleados/**", "/view/roles/**")
-                            .hasRole("ADMINISTRADOR")
-                        .requestMatchers("/api/usuarios/**", "/api/empleados/**", "/api/roles/**")
-                            .hasRole("ADMINISTRADOR")
-                        // El Vendedor trabaja en el mostrador: solo necesita facturar, ver el
-                        // historial de sus ventas, gestionar clientes y consultar fórmulas médicas
-                        // (las necesita para saber si puede vender un medicamento controlado).
-                        // También le doy Devoluciones y Domicilios, porque en la práctica esas dos
-                        // cosas normalmente las atiende quien está en el mostrador en el momento,
-                        // no necesariamente el farmacéutico. Eso sí, dentro de DevolucionesView
-                        // hay una regla aparte que evita que un Vendedor registre una devolución
-                        // A PROVEEDOR (esa sí es decisión del farmacéutico/regente).
-                        .requestMatchers("/view/home", "/view/ventas/**", "/view/dispensacion/**",
-                                          "/view/clientes/**", "/view/formulas/**",
-                                          "/view/devoluciones/**", "/view/domicilios/**")
-                            .hasAnyRole("ADMINISTRADOR", "FARMACEUTICO", "VENDEDOR")
-                        .requestMatchers("/api/ventas/**", "/api/clientes/**", "/api/formulas/**",
-                                          "/api/devoluciones/**", "/api/domicilios/**")
-                            .hasAnyRole("ADMINISTRADOR", "FARMACEUTICO", "VENDEDOR")
-                        // Toodo lo demás (catálogo/productos, lotes, inventario, compras,
-                        // proveedores, devoluciones, domicilios, reportes) es trabajo del
-                        // Farmaceutico (Regente) o del Administrador; el Vendedor no entra ahí.
-                        .anyRequest().hasAnyRole("ADMINISTRADOR", "FARMACEUTICO")
+
+                        // Módulo de Usuarios, Personal y Roles
+                        .requestMatchers("/view/usuarios/**", "/view/empleados/**", "/view/roles/**",
+                                          "/api/usuarios/**", "/api/empleados/**", "/api/roles/**")
+                            .hasAnyAuthority("ROLE_ADMINISTRADOR", "MOD_USUARIOS")
+
+                        // Mostrador y Ventas
+                        .requestMatchers("/view/ventas/nueva/**", "/view/ventas/nueva/guardar")
+                            .hasAnyAuthority("ROLE_ADMINISTRADOR", "MOD_POS")
+                        .requestMatchers("/view/dispensacion/**", "/view/ventas/detalle/**")
+                            .hasAnyAuthority("ROLE_ADMINISTRADOR", "MOD_VENTAS_HISTORIAL", "MOD_POS")
+                        .requestMatchers("/api/ventas/**")
+                            .hasAnyAuthority("ROLE_ADMINISTRADOR", "MOD_POS", "MOD_VENTAS_HISTORIAL")
+
+                        // Clientes
+                        .requestMatchers("/view/clientes/**", "/api/clientes/**")
+                            .hasAnyAuthority("ROLE_ADMINISTRADOR", "MOD_CLIENTES")
+
+                        // Devoluciones y Domicilios
+                        .requestMatchers("/view/devoluciones/**", "/api/devoluciones/**")
+                            .hasAnyAuthority("ROLE_ADMINISTRADOR", "MOD_DEVOLUCIONES")
+                        .requestMatchers("/view/domicilios/**", "/api/domicilios/**")
+                            .hasAnyAuthority("ROLE_ADMINISTRADOR", "MOD_DOMICILIOS")
+
+                        // Catálogo y Stock (Productos, Categorías, Lotes, Kardex)
+                        .requestMatchers("/view/medicamentos/**", "/api/medicamentos/**")
+                            .hasAnyAuthority("ROLE_ADMINISTRADOR", "MOD_PRODUCTOS")
+                        .requestMatchers("/view/categorias/**", "/api/categorias/**")
+                            .hasAnyAuthority("ROLE_ADMINISTRADOR", "MOD_CATEGORIAS")
+                        .requestMatchers("/view/lotes/**", "/view/vencimientos/**", "/api/lotes/**")
+                            .hasAnyAuthority("ROLE_ADMINISTRADOR", "MOD_LOTES")
+                        .requestMatchers("/view/inventario/**", "/api/inventario/**")
+                            .hasAnyAuthority("ROLE_ADMINISTRADOR", "MOD_INVENTARIO")
+
+                        // Compras y Proveedores
+                        .requestMatchers("/view/ordenes-compra/**", "/api/compras/**")
+                            .hasAnyAuthority("ROLE_ADMINISTRADOR", "MOD_COMPRAS")
+                        .requestMatchers("/view/proveedores/**", "/api/proveedores/**")
+                            .hasAnyAuthority("ROLE_ADMINISTRADOR", "MOD_PROVEEDORES")
+
+                        // Finanzas y Reportes
+                        .requestMatchers("/view/finanzas/**", "/api/finanzas/**")
+                            .hasAnyAuthority("ROLE_ADMINISTRADOR", "MOD_FINANZAS")
+                        .requestMatchers("/view/reportes/**", "/api/reportes/**")
+                            .hasAnyAuthority("ROLE_ADMINISTRADOR", "MOD_REPORTES")
+
+                        // Inicio y rutas base
+                        .requestMatchers("/", "/view/home").authenticated()
+
+                        .anyRequest().authenticated()
+                )
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                        .sessionFixation(sessionFixation -> sessionFixation.changeSessionId())
+                        .maximumSessions(-1)
+                )
+                .rememberMe(remember -> remember
+                        .key("PharmaCoreSecretKey2026")
+                        .tokenValiditySeconds(86400 * 30)
+                        .userDetailsService(userDetailsService)
+                        .rememberMeParameter("remember-me")
+                        .alwaysRemember(true)
                 )
                 .formLogin((FormLoginConfigurer<HttpSecurity> form) -> form
                         .loginPage("/login")
                         .loginProcessingUrl("/login")
-                        .defaultSuccessUrl("/view/home", true)
+                        .defaultSuccessUrl("/view/home", false)
                         .failureUrl("/login?error")
                         .permitAll()
                 )
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/login?logout")
+                        .deleteCookies("JSESSIONID", "remember-me")
                         .permitAll()
                 );
         return http.build();

@@ -61,6 +61,9 @@ public class MovimientosInventario {
     @Column(length = 255)
     private String motivo;
 
+    @Column(name = "id_transaccion")
+    private Integer idTransaccion;
+
     /** Tipos válidos, tal como quedaron en el ENUM de la tabla en MySQL. */
     public static final String[] TIPOS_VALIDOS = {
             "ENTRADA_COMPRA", "SALIDA_VENTA", "AJUSTE_PERDIDA",

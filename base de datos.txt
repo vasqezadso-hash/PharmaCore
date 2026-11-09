@@ -7,10 +7,10 @@ CREATE DATABASE IF NOT EXISTS pharmacore_db CHARACTER SET utf8mb4 COLLATE utf8mb
 USE pharmacore_db;
 
 SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS transacciones_financieras;
+DROP TABLE IF EXISTS roles_permisos_modulos;
 DROP TABLE IF EXISTS domicilios;
 DROP TABLE IF EXISTS devoluciones;
-DROP TABLE IF EXISTS detalles_formulas;
-DROP TABLE IF EXISTS formulas_medicas;
 DROP TABLE IF EXISTS detalles_ventas;
 DROP TABLE IF EXISTS ventas;
 DROP TABLE IF EXISTS detalles_compras;
@@ -27,11 +27,27 @@ DROP TABLE IF EXISTS clientes;
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- ------------------------------------------------------------
--- 1. TABLA ROLES
+-- 1. TABLA ROLES Y PERMISOS DE ACCESO A MÓDULOS
 -- ------------------------------------------------------------
 CREATE TABLE roles (
     id_rol INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(50) NOT NULL UNIQUE
+    nombre VARCHAR(50) NOT NULL UNIQUE,
+    descripcion VARCHAR(200),
+    -- Permisos de acceso a módulos funcionales
+    acceso_pos BOOLEAN NOT NULL DEFAULT TRUE,
+    acceso_ventas_historial BOOLEAN NOT NULL DEFAULT TRUE,
+    acceso_clientes BOOLEAN NOT NULL DEFAULT TRUE,
+    acceso_productos BOOLEAN NOT NULL DEFAULT FALSE,
+    acceso_categorias BOOLEAN NOT NULL DEFAULT FALSE,
+    acceso_lotes BOOLEAN NOT NULL DEFAULT FALSE,
+    acceso_inventario BOOLEAN NOT NULL DEFAULT FALSE,
+    acceso_compras BOOLEAN NOT NULL DEFAULT FALSE,
+    acceso_proveedores BOOLEAN NOT NULL DEFAULT FALSE,
+    acceso_devoluciones BOOLEAN NOT NULL DEFAULT FALSE,
+    acceso_domicilios BOOLEAN NOT NULL DEFAULT FALSE,
+    acceso_finanzas BOOLEAN NOT NULL DEFAULT FALSE,
+    acceso_reportes BOOLEAN NOT NULL DEFAULT FALSE,
+    acceso_usuarios BOOLEAN NOT NULL DEFAULT FALSE
 ) ENGINE=InnoDB;
 
 -- ------------------------------------------------------------
@@ -116,12 +132,13 @@ CREATE TABLE categorias (
 -- ------------------------------------------------------------
 CREATE TABLE productos (
     id_producto INT AUTO_INCREMENT PRIMARY KEY,
-    codigo_interno VARCHAR(30) UNIQUE NOT NULL,
     codigo_barras VARCHAR(50) UNIQUE NOT NULL,
     nombre_comercial VARCHAR(150) NOT NULL,
     nombre_generico VARCHAR(150),
     descripcion TEXT,
     presentacion VARCHAR(100),
+    unidades_por_caja INT DEFAULT 1,
+    blisteres_por_caja INT DEFAULT 1,
     concentracion VARCHAR(50),
     laboratorio VARCHAR(100),
     registro_invima VARCHAR(50) NOT NULL,
@@ -180,6 +197,7 @@ CREATE TABLE detalles_compras (
     id_detalle_compra INT AUTO_INCREMENT PRIMARY KEY,
     id_compra INT NOT NULL,
     id_producto INT NOT NULL,
+    formato VARCHAR(20) NOT NULL DEFAULT 'UNIDAD',
     cantidad INT NOT NULL,
     precio_unitario DECIMAL(12,2) NOT NULL,
     subtotal DECIMAL(12,2) NOT NULL,
@@ -212,6 +230,7 @@ CREATE TABLE detalles_ventas (
     id_venta INT NOT NULL,
     id_producto INT NOT NULL,
     id_lote INT NOT NULL,
+    formato ENUM('CAJA', 'BLISTER', 'UNIDAD') DEFAULT 'CAJA',
     cantidad INT NOT NULL,
     precio_unitario DECIMAL(12,2) NOT NULL,
     subtotal DECIMAL(12,2) NOT NULL,
@@ -222,36 +241,7 @@ CREATE TABLE detalles_ventas (
 
 
 -- ------------------------------------------------------------
--- 10. TABLA FORMULAS MEDICAS
--- ------------------------------------------------------------
-CREATE TABLE formulas_medicas (
-    id_formula INT AUTO_INCREMENT PRIMARY KEY,
-    id_cliente INT NOT NULL,
-    nombre_medico VARCHAR(150) NOT NULL,
-    tarjeta_profesional VARCHAR(50) NOT NULL,
-    entidad_salud VARCHAR(100),
-    fecha_expedicion DATE NOT NULL,
-    vigencia_dias INT DEFAULT 30,
-    archivo_adjunto_url VARCHAR(255),
-    observaciones TEXT,
-    FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente)
-) ENGINE=InnoDB;
-
-
-CREATE TABLE detalles_formulas (
-    id_detalle_formula INT AUTO_INCREMENT PRIMARY KEY,
-    id_formula INT NOT NULL,
-    id_producto INT NOT NULL,
-    dosis VARCHAR(100) NOT NULL,
-    frecuencia VARCHAR(100) NOT NULL,
-    duracion_tratamiento VARCHAR(100) NOT NULL,
-    FOREIGN KEY (id_formula) REFERENCES formulas_medicas(id_formula) ON DELETE CASCADE,
-    FOREIGN KEY (id_producto) REFERENCES productos(id_producto)
-) ENGINE=InnoDB;
-
-
--- ------------------------------------------------------------
--- 11. MOVIMIENTOS DE INVENTARIO
+-- 10. MOVIMIENTOS DE INVENTARIO
 -- ------------------------------------------------------------
 CREATE TABLE movimientos_inventario (
     id_movimiento INT AUTO_INCREMENT PRIMARY KEY,
@@ -264,13 +254,14 @@ CREATE TABLE movimientos_inventario (
     fecha_movimiento DATETIME DEFAULT CURRENT_TIMESTAMP,
     id_usuario INT NOT NULL,
     motivo VARCHAR(255),
+    id_transaccion INT,
     FOREIGN KEY (id_producto) REFERENCES productos(id_producto),
     FOREIGN KEY (id_lote) REFERENCES lotes(id_lote),
     FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario)
 ) ENGINE=InnoDB;
 
 -- ------------------------------------------------------------
--- 12. TABLA DOMICILIOS
+-- 11. TABLA DOMICILIOS
 -- ------------------------------------------------------------
 CREATE TABLE domicilios (
     id_domicilio INT AUTO_INCREMENT PRIMARY KEY,
@@ -288,7 +279,7 @@ CREATE TABLE domicilios (
 ) ENGINE=INNODB;
 
 -- ------------------------------------------------------------
--- 13. TABLA DEVOLUCIONES
+-- 12. TABLA DEVOLUCIONES
 -- ------------------------------------------------------------
 CREATE TABLE devoluciones (
     id_devolucion INT AUTO_INCREMENT PRIMARY KEY,
@@ -296,6 +287,7 @@ CREATE TABLE devoluciones (
     id_venta INT NULL,
     id_compra INT NULL,
     id_producto INT NOT NULL,
+    formato VARCHAR(20) NOT NULL DEFAULT 'UNIDAD',
     cantidad INT NOT NULL,
     motivo ENUM('PRODUCTO_DEFECTUOSO', 'ERROR_ENTREGA', 'PROXIMO_A_VENCER', 'VENCIDO', 'RETIRO_MERCADO', 'EMPAQUE_DANADO') NOT NULL,
     estado_producto ENUM('APTO_PARA_REINGRESO', 'DESECHADO', 'DEVUELTO_A_FABRICA') NOT NULL,
@@ -307,3 +299,26 @@ CREATE TABLE devoluciones (
     FOREIGN KEY (id_producto) REFERENCES productos(id_producto),
     FOREIGN KEY (id_usuario_regente) REFERENCES usuarios(id_usuario)
 ) ENGINE=innoDB;
+
+-- ------------------------------------------------------------
+-- 13. TABLA TRANSACCIONES FINANCIERAS (CAJA / TESORERIA)
+-- ------------------------------------------------------------
+CREATE TABLE transacciones_financieras (
+    id_transaccion INT AUTO_INCREMENT PRIMARY KEY,
+    tipo_transaccion VARCHAR(20) NOT NULL,
+    concepto VARCHAR(50) NOT NULL,
+    monto DECIMAL(12,2) NOT NULL,
+    metodo_pago VARCHAR(30),
+    fecha_transaccion DATETIME DEFAULT CURRENT_TIMESTAMP,
+    id_usuario INT NOT NULL,
+    id_venta BIGINT(20) NULL,
+    id_compra INT NULL,
+    id_devolucion INT NULL,
+    id_movimiento_inventario INT NULL,
+    descripcion VARCHAR(255),
+    referencia VARCHAR(100),
+    INDEX idx_tf_fecha (fecha_transaccion),
+    INDEX idx_tf_tipo (tipo_transaccion),
+    INDEX idx_tf_venta (id_venta),
+    INDEX idx_tf_compra (id_compra)
+) ENGINE=InnoDB;

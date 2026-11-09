@@ -52,8 +52,8 @@
                 </div>
             </div>
 
-            <!-- El Vendedor no maneja lotes ni vencimientos, así que no le muestro esta alerta -->
-            <div th:if="${lotesVencidos > 0 or lotesPorVencer > 0}" sec:authorize="hasAnyRole('ADMINISTRADOR','FARMACEUTICO')" class="bg-amber-50 border border-amber-200 rounded-2xl p-6 mb-8 flex items-center justify-between">
+            <!-- Alerta de vencimientos: solo si el rol tiene acceso a MOD_LOTES -->
+            <div th:if="${(lotesVencidos > 0 or lotesPorVencer > 0) and (permisosModulos == null or permisosModulos['MOD_LOTES'])}" class="bg-amber-50 border border-amber-200 rounded-2xl p-6 mb-8 flex items-center justify-between">
                 <p class="text-sm text-amber-800">
                     <span class="font-semibold" th:text="${lotesVencidos}"></span> lote(s) vencido(s) y
                     <span class="font-semibold" th:text="${lotesPorVencer}"></span> por vencer en los próximos 30 días.
@@ -134,8 +134,8 @@
                     </div>
                 </div>
 
-                <!-- Estado de los lotes (barra segmentada). Es de inventario: el Vendedor no la ve -->
-                <div sec:authorize="hasAnyRole('ADMINISTRADOR','FARMACEUTICO')" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <!-- Estado de los lotes (barra segmentada): solo si el rol tiene acceso a MOD_LOTES -->
+                <div th:if="${permisosModulos == null or permisosModulos['MOD_LOTES']}" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                     <div class="p-4 sm:p-6 border-b border-slate-100">
                         <h2 class="text-xs font-bold text-pharmacore-accent uppercase tracking-wider">Estado de los lotes</h2>
                     </div>
@@ -158,8 +158,8 @@
                     </div>
                 </div>
 
-                <!-- Stock bajo: barra = stock actual como % del mínimo. Es de inventario: el Vendedor no la ve -->
-                <div sec:authorize="hasAnyRole('ADMINISTRADOR','FARMACEUTICO')" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden lg:col-span-2">
+                <!-- Stock bajo: solo si tiene acceso a MOD_INVENTARIO -->
+                <div th:if="${permisosModulos == null or permisosModulos['MOD_INVENTARIO']}" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden lg:col-span-2">
                     <div class="p-4 sm:p-6 border-b border-slate-100 flex items-center justify-between">
                         <h2 class="text-xs font-bold text-pharmacore-accent uppercase tracking-wider">Productos con stock bajo</h2>
                         <a th:href="@{/view/inventario/stock}" class="text-[11px] text-pharmacore-accent font-semibold hover:underline">Ver todo →</a>
@@ -181,16 +181,16 @@
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <a th:href="@{/view/ventas/nueva}" class="bg-pharmacore-dark text-white rounded-2xl p-6 hover:bg-pharmacore-accent transition-colors">
+                <a th:href="@{/view/ventas/nueva}" th:if="${permisosModulos == null or permisosModulos['MOD_POS'] or permisosModulos['MOD_VENTAS']}" class="bg-pharmacore-dark text-white rounded-2xl p-6 hover:bg-pharmacore-accent transition-colors">
                     <p class="font-bold mb-1">Nueva Venta</p>
                     <p class="text-xs text-white/70">Registrar una venta en el punto de venta</p>
                 </a>
-                <!-- Estos dos botones son de módulos que el Vendedor no tiene permitido abrir, se ocultan para ese rol -->
-                <a th:href="@{/view/ordenes-compra}" sec:authorize="hasAnyRole('ADMINISTRADOR','FARMACEUTICO')" class="bg-white border border-slate-200 rounded-2xl p-6 hover:border-pharmacore-accent transition-colors">
+                <!-- Acciones rápidas según permisos del rol -->
+                <a th:href="@{/view/ordenes-compra}" th:if="${permisosModulos == null or permisosModulos['MOD_COMPRAS']}" class="bg-white border border-slate-200 rounded-2xl p-6 hover:border-pharmacore-accent transition-colors">
                     <p class="font-bold mb-1 text-pharmacore-dark">Órdenes de Compra</p>
                     <p class="text-xs text-slate-500">Ver y registrar compras a proveedores</p>
                 </a>
-                <a th:href="@{/view/lotes}" sec:authorize="hasAnyRole('ADMINISTRADOR','FARMACEUTICO')" class="bg-white border border-slate-200 rounded-2xl p-6 hover:border-pharmacore-accent transition-colors">
+                <a th:href="@{/view/lotes}" th:if="${permisosModulos == null or permisosModulos['MOD_LOTES']}" class="bg-white border border-slate-200 rounded-2xl p-6 hover:border-pharmacore-accent transition-colors">
                     <p class="font-bold mb-1 text-pharmacore-dark">Control de Lotes</p>
                     <p class="text-xs text-slate-500">Gestionar lotes y vencimientos</p>
                 </a>

@@ -27,10 +27,6 @@ public class Productos {
     @Column(name = "id_producto")
     private Integer idProducto;
 
-    @NotBlank(message = "El código interno es obligatorio")
-    @Column(name = "codigo_interno", unique = true, nullable = false, length = 30)
-    private String codigoInterno;
-
     @NotBlank(message = "El código de barras es obligatorio")
     @Column(name = "codigo_barras", unique = true, nullable = false, length = 50)
     private String codigoBarras;
@@ -47,6 +43,14 @@ public class Productos {
 
     @Column(name = "presentacion", length = 100)
     private String presentacion;
+
+    @Builder.Default
+    @Column(name = "unidades_por_caja")
+    private Integer unidadesPorCaja = 1;
+
+    @Builder.Default
+    @Column(name = "blisteres_por_caja")
+    private Integer blisteresPorCaja = 1;
 
     @Column(name = "concentracion", length = 50)
     private String concentracion;
@@ -122,5 +126,33 @@ public class Productos {
     /** Útil para el dashboard/inventario más adelante: true si el stock ya tocó (o pasó) el mínimo. */
     public boolean isStockBajo() {
         return stockTotal != null && stockMinimo != null && stockTotal <= stockMinimo;
+    }
+
+    /**
+     * Calcula cuántas unidades individuales hay contenidas en un blíster.
+     */
+    public int getUnidadesPorBlister() {
+        int uCaja = (unidadesPorCaja != null && unidadesPorCaja > 0) ? unidadesPorCaja : 1;
+        int bCaja = (blisteresPorCaja != null && blisteresPorCaja > 0) ? blisteresPorCaja : 1;
+        if (bCaja > 1 && uCaja > 1) {
+            return Math.max(1, Math.round((float) uCaja / bCaja));
+        }
+        return 1;
+    }
+
+    /**
+     * Convierte la cantidad vendida según el formato (CAJA, BLISTER, UNIDAD)
+     * a unidades base de inventario para el descuento exacto de los lotes.
+     */
+    public int calcularUnidadesBase(String formato, int cantidad) {
+        if (cantidad <= 0) return 0;
+        if ("BLISTER".equalsIgnoreCase(formato)) {
+            return cantidad * getUnidadesPorBlister();
+        } else if ("UNIDAD".equalsIgnoreCase(formato)) {
+            return cantidad;
+        }
+        // Por defecto: CAJA
+        int uCaja = (unidadesPorCaja != null && unidadesPorCaja > 0) ? unidadesPorCaja : 1;
+        return cantidad * uCaja;
     }
 }

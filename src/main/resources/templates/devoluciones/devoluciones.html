@@ -30,9 +30,9 @@
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                 <div>
                     <h1 class="text-xl sm:text-2xl font-bold text-pharmacore-dark uppercase tracking-wide">DEVOLUCIONES</h1>
-                    <p class="text-xs sm:text-sm text-slate-500">Devoluciones de clientes y a proveedores, con su efecto en el inventario.</p>
+                    <p class="text-xs sm:text-sm text-slate-500">Historial y registro de devoluciones de clientes y a proveedores.</p>
                 </div>
-                <a th:href="@{/view/devoluciones/form}" class="bg-pharmacore-accent text-white px-4 py-2 rounded-xl text-xs font-semibold hover:opacity-90 transition-opacity">+ Nueva Devolución</a>
+                <a th:href="@{/view/devoluciones/form}" class="inline-flex items-center gap-1.5 bg-pharmacore-accent text-white px-4 py-2.5 rounded-xl text-xs font-semibold hover:opacity-90 transition-opacity shadow-sm self-start sm:self-auto">+ Nueva Devolución</a>
             </div>
 
             <div th:if="${mensaje}" class="bg-emerald-50 text-emerald-700 border border-emerald-200 p-3 mb-4 rounded-xl text-sm" th:text="${mensaje}"></div>
@@ -66,11 +66,14 @@
                             <td class="p-4 text-xs text-slate-600" th:text="${#temporals.format(d.fechaDevolucion, 'dd/MM/yyyy HH:mm')}"></td>
                             <td class="p-4">
                                 <span class="px-2 py-1 rounded-full text-[10px] font-bold"
-                                      th:classappend="${d.tipoDevolucion == 'CLIENTE'} ? 'bg-blue-50 text-blue-700' : 'bg-purple-50 text-purple-700'"
+                                      th:classappend="${d.tipoDevolucion == 'CLIENTE'} ? 'bg-teal-50 text-teal-800 border border-teal-200' : 'bg-slate-100 text-slate-700 border border-slate-200'"
                                       th:text="${d.tipoDevolucion}"></span>
                             </td>
                             <td class="p-4 text-xs" th:text="${nombresProductos.get(d.idProducto) ?: ('Producto #' + d.idProducto)}"></td>
-                            <td class="p-4 text-xs text-center font-semibold" th:text="${d.cantidad}"></td>
+                            <td class="p-4 text-xs text-center font-semibold">
+                                <span th:text="${d.cantidad}"></span>
+                                <span class="text-[10px] text-slate-500 font-normal uppercase block" th:text="${d.formato ?: 'UNIDAD'}"></span>
+                            </td>
                             <td class="p-4 text-xs text-slate-600" th:text="${#strings.replace(d.motivo, '_', ' ')}"></td>
                             <td class="p-4">
                                 <span class="px-2 py-1 rounded-full text-[10px] font-bold"

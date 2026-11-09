@@ -12,7 +12,22 @@
     <link rel="icon" type="image/png" th:href="@{/img/img.png}">
     <script>
         tailwind.config = {
-            theme: { extend: { colors: { pharmacore: { bg:'#F7FAF9', dark:'#004B4B', darker:'#003939', accent:'#006565', text:'#1E1E1E' } }, fontFamily: { sans: ['Poppins','sans-serif'] } } }
+            theme: {
+                extend: {
+                    colors: {
+                        pharmacore: {
+                            bg: '#F7FAF9',
+                            dark: '#004B4B',
+                            darker: '#003939',
+                            accent: '#006565',
+                            text: '#1E1E1E'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif']
+                    }
+                }
+            }
         }
     </script>
 </head>
@@ -25,100 +40,161 @@
     <aside th:replace="~{fragments/layout :: sidebar('devoluciones')}"></aside>
 
     <div class="flex-1 flex flex-col min-w-0 bg-pharmacore-bg">
-        <main class="flex-1 p-4 sm:p-6 lg:p-8 max-w-3xl mx-auto w-full">
+        <main class="flex-1 p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto w-full">
 
-            <div class="mb-6 flex items-center justify-between">
+            <!-- Encabezado de la página -->
+            <div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h1 class="text-xl sm:text-2xl font-bold text-pharmacore-dark uppercase tracking-wide">NUEVA DEVOLUCIÓN</h1>
-                    <p class="text-xs sm:text-sm text-slate-500">Registre una devolución de cliente o hacia un proveedor.</p>
+                    <p class="text-xs sm:text-sm text-slate-500">Registre la devolución de productos de clientes o a proveedores.</p>
                 </div>
-                <a th:href="@{/view/devoluciones}" class="bg-slate-200 text-slate-700 px-4 py-2 rounded-xl text-xs font-semibold hover:bg-slate-300 transition-colors">← Volver</a>
+                <a th:href="@{/view/devoluciones}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 transition-colors shadow-xs self-start sm:self-auto">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Volver al listado
+                </a>
             </div>
 
-            <div th:if="${error}" class="bg-red-50 text-red-700 border border-red-200 p-3 mb-4 rounded-xl text-sm" th:text="${error}"></div>
+            <!-- Alerta de Error si existe -->
+            <div th:if="${error}" class="bg-red-50 text-red-700 border border-red-200 p-4 mb-6 rounded-2xl text-xs sm:text-sm flex items-center gap-3">
+                <svg class="w-5 h-5 text-red-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+                <span th:text="${error}"></span>
+            </div>
 
-            <form th:action="@{/view/devoluciones/guardar}" th:object="${devolucion}" method="post" class="space-y-6">
+            <form th:action="@{/view/devoluciones/guardar}" th:object="${devolucion}" method="post" id="form-devolucion" onsubmit="return validarEnvio(event)" class="space-y-6">
 
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
-                    <h2 class="text-xs font-bold text-pharmacore-accent uppercase tracking-wider mb-4">Tipo de Devolución</h2>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <!-- 1. Tarjeta: Origen y Tipo de Devolución -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-7">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="w-2.5 h-2.5 rounded-full bg-pharmacore-accent"></span>
+                        <h2 class="text-xs font-bold text-pharmacore-accent uppercase tracking-wider">Tipo y Origen de la Devolución</h2>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Tipo</label>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Tipo de Devolución *</label>
                             <select id="tipoDevolucion" th:field="*{tipoDevolucion}" onchange="alternarOrigen()"
-                                    class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all" required>
-                                <option value="">Seleccione...</option>
+                                    class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all font-medium text-slate-800" required>
+                                <option value="">Seleccione el tipo...</option>
                                 <option value="CLIENTE">Devolución de cliente</option>
-                                <!-- El Vendedor no gestiona devoluciones a proveedor, así que ni siquiera le muestro esta opción -->
-                                <option value="PROVEEDOR" sec:authorize="hasAnyRole('ADMINISTRADOR','FARMACEUTICO')">Devolución a proveedor</option>
+                                <option value="PROVEEDOR" th:if="${permisosModulos == null or permisosModulos['MOD_PROVEEDORES'] or permisosModulos['MOD_COMPRAS']}">Devolución a proveedor</option>
                             </select>
                         </div>
 
-                        <div id="campo-venta" style="display:none;">
-                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Venta relacionada (opcional)</label>
-                            <select th:field="*{idVenta}" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all">
-                                <option value="">Sin venta asociada</option>
-                                <option th:each="v : ${ventas}" th:value="${v.idVenta}" th:text="${v.numeroFactura}"></option>
+                        <div id="campo-ayuda-tipo" class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-500 flex items-center">
+                            <span>Seleccione si la devolución corresponde a una venta a cliente o a una compra con proveedor.</span>
+                        </div>
+
+                        <div id="campo-venta" style="display:none;" class="sm:col-span-1">
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Factura de Venta</label>
+                            <select id="idVenta" th:field="*{idVenta}" onchange="alCambiarVenta()"
+                                    class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all font-medium text-slate-800">
+                                <option value="">Sin factura asociada</option>
+                                <option th:each="v : ${ventas}" th:value="${v.idVenta}" th:text="${v.numeroFactura + ' - Total: $' + #numbers.formatDecimal(v.total, 0, 'POINT', 0, 'COMMA')}"></option>
                             </select>
                         </div>
 
-                        <div id="campo-compra" style="display:none;">
-                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Compra relacionada (opcional)</label>
-                            <select th:field="*{idCompra}" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all">
+                        <div id="campo-compra" style="display:none;" class="sm:col-span-1">
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Factura de Compra</label>
+                            <select id="idCompra" th:field="*{idCompra}"
+                                    class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all font-medium text-slate-800">
                                 <option value="">Sin compra asociada</option>
                                 <option th:each="c : ${compras}" th:value="${c.idCompra}" th:text="${c.numeroFacturaProveedor}"></option>
                             </select>
                         </div>
                     </div>
-                </div>
 
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
-                    <h2 class="text-xs font-bold text-pharmacore-accent uppercase tracking-wider mb-4">Producto Devuelto</h2>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Producto</label>
-                            <select id="idProducto" th:field="*{idProducto}" onchange="filtrarLotes()"
-                                    class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all" required>
-                                <option value="">Seleccione un producto</option>
-                                <option th:each="p : ${productos}" th:value="${p.idProducto}" th:text="${p.nombreComercial}"></option>
-                            </select>
+                    <!-- Banner de Acción Rápida al seleccionar factura -->
+                    <div id="banner-venta-info" class="hidden mt-4 p-4 rounded-xl border border-teal-200 bg-teal-50/70 text-xs text-teal-900 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-teal-600 text-white flex items-center justify-center shrink-0 font-bold text-xs shadow-xs">
+                                ✓
+                            </div>
+                            <div>
+                                <div class="font-bold text-slate-800" id="texto-venta-seleccionada">Factura seleccionada</div>
+                                <div class="text-[11px] text-teal-700">Puede agregar los productos manualmente o cargarlos todos con un solo clic.</div>
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Lote (opcional)</label>
-                            <select id="idLote" name="idLote" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all">
-                                <option value="">Sin lote específico (solo ajusta el total)</option>
-                            </select>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="cargarTodosLosItemsVenta()"
+                                    class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-xl text-xs transition-colors shadow-xs">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                                </svg>
+                                Cargar todos los productos de esta venta
+                            </button>
                         </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Cantidad</label>
-                            <input type="number" min="1" th:field="*{cantidad}" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all" required>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Motivo</label>
-                            <select th:field="*{motivo}" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all" required>
-                                <option value="">Seleccione...</option>
-                                <option th:each="m : ${motivos}" th:value="${m}" th:text="${#strings.replace(m, '_', ' ')}"></option>
-                            </select>
-                        </div>
-                        <div class="sm:col-span-2">
-                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">¿En qué estado queda el producto?</label>
-                            <select th:field="*{estadoProducto}" class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all" required>
-                                <option value="">Seleccione...</option>
-                                <option th:each="e : ${estadosProducto}" th:value="${e}" th:text="${#strings.replace(e, '_', ' ')}"></option>
-                            </select>
-                            <p class="text-[11px] text-slate-400 mt-1">
-                                "Apto para reingreso" es lo único que vuelve a sumar al stock disponible para la venta.
-                            </p>
-                        </div>
-                    </div>
-                    <div class="mt-6">
-                        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Observaciones</label>
-                        <textarea th:field="*{observaciones}" rows="3" placeholder="Detalles adicionales de la devolución..." class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all"></textarea>
                     </div>
                 </div>
 
-                <div class="flex items-center justify-end gap-3">
-                    <a th:href="@{/view/devoluciones}" class="px-5 py-2.5 rounded-xl text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors">Cancelar</a>
-                    <button type="submit" class="px-5 py-2.5 rounded-xl text-xs font-semibold text-white bg-pharmacore-accent hover:opacity-90 transition-opacity cursor-pointer">Registrar Devolución</button>
+                <!-- 2. Tarjeta: Productos a Devolver -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-7">
+                    <div class="flex items-center justify-between gap-3 mb-5 pb-3 border-b border-slate-100">
+                        <div class="flex items-center gap-2.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-pharmacore-accent"></span>
+                            <h2 class="text-xs font-bold text-pharmacore-accent uppercase tracking-wider">Productos a Devolver</h2>
+                            <span id="badge-contador-lineas" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600">0 líneas</span>
+                        </div>
+                        <button type="button" onclick="agregarLineaDevolucion()"
+                                class="inline-flex items-center gap-1.5 bg-pharmacore-accent text-white px-3.5 py-2 rounded-xl text-xs font-semibold hover:bg-pharmacore-darker transition-colors shadow-xs">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            + Agregar otra línea
+                        </button>
+                    </div>
+
+                    <!-- Contenedor de Líneas -->
+                    <div id="lineas-devolucion" class="space-y-4"></div>
+
+                    <!-- Estado Vacío -->
+                    <div id="empty-state" class="py-12 px-4 text-center border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
+                        <p class="text-xs sm:text-sm font-semibold text-slate-600">No hay líneas de devolución agregadas.</p>
+                        <p class="text-xs text-slate-400 mt-1">Seleccione una venta o haga clic en "+ Agregar otra línea" para comenzar.</p>
+                        <button type="button" onclick="agregarLineaDevolucion()" class="mt-4 px-4 py-2 bg-pharmacore-accent text-white text-xs font-semibold rounded-xl hover:bg-pharmacore-darker transition-colors shadow-xs">
+                            + Agregar primera línea
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 3. Tarjeta: Observaciones y Resumen -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-7">
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                        <!-- Observaciones -->
+                        <div class="lg:col-span-7">
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Observaciones</label>
+                            <textarea th:field="*{observaciones}" rows="3" placeholder="Detalles o comentarios de la devolución (opcional)..."
+                                      class="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all text-slate-700"></textarea>
+                        </div>
+
+                        <!-- Resumen Simple y Directo -->
+                        <div class="lg:col-span-5 bg-slate-50 border border-slate-200 rounded-2xl p-5">
+                            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-700 block mb-3">Resumen</span>
+                            <div class="space-y-2.5 text-xs">
+                                <div class="flex justify-between items-center text-slate-600">
+                                    <span>Total productos:</span>
+                                    <span id="resumen-total-lineas" class="font-bold text-slate-800">0</span>
+                                </div>
+                                <div class="pt-2.5 border-t border-slate-200 flex justify-between items-baseline">
+                                    <span class="font-semibold text-slate-700">Total a reembolsar:</span>
+                                    <span id="resumen-total-reembolso" class="text-lg font-bold text-pharmacore-dark">$0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botones de Acción Finales -->
+                <div class="flex items-center justify-end gap-3 pt-2">
+                    <a th:href="@{/view/devoluciones}" class="px-5 py-2.5 rounded-xl text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors">
+                        Cancelar
+                    </a>
+                    <button type="submit" id="btn-submit" class="px-6 py-2.5 rounded-xl text-xs font-semibold text-white bg-pharmacore-accent hover:opacity-90 transition-opacity cursor-pointer shadow-sm">
+                        Registrar Devolución
+                    </button>
                 </div>
             </form>
 
@@ -131,26 +207,482 @@
 
 <script th:inline="javascript">
     const LOTES = /*[[${lotes}]]*/ [];
+    const ITEMS_VENTAS = /*[[${itemsVentas}]]*/ [];
+    const PRODUCTOS_META = /*[[${productosMeta}]]*/ [];
+    const TODOS_PRODUCTOS = /*[[${productos}]]*/ [];
+    const MOTIVOS = /*[[${motivos}]]*/ [];
+    const ESTADOS_PRODUCTO = /*[[${estadosProducto}]]*/ [];
+
+    let contadorLineas = 0;
+
+    const MOTIVOS_LABELS = {
+        'PRODUCTO_DEFECTUOSO': 'Producto defectuoso',
+        'ERROR_ENTREGA': 'Error en despacho / entrega',
+        'PROXIMO_A_VENCER': 'Próximo a vencer',
+        'VENCIDO': 'Vencido',
+        'RETIRO_MERCADO': 'Retiro de mercado',
+        'EMPAQUE_DANADO': 'Empaque dañado'
+    };
+
+    const ESTADOS_LABELS = {
+        'APTO_PARA_REINGRESO': 'Apto para reingreso',
+        'DESECHADO': 'Desechado',
+        'DEVUELTO_A_FABRICA': 'Devuelto a fábrica'
+    };
 
     function alternarOrigen() {
         const tipo = document.getElementById('tipoDevolucion').value;
+        const ayuda = document.getElementById('campo-ayuda-tipo');
+        if (ayuda) ayuda.style.display = (tipo === '') ? 'flex' : 'none';
         document.getElementById('campo-venta').style.display = (tipo === 'CLIENTE') ? 'block' : 'none';
         document.getElementById('campo-compra').style.display = (tipo === 'PROVEEDOR') ? 'block' : 'none';
+
+        refrescarOpcionesProductosEnTodasLineas();
+        recalcularTotalesDevolucion();
     }
 
-    function filtrarLotes() {
-        const idProducto = document.getElementById('idProducto').value;
-        const select = document.getElementById('idLote');
-        select.innerHTML = '<option value="">Sin lote específico (solo ajusta el total)</option>';
-        LOTES.filter(l => String(l.idProducto) === String(idProducto)).forEach(l => {
+    function alCambiarVenta() {
+        const idVenta = document.getElementById('idVenta').value;
+        const bannerVenta = document.getElementById('banner-venta-info');
+        const txtVenta = document.getElementById('texto-venta-seleccionada');
+
+        if (!idVenta) {
+            bannerVenta.classList.add('hidden');
+            refrescarOpcionesProductosEnTodasLineas();
+            recalcularTotalesDevolucion();
+            return;
+        }
+
+        const items = ITEMS_VENTAS.filter(it => String(it.idVenta) === String(idVenta));
+        if (items.length > 0) {
+            bannerVenta.classList.remove('hidden');
+            const selectVenta = document.getElementById('idVenta');
+            const textoFactura = selectVenta.options[selectVenta.selectedIndex].text.split(' - ')[0];
+            txtVenta.textContent = 'Factura ' + textoFactura + ' (' + items.length + ' producto(s) comprados)';
+
+            const lineasActuales = document.querySelectorAll('#lineas-devolucion > div');
+            if (lineasActuales.length === 0) {
+                agregarLineaDevolucion(items[0]);
+            } else {
+                refrescarOpcionesProductosEnTodasLineas();
+            }
+        } else {
+            bannerVenta.classList.add('hidden');
+            refrescarOpcionesProductosEnTodasLineas();
+        }
+        recalcularTotalesDevolucion();
+    }
+
+    function cargarTodosLosItemsVenta() {
+        const idVenta = document.getElementById('idVenta').value;
+        if (!idVenta) return;
+
+        const items = ITEMS_VENTAS.filter(it => String(it.idVenta) === String(idVenta));
+        if (items.length === 0) {
+            alert('No se encontraron productos registrados en esta factura.');
+            return;
+        }
+
+        const contenedor = document.getElementById('lineas-devolucion');
+        contenedor.innerHTML = '';
+
+        items.forEach(it => {
+            agregarLineaDevolucion(it);
+        });
+
+        recalcularTotalesDevolucion();
+    }
+
+    function agregarLineaDevolucion(itemPreseleccionado = null) {
+        const idx = contadorLineas++;
+        const idVenta = document.getElementById('idVenta').value;
+        const itemsDeVenta = idVenta ? ITEMS_VENTAS.filter(it => String(it.idVenta) === String(idVenta)) : [];
+
+        document.getElementById('empty-state').classList.add('hidden');
+
+        const div = document.createElement('div');
+        div.className = 'bg-slate-50 border border-slate-200 rounded-2xl p-4 sm:p-5 relative transition-all hover:border-slate-300 shadow-xs space-y-3';
+        div.id = 'linea-' + idx;
+
+        // Opciones de Producto
+        let opcionesProductos = '<option value="">Seleccione producto...</option>';
+        if (itemsDeVenta.length > 0) {
+            opcionesProductos += '<optgroup label="Productos de la Factura">';
+            itemsDeVenta.forEach(it => {
+                const disponible = (it.cantidadRestante !== undefined) ? it.cantidadRestante : it.cantidad;
+                opcionesProductos += `<option value="${it.idProducto}">${it.nombreProducto} (Compró ${it.cantidad} ${it.formato} - Disp: ${disponible})</option>`;
+            });
+            opcionesProductos += '</optgroup>';
+            opcionesProductos += '<optgroup label="Otros Productos del Catálogo">';
+            TODOS_PRODUCTOS.forEach(p => {
+                opcionesProductos += `<option value="${p.idProducto}">${p.nombreComercial}</option>`;
+            });
+            opcionesProductos += '</optgroup>';
+        } else {
+            TODOS_PRODUCTOS.forEach(p => {
+                opcionesProductos += `<option value="${p.idProducto}">${p.nombreComercial}</option>`;
+            });
+        }
+
+        // Opciones de Motivo
+        let opcionesMotivos = '';
+        MOTIVOS.forEach(m => {
+            const label = MOTIVOS_LABELS[m] || m.replace(/_/g, ' ');
+            opcionesMotivos += `<option value="${m}">${label}</option>`;
+        });
+
+        // Opciones de Estado Producto (limpias, sin ruido técnico)
+        let opcionesEstados = '';
+        ESTADOS_PRODUCTO.forEach(e => {
+            const label = ESTADOS_LABELS[e] || e.replace(/_/g, ' ');
+            const selected = (e === 'APTO_PARA_REINGRESO') ? 'selected' : '';
+            opcionesEstados += `<option value="${e}" ${selected}>${label}</option>`;
+        });
+
+        div.innerHTML = `
+            <!-- Encabezado de la Fila -->
+            <div class="flex items-center justify-between pb-2 border-b border-slate-200/60">
+                <span class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-pharmacore-accent"></span>
+                    Producto a devolver
+                </span>
+                <button type="button" onclick="eliminarLineaDevolucion(${idx})"
+                        class="inline-flex items-center gap-1 text-slate-400 hover:text-red-600 text-xs font-medium transition-colors p-1" title="Quitar este producto">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                    Quitar
+                </button>
+            </div>
+
+            <!-- Fila 1: Producto, Formato, Cantidad, Lote -->
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-start">
+                <div class="sm:col-span-5">
+                    <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Producto</label>
+                    <select name="idProductos" id="prod-${idx}" onchange="alCambiarProductoEnLinea(${idx})"
+                            class="w-full px-3.5 py-2 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all font-medium text-slate-800" required>
+                        ${opcionesProductos}
+                    </select>
+                </div>
+
+                <div class="sm:col-span-2">
+                    <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Formato</label>
+                    <select name="formatos" id="formato-${idx}" onchange="actualizarLinea(${idx})"
+                            class="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all font-medium text-slate-800" required>
+                        <option value="CAJA">Caja</option>
+                        <option value="BLISTER">Blíster</option>
+                        <option value="UNIDAD">Unidad</option>
+                    </select>
+                </div>
+
+                <div class="sm:col-span-2">
+                    <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Cantidad</label>
+                    <input type="number" min="1" value="1" name="cantidades" id="cant-${idx}" oninput="actualizarLinea(${idx})"
+                           class="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all font-bold text-slate-800 text-center" required>
+                </div>
+
+                <div class="sm:col-span-3">
+                    <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Lote</label>
+                    <select name="idLotes" id="lote-${idx}" onchange="actualizarLinea(${idx})"
+                            class="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent transition-all text-slate-700">
+                        <option value="">Ajuste general</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Fila 2: Motivo, Estado, Reembolso -->
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center pt-1">
+                <div class="sm:col-span-5">
+                    <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Motivo</label>
+                    <select name="motivos" id="motivo-${idx}" class="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent text-slate-700" required>
+                        ${opcionesMotivos}
+                    </select>
+                </div>
+
+                <div class="sm:col-span-4">
+                    <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Estado</label>
+                    <select name="estadosProductos" id="estado-${idx}" onchange="actualizarLinea(${idx})" class="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-pharmacore-accent font-medium text-slate-700" required>
+                        ${opcionesEstados}
+                    </select>
+                </div>
+
+                <div class="sm:col-span-3 flex sm:flex-col sm:items-end justify-between items-center sm:justify-center pt-2 sm:pt-0">
+                    <span class="text-[10px] text-slate-400 uppercase font-semibold">Reembolso estimado</span>
+                    <span id="txt-reemb-${idx}" class="font-bold text-pharmacore-dark text-sm sm:text-base">$0</span>
+                </div>
+            </div>
+        `;
+
+        document.getElementById('lineas-devolucion').appendChild(div);
+
+        if (itemPreseleccionado) {
+            const selectProd = document.getElementById(`prod-${idx}`);
+            selectProd.value = itemPreseleccionado.idProducto;
+            aplicarDatosItemVenta(idx, itemPreseleccionado);
+        } else if (itemsDeVenta.length > 0) {
+            const productosYaAgregados = Array.from(document.querySelectorAll('select[name="idProductos"]'))
+                .map(s => s.value)
+                .filter(v => v !== '');
+            
+            const siguienteItem = itemsDeVenta.find(it => !productosYaAgregados.includes(String(it.idProducto))) || itemsDeVenta[0];
+            const selectProd = document.getElementById(`prod-${idx}`);
+            selectProd.value = siguienteItem.idProducto;
+            aplicarDatosItemVenta(idx, siguienteItem);
+        } else {
+            filtrarLotesParaLinea(idx);
+            actualizarLinea(idx);
+        }
+
+        actualizarContadorLineas();
+    }
+
+    function aplicarDatosItemVenta(idx, itemVenta) {
+        const selectFmt = document.getElementById(`formato-${idx}`);
+        if (itemVenta.formato) {
+            selectFmt.value = itemVenta.formato;
+        }
+
+        filtrarLotesParaLinea(idx, itemVenta.idLote);
+
+        const cantInput = document.getElementById(`cant-${idx}`);
+        const cantDisponible = (itemVenta.cantidadRestante !== undefined && itemVenta.cantidadRestante > 0)
+            ? itemVenta.cantidadRestante : itemVenta.cantidad;
+        
+        cantInput.max = cantDisponible;
+        cantInput.value = cantDisponible;
+
+        actualizarLinea(idx);
+    }
+
+    function alCambiarProductoEnLinea(idx) {
+        const idProd = document.getElementById(`prod-${idx}`).value;
+        const idVenta = document.getElementById('idVenta').value;
+
+        if (!idProd) {
+            filtrarLotesParaLinea(idx);
+            actualizarLinea(idx);
+            return;
+        }
+
+        let itemVenta = null;
+        if (idVenta) {
+            itemVenta = ITEMS_VENTAS.find(it => String(it.idVenta) === String(idVenta) && String(it.idProducto) === String(idProd));
+        }
+
+        if (itemVenta) {
+            aplicarDatosItemVenta(idx, itemVenta);
+        } else {
+            const cantInput = document.getElementById(`cant-${idx}`);
+            cantInput.removeAttribute('max');
+            filtrarLotesParaLinea(idx);
+            actualizarLinea(idx);
+        }
+    }
+
+    function filtrarLotesParaLinea(idx, loteSeleccionado = null) {
+        const idProd = document.getElementById(`prod-${idx}`).value;
+        const selectLote = document.getElementById(`lote-${idx}`);
+        selectLote.innerHTML = '<option value="">Ajuste general</option>';
+
+        if (!idProd) return;
+
+        LOTES.filter(l => String(l.idProducto) === String(idProd)).forEach(l => {
             const opt = document.createElement('option');
             opt.value = l.idLote;
             opt.textContent = l.numeroLote;
-            select.appendChild(opt);
+            if (loteSeleccionado && String(l.idLote) === String(loteSeleccionado)) {
+                opt.selected = true;
+            }
+            selectLote.appendChild(opt);
         });
     }
 
-    document.addEventListener('DOMContentLoaded', alternarOrigen);
+    function eliminarLineaDevolucion(idx) {
+        const linea = document.getElementById('linea-' + idx);
+        if (linea) {
+            linea.remove();
+        }
+        actualizarContadorLineas();
+        recalcularTotalesDevolucion();
+
+        const restantes = document.querySelectorAll('#lineas-devolucion > div');
+        if (restantes.length === 0) {
+            document.getElementById('empty-state').classList.remove('hidden');
+        }
+    }
+
+    function actualizarContadorLineas() {
+        const count = document.querySelectorAll('#lineas-devolucion > div').length;
+        const badge = document.getElementById('badge-contador-lineas');
+        if (badge) {
+            badge.textContent = `${count} línea${count === 1 ? '' : 's'}`;
+        }
+    }
+
+    function refrescarOpcionesProductosEnTodasLineas() {
+        const lineas = document.querySelectorAll('#lineas-devolucion > div');
+        lineas.forEach(div => {
+            const idx = div.id.replace('linea-', '');
+            const selectProd = document.getElementById(`prod-${idx}`);
+            const valorActual = selectProd ? selectProd.value : '';
+            
+            const idVenta = document.getElementById('idVenta').value;
+            const itemsDeVenta = idVenta ? ITEMS_VENTAS.filter(it => String(it.idVenta) === String(idVenta)) : [];
+
+            let opciones = '<option value="">Seleccione producto...</option>';
+            if (itemsDeVenta.length > 0) {
+                opciones += '<optgroup label="Productos de la Factura">';
+                itemsDeVenta.forEach(it => {
+                    const disponible = (it.cantidadRestante !== undefined) ? it.cantidadRestante : it.cantidad;
+                    opciones += `<option value="${it.idProducto}">${it.nombreProducto} (Compró ${it.cantidad} ${it.formato} - Disp: ${disponible})</option>`;
+                });
+                opciones += '</optgroup>';
+                opciones += '<optgroup label="Otros Productos del Catálogo">';
+                TODOS_PRODUCTOS.forEach(p => {
+                    opciones += `<option value="${p.idProducto}">${p.nombreComercial}</option>`;
+                });
+                opciones += '</optgroup>';
+            } else {
+                TODOS_PRODUCTOS.forEach(p => {
+                    opciones += `<option value="${p.idProducto}">${p.nombreComercial}</option>`;
+                });
+            }
+            if (selectProd) {
+                selectProd.innerHTML = opciones;
+                if (valorActual) selectProd.value = valorActual;
+            }
+            actualizarLinea(idx);
+        });
+    }
+
+    function actualizarLinea(idx) {
+        const selectProd = document.getElementById(`prod-${idx}`);
+        if (!selectProd) return;
+
+        const idProd = selectProd.value;
+        const formato = document.getElementById(`formato-${idx}`).value || 'CAJA';
+        const cantidad = parseInt(document.getElementById(`cant-${idx}`).value) || 0;
+        const estado = document.getElementById(`estado-${idx}`).value;
+        const idVenta = document.getElementById('idVenta').value;
+
+        const txtReemb = document.getElementById(`txt-reemb-${idx}`);
+
+        if (!idProd || cantidad <= 0) {
+            txtReemb.textContent = '$0';
+            txtReemb.dataset.valor = 0;
+            recalcularTotalesDevolucion();
+            return;
+        }
+
+        const prod = PRODUCTOS_META.find(p => String(p.idProducto) === String(idProd)) || {
+            unidadesPorCaja: 1, blisteresPorCaja: 1, precioVenta: 0
+        };
+
+        const uCaja = prod.unidadesPorCaja > 0 ? prod.unidadesPorCaja : 1;
+        const bCaja = prod.blisteresPorCaja > 0 ? prod.blisteresPorCaja : 1;
+        const uBlister = (bCaja > 1 && uCaja > 1) ? Math.max(1, Math.round(uCaja / bCaja)) : 1;
+
+        let factor = 1;
+        if (formato === 'CAJA') factor = uCaja;
+        else if (formato === 'BLISTER') factor = uBlister;
+        else factor = 1;
+
+        const pastillasBase = cantidad * factor;
+
+        let itemVenta = null;
+        if (idVenta) {
+            itemVenta = ITEMS_VENTAS.find(it => String(it.idVenta) === String(idVenta) && String(it.idProducto) === String(idProd));
+        }
+
+        let montoReembolso = 0;
+        if (itemVenta && estado === 'APTO_PARA_REINGRESO') {
+            const precioVendido = itemVenta.precioUnitario || 0;
+            let factorVenta = 1;
+            if (itemVenta.formato === 'CAJA') factorVenta = uCaja;
+            else if (itemVenta.formato === 'BLISTER') factorVenta = uBlister;
+
+            if (formato.toUpperCase() === (itemVenta.formato || '').toUpperCase()) {
+                montoReembolso = precioVendido * cantidad;
+            } else {
+                const precioBase = factorVenta > 0 ? (precioVendido / factorVenta) : 0;
+                montoReembolso = precioBase * pastillasBase;
+            }
+        }
+
+        txtReemb.textContent = '$' + Math.round(montoReembolso).toLocaleString('es-CO');
+        txtReemb.dataset.valor = montoReembolso;
+
+        recalcularTotalesDevolucion();
+    }
+
+    function recalcularTotalesDevolucion() {
+        const lineas = document.querySelectorAll('#lineas-devolucion > div');
+        let totalLineas = 0;
+        let totalReembolso = 0;
+
+        lineas.forEach(div => {
+            const idx = div.id.replace('linea-', '');
+            const txtReemb = document.getElementById(`txt-reemb-${idx}`);
+
+            if (txtReemb && txtReemb.dataset.valor) {
+                totalReembolso += parseFloat(txtReemb.dataset.valor) || 0;
+            }
+            totalLineas++;
+        });
+
+        document.getElementById('resumen-total-lineas').textContent = totalLineas;
+        document.getElementById('resumen-total-reembolso').textContent = '$' + Math.round(totalReembolso).toLocaleString('es-CO');
+    }
+
+    function validarEnvio(e) {
+        const lineas = document.querySelectorAll('#lineas-devolucion > div');
+        if (lineas.length === 0) {
+            alert('Debe agregar al menos una línea de producto a devolver.');
+            if (e) e.preventDefault();
+            return false;
+        }
+
+        for (let i = 0; i < lineas.length; i++) {
+            const div = lineas[i];
+            const idx = div.id.replace('linea-', '');
+            const selectProd = document.getElementById(`prod-${idx}`);
+            const cantInput = document.getElementById(`cant-${idx}`);
+
+            if (!selectProd || !selectProd.value) {
+                alert(`En la línea #${i + 1} no se ha seleccionado un producto válido.`);
+                if (selectProd) selectProd.focus();
+                if (e) e.preventDefault();
+                return false;
+            }
+
+            const cant = parseInt(cantInput.value) || 0;
+            if (cant <= 0) {
+                alert(`En la línea #${i + 1} la cantidad debe ser mayor a cero.`);
+                if (cantInput) cantInput.focus();
+                if (e) e.preventDefault();
+                return false;
+            }
+
+            if (cantInput.max && cant > parseInt(cantInput.max)) {
+                alert(`En la línea #${i + 1} la cantidad ingresada (${cant}) supera el máximo permitido de la factura (${cantInput.max}).`);
+                cantInput.focus();
+                if (e) e.preventDefault();
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        alternarOrigen();
+        const idVentaActual = document.getElementById('idVenta').value;
+        if (idVentaActual) {
+            alCambiarVenta();
+        } else {
+            agregarLineaDevolucion();
+        }
+    });
 </script>
 </body>
 </html>

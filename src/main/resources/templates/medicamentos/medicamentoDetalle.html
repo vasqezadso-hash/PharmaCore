@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="fragments/layout :: styles"></th:block>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${'PharmaCore - ' + producto.nombreComercial + ' (Ficha Maestra)'}">PharmaCore - Detalle Medicamento</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" th:href="@{/img/img.png}">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        pharmacore: {
+                            bg: '#F7FAF9',
+                            dark: '#004B4B',
+                            darker: '#003939',
+                            accent: '#006565',
+                            text: '#1E1E1E'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-pharmacore-bg font-sans text-pharmacore-text antialiased min-h-screen flex flex-col selection:bg-pharmacore-accent selection:text-white">
+
+<header th:replace="~{fragments/layout :: topbar('Ficha del Medicamento')}"></header>
+
+<div class="flex flex-1 relative min-h-[calc(100vh-4rem)]">
+
+    <div id="overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/60 z-10 hidden md:hidden transition-all duration-300"></div>
+
+    <aside th:replace="~{fragments/layout :: sidebar('medicamentos')}"></aside>
+
+    <div class="flex-1 flex flex-col min-w-0 bg-pharmacore-bg">
+        <main class="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
+
+            <!-- Breadcrumb y navegación rápida -->
+            <div class="mb-5 flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center gap-2 text-xs text-slate-500">
+                    <a th:href="@{/view/medicamentos}" class="hover:text-pharmacore-accent transition-colors font-medium">Catálogo de Productos</a>
+                    <span>/</span>
+                    <span class="text-slate-800 font-semibold" th:text="${producto.nombreComercial}">Medicamento</span>
+                    <span class="bg-teal-100 text-teal-800 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Producto Maestro</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <a th:href="@{/view/medicamentos}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 transition-colors shadow-xs">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                        </svg>
+                        Volver al catálogo
+                    </a>
+                    <a th:href="@{/view/medicamentos/edit/{id}(id=${producto.idProducto})}" class="bg-slate-100 text-slate-700 border border-slate-300 px-4 py-2 rounded-xl text-xs font-semibold hover:bg-slate-200 transition-colors inline-flex items-center gap-1.5">
+                        <svg class="w-3.5 h-3.5 text-slate-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                        <span>Editar Ficha</span>
+                    </a>
+                    <a th:if="${permisosModulos != null and permisosModulos['MOD_LOTES']}"
+                       th:href="@{/view/lotes/form(idProducto=${producto.idProducto}, origen='detalle')}"
+                       class="bg-pharmacore-accent text-white px-4 py-2 rounded-xl text-xs font-semibold hover:opacity-90 transition-opacity shadow-sm">
+                        + Agregar Lote a este Medicamento
+                    </a>
+                </div>
+            </div>
+
+            <!-- Mensajes flash -->
+            <div th:if="${mensaje}" class="bg-emerald-50 text-emerald-700 border border-emerald-200 p-3 mb-4 rounded-xl text-sm" th:text="${mensaje}"></div>
+            <div th:if="${error}" class="bg-red-50 text-red-700 border border-red-200 p-3 mb-4 rounded-xl text-sm" th:text="${error}"></div>
+
+            <!-- Encabezado del Producto Maestro -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8 mb-6">
+                <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-6 pb-6 border-b border-slate-100">
+                    <div>
+                        <div class="flex flex-wrap items-center gap-3">
+                            <h1 class="text-2xl sm:text-3xl font-bold text-pharmacore-dark" th:text="${producto.nombreComercial}">Nombre Comercial</h1>
+                            <span th:if="${producto.concentracion}" class="bg-slate-100 text-slate-700 font-semibold text-xs px-2.5 py-1 rounded-lg border border-slate-200" th:text="${producto.concentracion}">Concentración</span>
+                            <span th:text="${producto.estado}"
+                                  th:classappend="${producto.estado.name() == 'ACTIVO'} ? 'bg-emerald-100 text-emerald-700' : (${producto.estado.name() == 'INACTIVO'} ? 'bg-slate-200 text-slate-600' : 'bg-red-100 text-red-700')"
+                                  class="inline-block px-2.5 py-1 rounded-full text-[11px] font-semibold"></span>
+                        </div>
+                        <p class="text-sm text-slate-500 mt-1">
+                            <span class="font-medium text-slate-700" th:text="${producto.nombreGenerico ?: 'Sin nombre genérico'}">Nombre Genérico</span>
+                            <span th:if="${producto.laboratorio}" th:text="${' • Laboratorio ' + producto.laboratorio}"></span>
+                            <span th:if="${producto.presentacion}" th:text="${' • ' + producto.presentacion}"></span>
+                        </p>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span th:if="${producto.esVentaLibre and !producto.esControlado and !producto.requiereFormula}" class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1.5 rounded-xl text-xs font-semibold inline-flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                            <span>Venta Libre</span>
+                        </span>
+                        <span th:if="${producto.requiereFormula}" class="bg-teal-50 text-teal-800 border border-teal-200 px-3 py-1.5 rounded-xl text-xs font-semibold inline-flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5 text-pharmacore-accent" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                            <span>Requiere Fórmula Médica</span>
+                        </span>
+                        <span th:if="${producto.esControlado}" class="bg-red-50 text-red-700 border border-red-200 px-3 py-1.5 rounded-xl text-xs font-semibold inline-flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5 text-red-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                            <span>Medicamento Controlado</span>
+                        </span>
+                        <span th:if="${producto.requiereRefrigeracion}" class="bg-teal-50 text-teal-800 border border-teal-200 px-3 py-1.5 rounded-xl text-xs font-semibold inline-flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5 text-pharmacore-accent" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v18m0-18l-3 3m3-3l3 3m-3 15l-3-3m3 3l3-3m6-6H3m18 0l-3-3m3 3l-3 3M3 12l3-3m-3 3l3 3"/></svg>
+                            <span>Cadena de Frío</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Tarjetas de métricas del producto -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+                    <!-- Stock Consolidado -->
+                    <div class="bg-slate-50/80 rounded-xl p-4 border border-slate-200">
+                        <div class="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Stock Total Consolidado</div>
+                        <div class="text-2xl font-bold text-pharmacore-dark mt-1 flex items-baseline gap-2">
+                            <span th:text="${producto.stockTotal != null ? producto.stockTotal : 0}">0</span>
+                            <span class="text-xs font-normal text-slate-500">unidades</span>
+                        </div>
+                        <div class="mt-2 flex items-center gap-1.5">
+                            <span th:if="${producto.stockBajo}" class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-amber-100 text-amber-700 inline-flex items-center gap-1">
+                                <svg class="w-3 h-3 text-amber-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                                <span>Stock Bajo (mín: <span th:text="${producto.stockMinimo}">10</span>)</span>
+                            </span>
+                            <span th:if="${!producto.stockBajo and producto.stockTotal > 0}" class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-emerald-100 text-emerald-700 inline-flex items-center gap-1">
+                                <svg class="w-3 h-3 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                                <span>Nivel Óptimo</span>
+                            </span>
+                            <span th:if="${producto.stockTotal == null or producto.stockTotal == 0}" class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-red-100 text-red-700 inline-flex items-center gap-1">
+                                <svg class="w-3 h-3 text-red-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                                <span>Agotado</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Precios -->
+                    <div class="bg-slate-50/80 rounded-xl p-4 border border-slate-200">
+                        <div class="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Precio de Venta</div>
+                        <div class="text-2xl font-bold text-pharmacore-accent mt-1"
+                             th:text="${'$' + #numbers.formatDecimal(producto.precioVenta, 0, 'COMMA', 0, 'POINT')}">$0</div>
+                        <div class="text-[11px] text-slate-500 mt-1">
+                            Compra: <span class="font-medium text-slate-700" th:text="${'$' + #numbers.formatDecimal(producto.precioCompra, 0, 'COMMA', 0, 'POINT')}">$0</span>
+                        </div>
+                    </div>
+
+                    <!-- Remesas / Lotes -->
+                    <div class="bg-slate-50/80 rounded-xl p-4 border border-slate-200">
+                        <div class="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Historial de Remesas</div>
+                        <div class="text-2xl font-bold text-slate-800 mt-1 flex items-baseline gap-2">
+                            <span th:text="${#lists.size(lotes)}">0</span>
+                            <span class="text-xs font-normal text-slate-500">lote(s)</span>
+                        </div>
+                        <div class="text-[11px] text-slate-500 mt-1">
+                            <span class="text-emerald-700 font-semibold" th:text="${lotesDisponibles}">0</span> disp. •
+                            <span class="text-amber-700 font-semibold" th:text="${lotesProximos}">0</span> por vencer •
+                            <span class="text-red-700 font-semibold" th:text="${lotesVencidos}">0</span> venc.
+                        </div>
+                    </div>
+
+                    <!-- Ubicación y Almacenaje -->
+                    <div class="bg-slate-50/80 rounded-xl p-4 border border-slate-200">
+                        <div class="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Ubicación Física</div>
+                        <div class="text-sm font-bold text-slate-800 mt-2 flex items-center gap-1.5">
+                            <svg class="w-4 h-4 text-pharmacore-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                            <span th:text="${producto.ubicacionEstante ?: 'Estante no asignado'}">Estante</span>
+                        </div>
+                        <div class="text-[11px] text-slate-500 mt-1" th:text="${'Categoría: ' + (producto.categoria != null ? producto.categoria.nombre : '-')}">Categoría</div>
+                    </div>
+                </div>
+
+                <!-- Detalles técnicos maestros en formato de rejilla -->
+                <div class="mt-6 pt-6 border-t border-slate-100 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 text-xs">
+                    <div>
+                        <span class="text-slate-400 block uppercase tracking-wider text-[10px]">Código de Barras</span>
+                        <span class="font-mono font-semibold text-slate-700" th:text="${producto.codigoBarras}">-</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block uppercase tracking-wider text-[10px]">Registro INVIMA</span>
+                        <span class="font-semibold text-slate-700" th:text="${producto.registroInvima}">-</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block uppercase tracking-wider text-[10px]">Proveedor</span>
+                        <span class="font-semibold text-slate-700" th:text="${producto.proveedor != null ? producto.proveedor.razon_social : '-'}">-</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block uppercase tracking-wider text-[10px]">Presentación</span>
+                        <span class="font-semibold text-slate-700" th:text="${producto.presentacion ?: '-'}">-</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block uppercase tracking-wider text-[10px]">Empaque / Fracc.</span>
+                        <span class="font-semibold text-slate-700" th:text="${(producto.unidadesPorCaja != null ? producto.unidadesPorCaja : 1) + ' unid/caja • ' + (producto.blisteresPorCaja != null ? producto.blisteresPorCaja : 1) + ' blíst.'}">-</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block uppercase tracking-wider text-[10px]">Restricciones</span>
+                        <span class="font-semibold text-slate-700" th:text="${producto.restriccionesVenta ?: 'Sin restricciones'}">-</span>
+                    </div>
+                </div>
+
+                <div th:if="${producto.descripcion}" class="mt-4 pt-4 border-t border-slate-100 text-xs text-slate-600">
+                    <span class="font-semibold text-slate-700">Descripción médica / notas: </span>
+                    <span th:text="${producto.descripcion}"></span>
+                </div>
+            </div>
+
+            <!-- SECCIÓN HISTORIAL DE LOTES (PRODUCTO MAESTRO ÚNICO) -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h2 class="text-base sm:text-lg font-bold text-pharmacore-dark uppercase tracking-wide">
+                                Historial de Lotes y Vencimientos
+                            </h2>
+                            <span class="bg-teal-50 text-teal-700 border border-teal-200 text-xs font-semibold px-2.5 py-0.5 rounded-full"
+                                  th:text="${#lists.size(lotes) + ' remesa(s) registrada(s)'}">0</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-1">
+                            El stock maestro se alimenta de estos lotes. Cada remesa conserva su fecha de vencimiento y disponibilidad sin necesidad de duplicar el medicamento en el catálogo.
+                        </p>
+                    </div>
+
+                    <div th:if="${permisosModulos != null and permisosModulos['MOD_LOTES']}">
+                        <a th:href="@{/view/lotes/form(idProducto=${producto.idProducto}, origen='detalle')}"
+                           class="bg-pharmacore-accent text-white px-4 py-2 rounded-xl text-xs font-semibold hover:opacity-90 transition-opacity flex items-center gap-1.5 shadow-sm">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                            + Agregar Lote
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Tabla del historial de lotes -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-pharmacore-dark text-white text-xs uppercase tracking-wider">
+                        <tr>
+                            <th class="p-4">Número de Lote</th>
+                            <th class="p-4">Fecha Fabricación</th>
+                            <th class="p-4">Fecha Vencimiento</th>
+                            <th class="p-4">Existencia / Inicial</th>
+                            <th class="p-4">Estado</th>
+                            <th class="p-4 text-center">Acciones</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <!-- Estado vacío cuando no hay lotes -->
+                        <tr th:if="${#lists.isEmpty(lotes)}">
+                            <td colspan="6" class="p-8 text-center text-slate-500">
+                                <div class="max-w-md mx-auto">
+                                    <div class="w-12 h-12 rounded-full bg-teal-50 text-pharmacore-accent flex items-center justify-center mx-auto mb-3">
+                                        <svg class="w-6 h-6 text-pharmacore-accent" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                                    </div>
+                                    <h3 class="text-sm font-bold text-slate-800">No hay lotes registrados para este medicamento</h3>
+                                    <p class="text-xs text-slate-500 mt-1">
+                                        Para habilitar el stock y la venta de este producto maestro con control FEFO de caducidad, agregue la primera remesa de lote.
+                                    </p>
+                                    <a th:if="${permisosModulos != null and permisosModulos['MOD_LOTES']}"
+                                       th:href="@{/view/lotes/form(idProducto=${producto.idProducto}, origen='detalle')}"
+                                       class="inline-block mt-4 bg-pharmacore-accent text-white px-4 py-2 rounded-xl text-xs font-semibold hover:opacity-90 transition-opacity">
+                                        + Registrar Primer Lote
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Filas de lotes -->
+                        <tr th:each="l : ${lotes}" class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                            <td class="p-4">
+                                <div class="font-mono font-bold text-slate-800 text-xs flex items-center gap-2">
+                                    <span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200" th:text="${l.numeroLote}">LOTE-001</span>
+                                </div>
+                                <div class="text-[10px] text-slate-400 font-mono mt-0.5" th:text="${'ID Sistema #' + l.idLote}"></div>
+                            </td>
+                            <td class="p-4 text-xs text-slate-600"
+                                th:text="${l.fechaFabricacion != null ? #temporals.format(l.fechaFabricacion, 'dd/MM/yyyy') : 'No indicada'}">
+                            </td>
+                            <td class="p-4 text-xs">
+                                <div class="font-semibold flex items-center gap-1.5"
+                                     th:classappend="${l.estadoCalculado == 'VENCIDO'} ? 'text-red-600' : (${l.estadoCalculado == 'PROXIMO_A_VENCER'} ? 'text-amber-600' : 'text-slate-700')">
+                                    <svg th:if="${l.estadoCalculado == 'VENCIDO'}" class="w-3.5 h-3.5 text-red-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                                    <svg th:if="${l.estadoCalculado == 'PROXIMO_A_VENCER'}" class="w-3.5 h-3.5 text-amber-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    <span th:text="${#temporals.format(l.fechaVencimiento, 'dd/MM/yyyy')}">01/01/2026</span>
+                                </div>
+                                <div th:if="${l.estadoCalculado == 'PROXIMO_A_VENCER'}" class="text-[10px] text-amber-700 font-medium">
+                                    Próximo a caducar (&lt; 30 días)
+                                </div>
+                                <div th:if="${l.estadoCalculado == 'VENCIDO'}" class="text-[10px] text-red-600 font-bold">
+                                    Caducado
+                                </div>
+                            </td>
+                            <td class="p-4 text-xs">
+                                <div class="font-semibold text-slate-800 flex items-center gap-1">
+                                    <span class="text-pharmacore-dark font-bold text-sm" th:text="${l.cantidadActual}">0</span>
+                                    <span class="text-slate-400">/</span>
+                                    <span class="text-slate-500" th:text="${l.cantidadInicial + ' unid.'}">100 unid.</span>
+                                </div>
+                                <!-- Barra de disponibilidad -->
+                                <div class="w-28 bg-slate-200 rounded-full h-1.5 mt-1.5 overflow-hidden">
+                                    <div class="h-1.5 rounded-full"
+                                         th:classappend="${l.cantidadActual == 0} ? 'bg-red-400' : (${l.cantidadActual < (l.cantidadInicial * 0.25)} ? 'bg-amber-400' : 'bg-emerald-500')"
+                                         th:style="${'width: ' + (l.cantidadInicial > 0 ? ((l.cantidadActual * 100) / l.cantidadInicial) : 0) + '%'}">
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="p-4 text-xs">
+                                <span th:text="${l.estadoCalculado}"
+                                      th:classappend="${l.estadoCalculado == 'DISPONIBLE'} ? 'bg-emerald-100 text-emerald-700'
+                                                       : (${l.estadoCalculado == 'PROXIMO_A_VENCER'} ? 'bg-amber-100 text-amber-800'
+                                                       : (${l.estadoCalculado == 'VENCIDO'} ? 'bg-red-100 text-red-700' : 'bg-slate-200 text-slate-600'))"
+                                      class="inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold"></span>
+                            </td>
+                            <td class="p-4 text-center whitespace-nowrap">
+                                <th:block th:if="${permisosModulos != null and permisosModulos['MOD_LOTES']}">
+                                    <a th:href="@{/view/lotes/edit/{id}(id=${l.idLote}, origen='detalle')}"
+                                       class="text-pharmacore-accent font-semibold mr-3 hover:underline">
+                                        Editar Lote
+                                    </a>
+                                    <form th:action="@{/view/lotes/delete/{id}(id=${l.idLote})}" method="post" class="inline">
+                                        <input type="hidden" name="origen" value="detalle"/>
+                                        <button type="submit" class="text-red-600 font-semibold hover:underline cursor-pointer"
+                                                onclick="return confirm('¿Eliminar este lote? El stock total del medicamento se recalculará.');">
+                                            Eliminar
+                                        </button>
+                                    </form>
+                                </th:block>
+                                <span th:unless="${permisosModulos != null and permisosModulos['MOD_LOTES']}" class="text-slate-400 text-[11px] italic">
+                                    Solo lectura
+                                </span>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Resumen en pie de tabla -->
+                <div class="p-4 sm:p-6 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
+                    <div>
+                        <span>Suma de stock de lotes activos: </span>
+                        <strong class="text-pharmacore-dark font-bold text-sm" th:text="${stockCalculado + ' unidades'}">0 unidades</strong>
+                        <span class="text-slate-400 ml-1">(Sincronizado con el catálogo maestro)</span>
+                    </div>
+                    <div th:if="${permisosModulos != null and permisosModulos['MOD_LOTES']}">
+                        <a th:href="@{/view/lotes}" class="text-pharmacore-accent hover:underline font-medium">
+                            Ver todos los lotes del sistema →
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <footer th:replace="~{fragments/layout :: footer}"></footer>
+    </div>
+</div>
+
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

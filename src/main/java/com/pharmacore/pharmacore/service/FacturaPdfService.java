@@ -81,7 +81,8 @@ public class FacturaPdfService {
             String numeroLote = nombresLotes.getOrDefault(d.getIdLote(), "Lote #" + d.getIdLote());
             agregarCelda(tabla, nombreProducto, fuenteCelda, Element.ALIGN_LEFT);
             agregarCelda(tabla, numeroLote, fuenteCelda, Element.ALIGN_LEFT);
-            agregarCelda(tabla, String.valueOf(d.getCantidad()), fuenteCelda, Element.ALIGN_CENTER);
+            String cantTexto = d.getCantidad() + (d.getFormato() != null && !d.getFormato().isBlank() ? " (" + d.getFormato().toLowerCase() + ")" : "");
+            agregarCelda(tabla, cantTexto, fuenteCelda, Element.ALIGN_CENTER);
             agregarCelda(tabla, formatearMoneda(d.getPrecioUnitario()), fuenteCelda, Element.ALIGN_RIGHT);
             agregarCelda(tabla, formatearMoneda(d.getSubtotal()), fuenteCelda, Element.ALIGN_RIGHT);
         }

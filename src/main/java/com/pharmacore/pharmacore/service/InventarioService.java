@@ -98,4 +98,21 @@ public class InventarioService {
 
         return movimientosRepository.save(movimiento);
     }
+
+    @Transactional
+    public void vincularTransaccion(Integer idMovimiento, Integer idTransaccion) {
+        if (idMovimiento == null || idTransaccion == null) return;
+        movimientosRepository.findById(idMovimiento).ifPresent(m -> {
+            m.setIdTransaccion(idTransaccion);
+            movimientosRepository.save(m);
+        });
+    }
+
+    @Transactional
+    public void vincularTransaccionMultiple(Iterable<Integer> idsMovimientos, Integer idTransaccion) {
+        if (idsMovimientos == null || idTransaccion == null) return;
+        for (Integer idMov : idsMovimientos) {
+            vincularTransaccion(idMov, idTransaccion);
+        }
+    }
 }
