@@ -322,3 +322,45 @@ CREATE TABLE transacciones_financieras (
     INDEX idx_tf_venta (id_venta),
     INDEX idx_tf_compra (id_compra)
 ) ENGINE=InnoDB;
+
+-- ============================================================
+-- DATOS INICIALES SEMILLA (ROLES, EMPLEADOS, USUARIOS Y CATÁLOGO)
+-- ============================================================
+
+-- 1. Roles del Sistema con sus 14 permisos dinámicos
+INSERT INTO roles (id_rol, nombre, descripcion, acceso_pos, acceso_ventas_historial, acceso_clientes, acceso_productos, acceso_categorias, acceso_lotes, acceso_inventario, acceso_compras, acceso_proveedores, acceso_devoluciones, acceso_domicilios, acceso_finanzas, acceso_reportes, acceso_usuarios) VALUES
+(1, 'ADMINISTRADOR', 'Acceso total y administración del sistema', 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+(2, 'FARMACEUTICO', 'Gestión farmacéutica, catálogo, inventario y compras', 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0),
+(3, 'VENDEDOR', 'Dispensación en mostrador, clientes y ventas', 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0)
+ON DUPLICATE KEY UPDATE nombre=VALUES(nombre);
+
+-- 2. Empleados Iniciales vinculados a cada perfil
+INSERT INTO empleados (id_empleado, nombre_completo, tipo_documento, numero_documento, telefono, direccion, correo, cargo, salario, estado) VALUES
+(1, 'Manuel Andrés Bahamón', 'CC', '1000000001', '3001234567', 'Calle 10 # 5-20', 'admin@pharmacore.com', 'Administrador', 3500000.00, 'ACTIVO'),
+(2, 'Pedro Martínez', 'CC', '1000000002', '3109876543', 'Carrera 15 # 8-30', 'farmacia@pharmacore.com', 'Farmacéutico', 2200000.00, 'ACTIVO'),
+(3, 'María Fernanda López', 'CC', '1000000003', '3205558899', 'Avenida 4 # 12-45', 'ventas@pharmacore.com', 'Vendedor', 1400000.00, 'ACTIVO')
+ON DUPLICATE KEY UPDATE nombre_completo=VALUES(nombre_completo);
+
+-- 3. Usuarios de Acceso al Sistema
+-- Contraseña para todos: admin123 (Cifrada con algoritmo BCrypt)
+-- Hash BCrypt: $2a$10$Qb9ED1ll/BrT5WSnFTCFJOSOMmfMSXtOj3Xu8K/yTC38eQpL2IBoa
+INSERT INTO usuarios (id_usuario, id_empleado, id_rol, username, password_hash, estado) VALUES
+(1, 1, 1, 'manuelbhm', '$2a$10$Qb9ED1ll/BrT5WSnFTCFJOSOMmfMSXtOj3Xu8K/yTC38eQpL2IBoa', 'ACTIVO'),
+(2, 2, 2, 'pmartinez', '$2a$10$Qb9ED1ll/BrT5WSnFTCFJOSOMmfMSXtOj3Xu8K/yTC38eQpL2IBoa', 'ACTIVO'),
+(3, 3, 3, 'asdw', '$2a$10$Qb9ED1ll/BrT5WSnFTCFJOSOMmfMSXtOj3Xu8K/yTC38eQpL2IBoa', 'ACTIVO')
+ON DUPLICATE KEY UPDATE username=VALUES(username);
+
+-- 4. Categorías Iniciales
+INSERT INTO categorias (id_categoria, nombre, descripcion) VALUES
+(1, 'Analgésicos', 'Medicamentos para el manejo del dolor'),
+(2, 'Antibióticos', 'Medicamentos que requieren fórmula médica'),
+(3, 'Cuidado personal', 'Productos de higiene y cuidado, sin fórmula'),
+(4, 'Vitaminas', 'Suplementos vitamínicos e inyectables')
+ON DUPLICATE KEY UPDATE nombre=VALUES(nombre);
+
+-- 5. Proveedores Iniciales
+INSERT INTO proveedores (id_proveedor, razon_social, nit, direccion, telefono, correo, nombre_contacto, tipo_productos, estado) VALUES
+(1, 'Laboratorios Genfar S.A.', '8600123456-1', 'Zona Industrial Bogotá', '6017894561', 'contacto@genfar.com', 'Carlos Rojas', 'Medicamentos Genéricos', 'ACTIVO'),
+(2, 'DisFarma Distribuciones S.A.S.', '9001234567-2', 'Calle 26 # 68-15', '6013216548', 'ventas@disfarma.com', 'Laura Gómez', 'Medicamentos y Hospitalarios', 'ACTIVO')
+ON DUPLICATE KEY UPDATE razon_social=VALUES(razon_social);
+
